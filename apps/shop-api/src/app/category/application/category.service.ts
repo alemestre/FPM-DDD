@@ -1,15 +1,13 @@
-import { CategoryRepository } from "./port/category.repository";
+import { CategoryRepository } from "../domain/category.repository";
 import { Category } from "../domain/category.entity";
 import { Inject } from "@nestjs/common";
-import { Uuid } from "../../core/domain/value-objects/uuid.value-object";
-import { Label } from "../domain/value-objects/label";
+import { Name } from "../../shared/domain/value-objects/name.value-object";
 
 export class CategoryService {
   constructor(@Inject(CategoryRepository) private readonly repository: CategoryRepository) {}
 
   async createCategory(rawLabel: string): Promise<Category> {
-    const label = Label.create(rawLabel);
-    const category = new Category(new Uuid().getValue(), label);
+    const category = Category.create(rawLabel);
     return this.repository.save(category);
   }
 
@@ -18,11 +16,8 @@ export class CategoryService {
   }
 
   async updateCategory(id: string, rawLabel: string) {
-    const category = await this.repository.findById(id);
-
-    if (!category) throw new Error("Category not found");
-
-    const label = Label.create(rawLabel).toString();
-    this.repository.update(id, { label });
+    const category = await this.repository.findByIdOrFail(id);
+    const label = Name.create(rawLabel).toString();
+    this.repository.update(category.id, { label });
   }
 }

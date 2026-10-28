@@ -1,34 +1,28 @@
-import { Label } from "./value-objects/label";
+import { Name } from "../../shared/domain/value-objects/name.value-object";
+import { Uuid } from "../../shared/domain/value-objects/uuid.value-object";
 
 /**
- * Category aggregate root.
- *
  * A category groups products under a unique identity and a display label.
  */
 export class Category {
-  /**
-   * Builds a category. Callers use {@link Category.create} instead of this
-   * constructor so invariants are checked first.
-   *
-   * @param id - Category identity.
-   * @param _label - Display name. Must not be empty.
-   */
-  constructor(
-    readonly id: string,
-    private _label: Label,
+  private constructor(
+    public readonly id: string,
+    private _label: Name
   ) {}
 
-  get label() {
+  static create(label: string): Category {
+    return new Category(new Uuid().getValue(), Name.create(label));
+  }
+
+  static reconstitute(id: string, label: string): Category {
+    return new Category(id, Name.create(label));
+  }
+
+  get label(): string {
     return this._label.toString();
   }
 
-  /**
-   * Updates the label after validating the same invariants as create.
-   *
-   * @param label - Display name. Must not be empty.
-   * @throws Error when an invariant fails.
-   */
-  changeLabel(label: Label): void {
-    this._label = label;
+  changeLabel(label: string): void {
+    this._label = Name.create(label);
   }
 }

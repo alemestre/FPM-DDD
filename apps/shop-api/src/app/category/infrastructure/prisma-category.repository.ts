@@ -1,8 +1,7 @@
-import { CategoryRepository } from "../application/port/category.repository";
+import { CategoryRepository } from "../domain/category.repository";
 import { PrismaService } from "../../../prisma/prisma.service";
-import { Label } from "../domain/value-objects/label";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { Category } from "../domain/category.entity";
-import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class PrismaCategoryRepository implements CategoryRepository {
@@ -15,7 +14,7 @@ export class PrismaCategoryRepository implements CategoryRepository {
       create: { id: entity.id, label: entity.label }
     });
 
-    const category = new Category(row.id, Label.create(row.label));
+    const category = Category.create(row.label);
     return category;
   }
 
@@ -25,21 +24,28 @@ export class PrismaCategoryRepository implements CategoryRepository {
       data: { ...dataToUpdate }
     });
 
-    const category = new Category(row.id, Label.create(row.label));
+    const category = Category.reconstitute(row.id, row.label);
     return category;
   }
 
   async findById(id: string): Promise<Category | null> {
     const row = await this.prisma.category.findUnique({ where: { id } });
     if (!row) return null;
-    const category = new Category(row.id, Label.create(row.label));
+    const category = Category.reconstitute(row.id, row.label);
+    return category;
+  }
+
+  async findByIdOrFail(id: string): Promise<Category> {
+    const row = await this.prisma.category.findUnique({ where: { id } });
+    if (!row) throw new NotFoundException();
+    const category = Category.reconstitute(row.id, row.label);
     return category;
   }
 
   async findAll(): Promise<Category[]> {
     const rows = await this.prisma.category.findMany();
     return rows.map((r) => {
-      const category = new Category(r.id, Label.create(r.label));
+      const category = Category.reconstitute(r.id, r.label);
       return category;
     });
   }

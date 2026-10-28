@@ -14,12 +14,21 @@ export abstract class GenericEntityRepository<T> {
   abstract save(entity: T): Promise<T>;
 
   /**
-   * Loads a product by identifier.
+   * Loads an entity by identifier.
    *
    * @param id - Entity identity.
    * @returns The entity when it exists, otherwise `null`.
    */
   abstract findById(id: string): Promise<T | null>;
+
+  /**
+   * Finds an entity by its identifier.
+   *
+   * @param id - The entity identifier.
+   * @returns A promise that resolves to the entity if found.
+   * @throws {EntityNotFoundError} If no entity exists with the given identifier.
+   */
+  abstract findByIdOrFail(id: string): Promise<T>;
 
   /**
    * Loads every entity.
