@@ -1,0 +1,11 @@
+version: "3"
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD=vrehDT06j3y1
+      POSTGRES_INITDB_ARGS="-E 'utf8'
+      POSTGRES_DB=fpm_dev
+    ports:
+        - "127.0.0.1:5432:5432"

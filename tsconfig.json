@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compileOnSave": false,
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/shop-api-e2e"
+    },
+    {
+      "path": "./apps/shop-api"
+    }
+  ],
+  "compilerOptions": {
+    "strict": true
+  }
+}

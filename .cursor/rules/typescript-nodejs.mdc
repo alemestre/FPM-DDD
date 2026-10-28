@@ -1,0 +1,50 @@
+---
+description: TypeScript and Node.js coding standards for this workspace
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# TypeScript and Node.js
+
+Prefer explicit, maintainable TypeScript. Do not use `any`. Use `unknown` at untrusted boundaries, then narrow.
+
+## Naming
+
+- Classes, types, enums: PascalCase
+- Variables, functions, methods: camelCase
+- Files and directories: kebab-case
+- Constants and env keys: UPPER_SNAKE_CASE
+
+## Types
+
+- Prefer `import type` when a symbol is type-only.
+- Mark immutable fields `readonly`.
+- Prefer `z.infer<typeof schema>` over hand-written DTO types when Zod already describes the shape.
+- Do not use `@ts-ignore`. Prefer `@ts-expect-error` with a one-line reason only when unavoidable.
+
+## Functions and errors
+
+- Name functions with a verb and a noun (`getOrderById`).
+- Prefer small pure functions in the domain; keep I/O in application or infrastructure.
+- Never swallow errors. Log with context, then throw a typed error with `{ cause }`.
+
+```typescript
+// ❌
+try {
+  await save(order);
+} catch (e) {}
+
+// ✅
+try {
+  await save(order);
+} catch (error) {
+  logger.error('Failed to save order', { orderId: order.id, error });
+  throw new OrderPersistenceError('Unable to save order', { cause: error });
+}
+```
+
+## Node.js
+
+- Treat process input (HTTP, queues, env, files) as untrusted. Validate with Zod before use.
+- Prefer `Promise.all` for independent async work. Do not await in a loop unless order or rate limits require it.
+- Keep secrets in env, never in source. Validate env with a Zod schema at startup.
