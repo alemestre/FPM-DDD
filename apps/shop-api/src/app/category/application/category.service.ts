@@ -17,7 +17,7 @@ export class CategoryService {
 
   async updateCategory(id: string, rawLabel: string) {
     const category = await this.repository.findByIdOrFail(id);
-    const label = Name.create(rawLabel).toString();
-    this.repository.update(category.id, { label });
+    const name = Name.create(rawLabel).toString();
+    this.repository.update(category.id, { name });
   }
 }

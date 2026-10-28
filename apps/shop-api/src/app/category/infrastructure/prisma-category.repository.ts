@@ -10,11 +10,11 @@ export class PrismaCategoryRepository implements CategoryRepository {
   async save(entity: Category) {
     const row = await this.prisma.category.upsert({
       where: { id: entity.id },
-      update: { label: entity.label, updatedAt: new Date() },
-      create: { id: entity.id, label: entity.label }
+      update: { name: entity.name, updatedAt: new Date() },
+      create: { id: entity.id, name: entity.name }
     });
 
-    const category = Category.create(row.label);
+    const category = Category.create(row.name);
     return category;
   }
 
@@ -24,28 +24,28 @@ export class PrismaCategoryRepository implements CategoryRepository {
       data: { ...dataToUpdate }
     });
 
-    const category = Category.reconstitute(row.id, row.label);
+    const category = Category.reconstitute(row.id, row.name);
     return category;
   }
 
   async findById(id: string): Promise<Category | null> {
     const row = await this.prisma.category.findUnique({ where: { id } });
     if (!row) return null;
-    const category = Category.reconstitute(row.id, row.label);
+    const category = Category.reconstitute(row.id, row.name);
     return category;
   }
 
   async findByIdOrFail(id: string): Promise<Category> {
     const row = await this.prisma.category.findUnique({ where: { id } });
     if (!row) throw new NotFoundException();
-    const category = Category.reconstitute(row.id, row.label);
+    const category = Category.reconstitute(row.id, row.name);
     return category;
   }
 
   async findAll(): Promise<Category[]> {
     const rows = await this.prisma.category.findMany();
     return rows.map((r) => {
-      const category = Category.reconstitute(r.id, r.label);
+      const category = Category.reconstitute(r.id, r.name);
       return category;
     });
   }

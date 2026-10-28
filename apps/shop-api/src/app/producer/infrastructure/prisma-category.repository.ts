@@ -1,7 +1,7 @@
-import { CategoryRepository } from "../domain/category.repository";
+import { CategoryRepository } from "../domain/producer.repository";
 import { PrismaService } from "../../../prisma/prisma.service";
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { Category } from "../domain/category.entity";
+import { Category } from "../domain/producer.entity";
 
 @Injectable()
 export class PrismaCategoryRepository implements CategoryRepository {

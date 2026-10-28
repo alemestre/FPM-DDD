@@ -44,3 +44,8 @@ export { Prisma }
  * 
  */
 export type Category = Prisma.CategoryModel
+/**
+ * Model Producer
+ * 
+ */
+export type Producer = Prisma.ProducerModel

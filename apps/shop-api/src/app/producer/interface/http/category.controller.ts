@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Get, Patch, Param } from "@nestjs/common";
-import { CategoryService } from "../../application/category.service";
+import { CategoryService } from "../../application/producer.service";
 import { CreateCategoryDTO } from "./dto/create-category.dto";
 import { UpdateCategoryDTO } from "./dto/update-category.dto";
 
