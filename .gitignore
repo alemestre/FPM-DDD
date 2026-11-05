@@ -1,45 +1,41 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+# Nestjs specific
+/dist
+/node_modules
+/.nmhash
+/build
+/tmp
 
-# compiled output
-dist
-tmp
-out-tsc
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
-# dependencies
-node_modules
+# dotenv environment variable files
+.env
+.env.development
+.env.test
+.env.production
 
-# IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# misc
-/.sass-cache
-/connect.lock
-/coverage
-/libpeerconnection.log
-npm-debug.log
-yarn-error.log
-testem.log
-/typings
-
-# System Files
-.DS_Store
-Thumbs.db
+# temp directory
+.temp
+.tmp
 
 .nx/cache
 .nx/workspace-data
-.nx/migrate-runs
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
+
 .claude/worktrees
 .claude/settings.local.json
+.nx/polygraph
+.nx/self-healing
+.nx/migrate-runs
+test-output
+
+# Prisma generated client (run `prisma generate`)
+apps/shop-api/src/generated/
+
