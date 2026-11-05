@@ -1,0 +1,12 @@
+.git
+.env
+.env.*
+node_modules
+dist
+coverage
+.nx
+.angular
+.idea
+.vscode
+.claude
+apps/shop-api/src/generated
