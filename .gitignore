@@ -39,3 +39,8 @@ test-output
 # Prisma generated client (run `prisma generate`)
 apps/shop-api/src/generated/
 
+
+# Local tooling and test output
+.angular
+.idea
+coverage
