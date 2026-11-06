@@ -42,5 +42,6 @@ apps/shop-api/src/generated/
 
 # Local tooling and test output
 .angular
+.vscode
 .idea
 coverage
