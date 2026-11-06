@@ -5,7 +5,8 @@ import { CreateProducerUseCase } from "../../application/use-cases/create-produc
 import { UpdateProducerUseCase } from "../../application/use-cases/update-producer.use-case";
 import { ListProducersUseCase } from "../../application/use-cases/list-producers.use-case";
 import { GetProducerUseCase } from "../../application/use-cases/get-producer.use-case";
-import { type ProducerResponse, toProducerResponse } from "./producer.response";
+import type { ProducerResponseDto } from "@fpm/contracts";
+import { toProducerResponse } from "./producer.response.mapper";
 import { CreateProducerDto } from "./dto/create-producer.dto";
 import { UpdateProducerDto } from "./dto/update-producer.dto";
 
@@ -25,18 +26,18 @@ export class ProducerController {
   ) {}
 
   @Post()
-  async create(@Body() dto: CreateProducerDto): Promise<ProducerResponse> {
+  async create(@Body() dto: CreateProducerDto): Promise<ProducerResponseDto> {
     return toProducerResponse(await this.createProducer.execute(dto));
   }
 
   @Get()
-  async findAll(): Promise<ProducerResponse[]> {
+  async findAll(): Promise<ProducerResponseDto[]> {
     const producers = await this.listProducers.execute();
     return producers.map(toProducerResponse);
   }
 
   @Get(":id")
-  async findOne(@Param("id", ParseUUIDPipe) id: string): Promise<ProducerResponse> {
+  async findOne(@Param("id", ParseUUIDPipe) id: string): Promise<ProducerResponseDto> {
     return toProducerResponse(await this.getProducer.execute(id));
   }
 
@@ -44,19 +45,19 @@ export class ProducerController {
   async update(
     @Param("id", ParseUUIDPipe) id: string,
     @Body() dto: UpdateProducerDto
-  ): Promise<ProducerResponse> {
+  ): Promise<ProducerResponseDto> {
     return toProducerResponse(await this.updateProducer.execute(id, dto));
   }
 
   @Post(":id/activate")
   @HttpCode(HttpStatus.OK)
-  async activate(@Param("id", ParseUUIDPipe) id: string): Promise<ProducerResponse> {
+  async activate(@Param("id", ParseUUIDPipe) id: string): Promise<ProducerResponseDto> {
     return toProducerResponse(await this.activateProducer.execute(id));
   }
 
   @Post(":id/deactivate")
   @HttpCode(HttpStatus.OK)
-  async deactivate(@Param("id", ParseUUIDPipe) id: string): Promise<ProducerResponse> {
+  async deactivate(@Param("id", ParseUUIDPipe) id: string): Promise<ProducerResponseDto> {
     return toProducerResponse(await this.deactivateProducer.execute(id));
   }
 }

@@ -3,7 +3,8 @@ import { CreateCategoryUseCase } from "../../application/use-cases/create-catego
 import { DeleteCategoryUseCase } from "../../application/use-cases/delete-category.use-case";
 import { ListCategoriesUseCase } from "../../application/use-cases/list-categories.use-case";
 import { UpdateCategoryUseCase } from "../../application/use-cases/update-category.use-case";
-import { type CategoryResponseDto, toCategoryResponse } from "./dto/category.response.dto";
+import type { CategoryResponseDto } from "@fpm/contracts";
+import { toCategoryResponse } from "./dto/category.response.mapper";
 import { GetCategoryUseCase } from "../../application/use-cases/get-category.use-case";
 import { CreateCategoryDTO } from "./dto/create-category.dto";
 import { UpdateCategoryDTO } from "./dto/update-category.dto";

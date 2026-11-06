@@ -5,7 +5,8 @@ import { CreateProductUseCase } from "../../application/use-cases/create-product
 import { DeleteProductUseCase } from "../../application/use-cases/delete-product.use-case";
 import { UpdateProductUseCase } from "../../application/use-cases/update-product.use-case";
 import { ListProductsUseCase } from "../../application/use-cases/list-products.use-case";
-import { type ProductResponseDto, toProductResponse } from "./dto/product.response.dto";
+import type { ProductResponseDto } from "@fpm/contracts";
+import { toProductResponse } from "./dto/product.response.mapper";
 import { GetProductUseCase } from "../../application/use-cases/get-product.use-case";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { StockMovementDto } from "./dto/stock-movement.dto";

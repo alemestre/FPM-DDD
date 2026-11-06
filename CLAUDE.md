@@ -41,6 +41,9 @@ Follow the guidelines defined in `.claude/rules/`:
 
 - apps/shop-api : backend api
 - apps/angular-shop : Angular SSR storefront (still the generated starter)
+- libs/contracts : HTTP response contracts (`@fpm/contracts`) shared by both apps. Holds the Zod
+  schemas and `*ResponseDto` types only. Mappers stay in shop-api because they import domain entities.
+  In angular-shop, use `import type` so Zod stays out of the browser bundle.
 
 ## Shop Api
 

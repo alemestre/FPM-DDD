@@ -1,12 +1,5 @@
+import type { CategoryResponseDto } from "@fpm/contracts";
 import type { Category } from "../../../domain/category.entity";
-import { z } from "zod";
-
-export const CategoryResponseSchema = z.object({
-  id: z.uuid(),
-  name: z.string()
-});
-
-export type CategoryResponseDto = z.infer<typeof CategoryResponseSchema>;
 
 /**
  * Maps the aggregate to its public HTTP representation. Serializing the entity
