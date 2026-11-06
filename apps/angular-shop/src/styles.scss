@@ -1,1 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
+
+$primary : #c2003d;
+$secondary : #3c1824;
+
+@use 'bootstrap/scss/bootstrap';
+@use 'bootstrap-icons/font/bootstrap-icons.css';
+
+:root {
+    --colorbase: hsl(0, 65%, 34%);
+    --red: hsl(0, 78%, 62%);
+    --cyan: hsl(180, 62%, 55%);
+    --orange: hsl(34, 97%, 64%);
+    --blue: hsl(212, 86%, 64%);
+    --varyDarkBlue: hsl(234, 12%, 34%);
+    --grayishBlue: hsl(229, 6%, 66%);
+}

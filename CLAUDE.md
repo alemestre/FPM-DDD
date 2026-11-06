@@ -77,6 +77,9 @@ Bounded contexts are in `apps/shop-api/src/app/{product,producer,category}`, eac
 
 - **Request path:** a controller receives a Zod DTO, calls one `*UseCase.execute()`, then maps
   the entity with a response mapper such as `toProductResponse`.
+- **Responses:** `ApiResponseInterceptor` wraps every successful result as
+  `{ success: true, data }` (`ApiResponseDto`), so controllers return the bare DTO. Empty
+  204 responses stay empty, and errors keep the format set by the exception filters.
 - **Use cases:** one class per file and per action, not a grouped `*.service.ts`.
 - **Repository ports:** abstract classes extending `GenericEntityRepository<T>`, so they can be
   Nest DI tokens. Bind them in the module:

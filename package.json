@@ -4,8 +4,9 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "serve": "dotenv run -f .env -- nx serve $APP --verbose --host=0.0.0.0 --port=$DEBUG_PORT",
+    "serve": "dotenv run -f .env -- nx serve $APP --verbose --port=$DEBUG_PORT",
     "serve:shop-api": "APP=shop-api PORT=3000 DEBUG_PORT=9000 npm run serve",
+    "serve:angular-shop": "APP=angular-shop PORT=4200 DEBUG_PORT=9001 npm run serve",
     "reload:node_modules": "if [ -d /node_modules ]; then cmp -s /.nmhash /srv/fpm/.nmhash || (echo 'reloading node_modules!' && rm -rf /srv/fpm/node_modules && cp -R /node_modules /srv/fpm/ && cp /.nmhash /srv/fpm/.nmhash); else [ -d node_modules ] && sha256sum package-lock.json | cmp -s - .nmhash || (echo 'installing node_modules!' && npm ci && sha256sum package-lock.json > .nmhash); fi",
     "test:all": "nx run-many --projects=tag:scope:test --target=test --coverage --verbose --parallel=100% --skip-nx-cache --runInBand --no-cache"
   },
@@ -23,8 +24,11 @@
     "@nestjs/config": "^12.1.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@ng-bootstrap/ng-bootstrap": "^21.0.0",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
+    "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.2",
     "express": "^4.21.2",
     "nestjs-zod": "^5.5.0",
     "reflect-metadata": "^0.2.0",
