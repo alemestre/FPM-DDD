@@ -15,6 +15,7 @@
       "options": {
         "outputPath": "dist/apps/angular-shop",
         "browser": "apps/angular-shop/src/main.ts",
+        "polyfills": ["@angular/localize/init"],
         "tsConfig": "apps/angular-shop/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
@@ -45,7 +46,7 @@
             },
             {
               "type": "anyComponentStyle",
-              "maximumWarning": "4kb",
+              "maximumWarning": "6kb",
               "maximumError": "8kb"
             }
           ],

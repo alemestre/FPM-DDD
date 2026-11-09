@@ -1,0 +1,21 @@
+name: fpm
+
+services:
+  db:
+    image: postgres
+    restart: always
+    container_name: postgres
+    env_file:
+      - ../.env
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_INITDB_ARGS="-E 'utf8'"
+      - POSTGRES_DB=fpm_dev
+    ports:
+        - "127.0.0.1:5432:5432"
+    networks:
+        - fpm
+
+networks:
+    fpm:
+      external: true

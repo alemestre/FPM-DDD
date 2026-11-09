@@ -1,1 +1,283 @@
-<p>about works!</p>
+<!-- HERO -->
+<section class="about-hero">
+  <div class="about-hero__overlay"></div>
+
+  <div class="container about-hero__content">
+    <span class="about-hero__subtitle">La Ferme du Petit Marais</span>
+
+    <h1>Une histoire de famille et de passion</h1>
+
+    <p>
+      Depuis plusieurs générations, nous cultivons la terre
+      et élevons nos animaux avec passion et respect de la nature.
+    </p>
+  </div>
+</section>
+
+
+<!-- NOTRE HISTOIRE -->
+<section id="notre-histoire" class="family-section py-5">
+  <div class="container">
+    <div class="row align-items-center g-4">
+
+      <div class="col-lg-6">
+        <div class="family-section__image">
+          <img
+            src="./images/famille-nicolas.jpg"
+            alt="La famille Nicolas de la Ferme du Petit Marais"
+            class="img-fluid rounded-4"
+          >
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <span class="section-eyebrow">Notre histoire</span>
+
+        <h2 class="section-title">
+          Une ferme familiale depuis plusieurs générations
+        </h2>
+        <p>
+          Notre exploitation est avant tout une histoire de famille,
+          de transmission et de savoir-faire. Nous avons à cœur
+          de préserver notre environnement et de proposer des
+          produits de qualité, issus autant que possible de notre ferme.
+        </p>
+
+        <p>
+          Chaque jour, nous mettons notre passion au service
+          d'une agriculture respectueuse de la nature et des animaux.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- NOTRE FERME ET SES ACTIVITÉS : CARROUSEL -->
+<section class="farm-carousel-section py-5">
+  <div class="container">
+
+    <div class="section-heading text-center mb-5">
+      <span class="section-eyebrow">Au fil des saisons</span>
+
+      <h2 class="section-title">
+        Notre ferme, notre quotidien
+      </h2>
+
+      <p class="section-description">
+        Des champs aux animaux, découvrez les différentes activités
+        de notre exploitation.
+      </p>
+    </div>
+
+    <ngb-carousel class="farm-carousel" [interval]="0">
+      <!-- VACHES -->
+      <ng-template ngbSlide>
+        <img
+          src="./images/fpm-vache-limousine.jpg"
+          class="d-block w-100"
+          alt="Vaches Limousines dans les pâturages"
+        >
+
+        <div class="carousel-caption">
+          <h3>L'élevage bovin</h3>
+
+          <p>
+            Nous élevons des vaches de race Limousine.
+            Plus de la moitié de l'année, elles profitent des pâturages
+            avec leurs petits. En hiver, elles sont abritées à la ferme
+            et nourries au foin.
+          </p>
+        </div>
+      </ng-template>
+
+      <!-- VOLAILLES -->
+      <ng-template ngbSlide>
+        <img
+          src="./images/fpm-volailles.jpg"
+          class="d-block w-100"
+          alt="Volailles élevées à la ferme"
+        >
+
+        <div class="carousel-caption">
+          <h3>Nos volailles</h3>
+
+          <p>
+            Poulets de chair, poules pondeuses, pintades et dindes :
+            nos volailles font également partie de la vie de la ferme.
+          </p>
+        </div>
+      </ng-template>
+
+      <!-- CULTURES -->
+      <ng-template ngbSlide>
+        <img
+          src="./images/champs.jpeg"
+          class="d-block w-100"
+          alt="Champs de céréales de la ferme"
+        >
+
+        <div class="carousel-caption">
+          <h3>Nos cultures céréalières</h3>
+
+          <p>
+            Les cultures représentent une grande partie de notre
+            exploitation. Elles contribuent notamment à l'alimentation
+            de nos animaux.
+          </p>
+        </div>
+      </ng-template>
+
+      <!-- FRUITS ET LÉGUMES -->
+      <ng-template ngbSlide>
+        <img
+          src="./images/fpm-legumes.jpg"
+          class="d-block w-100"
+          alt="Fruits et légumes frais cultivés à la ferme"
+        >
+
+        <div class="carousel-caption">
+          <h3>Nos fruits et légumes</h3>
+
+          <p>
+            Depuis 2020, nous consacrons une partie de nos terres
+            à la production de fruits et légumes, en conversion
+            vers l'agriculture biologique.
+          </p>
+        </div>
+      </ng-template>
+    </ngb-carousel>
+  </div>
+</section>
+
+
+<!-- NOS ENGAGEMENTS -->
+<section class="commitments-section py-5">
+  <div class="container">
+
+    <div class="text-center mb-5">
+      <span class="section-eyebrow">Nos valeurs</span>
+
+      <h2 class="section-title">
+        Ce qui nous tient à cœur
+      </h2>
+    </div>
+
+    <div class="row g-4">
+
+      <div class="col-md-4">
+        <div class="commitment-card h-100">
+          <div class="commitment-card__icon">
+            <i class="bi bi-heart"></i>
+          </div>
+
+          <h3>Le respect des animaux</h3>
+
+          <p>
+            Nous veillons au bien-être de nos animaux et à leur offrir
+            des conditions d'élevage adaptées à leurs besoins.
+          </p>
+        </div>
+      </div>
+
+
+      <div class="col-md-4">
+        <div class="commitment-card h-100">
+          <div class="commitment-card__icon">
+            <i class="bi bi-flower1"></i>
+          </div>
+
+          <h3>Le respect de la nature</h3>
+
+          <p>
+            Nous sommes attachés à notre environnement et cherchons
+            à faire évoluer nos pratiques dans le respect de la terre.
+          </p>
+        </div>
+      </div>
+
+
+      <div class="col-md-4">
+        <div class="commitment-card h-100">
+          <div class="commitment-card__icon">
+            <i class="bi bi-basket"></i>
+          </div>
+
+          <h3>Le goût des bons produits</h3>
+
+          <p>
+            Nous souhaitons proposer des produits fermiers de qualité,
+            issus de notre travail et de celui de producteurs locaux.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- LE MAGASIN -->
+<section class="shop-section py-5">
+  <div class="container">
+
+    <div class="row align-items-center g-4">
+
+      <div class="col-lg-6">
+        <span class="section-eyebrow">Vente directe</span>
+
+        <h2 class="section-title">
+          Retrouvez-nous à la ferme !
+        </h2>
+
+        <p>
+          Depuis janvier 2018, notre magasin vous accueille directement
+          à la ferme pour vous faire découvrir nos produits.
+        </p>
+
+        <p>
+          Vous y retrouverez nos produits maison : œufs, viande bovine
+          et volailles, mais également une sélection de produits
+          proposés par d'autres agriculteurs locaux.
+        </p>
+
+        <p>
+          Une belle occasion de privilégier les circuits courts,
+          de découvrir le travail des producteurs de notre région
+          et de retrouver le goût des bonnes choses.
+        </p>
+
+        <a href="/boutique" class="btn btn-success btn-lg mt-3">
+          Découvrir nos produits
+        </a>
+      </div>
+
+
+      <div class="col-lg-6">
+        <img
+          src="./images/fpm-magasin.jpg"
+          alt="Magasin de vente directe de la Ferme du Petit Marais"
+          class="img-fluid rounded-4 shop-section__image"
+        >
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SIGNATURE FINALE -->
+<section class="about-footer py-5">
+  <div class="container text-center">
+
+    <h2>
+      Au plaisir de vous accueillir à la ferme !
+    </h2>
+
+    <p>
+      La famille Nicolas
+    </p>
+
+  </div>
+</section>

@@ -1,9 +1,15 @@
 /* You can add global styles to this file, and also import other style files */
 
-$primary : #c2003d;
+//$primary : #c2003d;
+//$secondary : #3c1824;
+
+$primary : #8c2f39;
 $secondary : #3c1824;
 
-@use 'bootstrap/scss/bootstrap';
+@use 'bootstrap/scss/bootstrap' with (
+    $primary: $primary,
+    $secondary: $secondary
+);
 @use 'bootstrap-icons/font/bootstrap-icons.css';
 
 :root {

@@ -1,0 +1,22 @@
+name: fpm
+
+services:
+  shop-api:
+    build:
+      context: ../
+      args:
+        NODE_VERSION: ${NODE_VERSION}
+      dockerfile: apps/shop-api/Dockerfile.dev
+    container_name: shop-api
+    image: shop-api:1
+    ports:
+      - "3000:3000"
+      - "9000:9000"
+    volumes:
+      - /srv/fpm/:/srv/fpm/
+    networks:
+      - fpm
+
+networks:
+  fpm:
+    external: true
