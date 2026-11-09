@@ -85,8 +85,8 @@ describe('ProducerController (HTTP)', () => {
   const expectedProducer = {
     id: PRODUCER_ID,
     name: 'Ferme du Moulin',
-    contactEmail: 'contact@ferme-moulin.fr',
-    phoneNumber: '+33612345678',
+    email: 'contact@ferme-moulin.fr',
+    phone: '+33612345678',
     vatNumber: 'FR40303265045',
     addressLine1: '1 chemin du Moulin',
     addressLine2: '',
@@ -122,8 +122,8 @@ describe('ProducerController (HTTP)', () => {
   describe('POST /producers', () => {
     const payload = {
       name: 'Ferme du Moulin',
-      contactEmail: 'contact@ferme-moulin.fr',
-      phoneNumber: '06 12 34 56 78',
+      email: 'contact@ferme-moulin.fr',
+      phone: '06 12 34 56 78',
       vatNumber: 'FR40303265045',
       addressLine1: '1 chemin du Moulin',
       postalCode: '75001',
@@ -138,7 +138,7 @@ describe('ProducerController (HTTP)', () => {
     });
 
     it('renvoie 400 si le corps est invalide', async () => {
-      expect((await request('POST', '', { ...payload, contactEmail: 'pas-un-email' })).status).toBe(400);
+      expect((await request('POST', '', { ...payload, email: 'pas-un-email' })).status).toBe(400);
     });
 
     it('renvoie 400 si le numéro de TVA est invalide', async () => {

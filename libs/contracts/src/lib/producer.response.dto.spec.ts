@@ -4,8 +4,8 @@ describe('ProducerResponseSchema', () => {
     const validProducer = {
         id: '3f0c9a52-8a6e-4c1b-9d57-2b1e7f4a6c10',
         name: 'Ferme du Val',
-        contactEmail: 'contact@ferme-du-val.example',
-        phoneNumber: '+33123456789',
+        email: 'contact@ferme-du-val.example',
+        phone: '+33123456789',
         vatNumber: 'FR12345678901',
         addressLine1: '1 chemin des Vergers',
         addressLine2: '',

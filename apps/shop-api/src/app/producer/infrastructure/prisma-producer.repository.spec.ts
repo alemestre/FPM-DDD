@@ -18,8 +18,8 @@ const producerRow = (overrides: Record<string, unknown> = {}) => ({
   uid: 1,
   id: PRODUCER_ID,
   name: 'Ferme du Moulin',
-  contactEmail: 'contact@ferme-moulin.fr',
-  phoneNumber: '+33612345678',
+  email: 'contact@ferme-moulin.fr',
+  phone: '+33612345678',
   tvaNumber: 'FR40303265045',
   addressLine1: '1 chemin du Moulin',
   addressLine2: '',
@@ -71,8 +71,8 @@ describe('PrismaProducerRepository', () => {
 
     const data = {
       name: 'Ferme du Moulin',
-      contactEmail: 'contact@ferme-moulin.fr',
-      phoneNumber: '+33612345678',
+      email: 'contact@ferme-moulin.fr',
+      phone: '+33612345678',
       tvaNumber: 'FR40303265045',
       addressLine1: '1 chemin du Moulin',
       addressLine2: '',

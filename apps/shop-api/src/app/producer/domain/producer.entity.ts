@@ -34,8 +34,8 @@ export class Producer {
 
   static create(
     name: string,
-    contactEmail: string,
-    phoneNumber: string,
+    email: string,
+    phone: string,
     vatNumber: string,
     addressLine1: string,
     postalCode: string,
@@ -45,8 +45,8 @@ export class Producer {
     return new Producer(
       new Uuid().getValue(),
       Name.create(name),
-      Email.create(contactEmail),
-      PhoneNumber.create(phoneNumber),
+      Email.create(email),
+      PhoneNumber.create(phone),
       VatNumber.create(vatNumber),
       addressLine1,
       PostalCode.create(postalCode),
@@ -59,8 +59,8 @@ export class Producer {
   static reconstitute(
     id: string,
     name: string,
-    contactEmail: string,
-    phoneNumber: string,
+    email: string,
+    phone: string,
     vatNumber: string,
     addressLine1: string,
     postalCode: string,
@@ -71,8 +71,8 @@ export class Producer {
     return new Producer(
       id,
       Name.create(name),
-      Email.create(contactEmail),
-      PhoneNumber.create(phoneNumber),
+      Email.create(email),
+      PhoneNumber.create(phone),
       VatNumber.create(vatNumber),
       addressLine1,
       PostalCode.create(postalCode),
@@ -134,12 +134,12 @@ export class Producer {
     this._name = Name.create(name);
   }
 
-  changeEmail(contactEmail: string): void {
-    this._email = Email.create(contactEmail);
+  changeEmail(email: string): void {
+    this._email = Email.create(email);
   }
 
-  changePhone(phoneNumber: string): void {
-    this._phone = PhoneNumber.create(phoneNumber);
+  changePhone(phone: string): void {
+    this._phone = PhoneNumber.create(phone);
   }
 
   changeVatNumber(vatNumber: string): void {

@@ -3,8 +3,8 @@ import { UpdateProducerSchema } from "./update-producer.dto";
 
 const validProducer = {
   name: "Producer",
-  contactEmail: "producer@example.com",
-  phoneNumber: "0123456789",
+  email: "producer@example.com",
+  phone: "0123456789",
   vatNumber: "1234567890123",
   addressLine1: "1 Main Street",
   addressLine2: "",
@@ -20,8 +20,8 @@ describe("Producer schemas", () => {
   it("rejects a producer when a required property is missing", () => {
     const requiredProperties = [
       "name",
-      "contactEmail",
-      "phoneNumber",
+      "email",
+      "phone",
       "vatNumber",
       "addressLine1",
       "postalCode",
@@ -39,16 +39,16 @@ describe("Producer schemas", () => {
   it("trims the contact email before validating it", () => {
     const parsed = CreateProducerSchema.safeParse({
       ...validProducer,
-      contactEmail: "  producer@example.com  "
+      email: "  producer@example.com  "
     });
 
     expect(parsed.success).toBe(true);
-    expect(parsed.data?.contactEmail).toBe("producer@example.com");
+    expect(parsed.data?.email).toBe("producer@example.com");
   });
 
   it("rejects an invalid contact email", () => {
     expect(
-      CreateProducerSchema.safeParse({ ...validProducer, contactEmail: " not-an-email " }).success
+      CreateProducerSchema.safeParse({ ...validProducer, email: " not-an-email " }).success
     ).toBe(false);
   });
 

@@ -22,8 +22,8 @@ const createRepositoryMock = (): jest.Mocked<ProducerRepository> => ({
 describe('CreateProducerUseCase', () => {
   const input = {
     name: 'Ferme du Moulin',
-    contactEmail: ' Contact@Ferme-Moulin.FR ',
-    phoneNumber: '06 12 34 56 78',
+    email: ' Contact@Ferme-Moulin.FR ',
+    phone: '06 12 34 56 78',
     vatNumber: 'FR40303265045',
     addressLine1: '1 chemin du Moulin',
     postalCode: '75001',

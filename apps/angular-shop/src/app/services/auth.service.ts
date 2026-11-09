@@ -1,78 +1,92 @@
+import type { ApiResponseDto, CurrentUserResponseDto } from '@fpm/contracts';
 import { Injectable, inject, signal, computed } from '@angular/core';
+import { environment } from '../../environments/environment';
+import { catchError, map, Observable, of, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { User } from '../models/entities/user';
-import { catchError, map, Observable, of, tap } from 'rxjs';
+import { CONSTANTS } from '../constant';
 
-export type RegisterPayload = Pick<User, 'firstName' | 'lastName' | 'email' | 'phone'> & {
-  password: string;
+export type RegisterPayload = Pick<User, 'firstName' | 'lastName' | 'email'> & {
+    password: string;
 };
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root',
 })
 export class AuthService {
-  private http = inject(HttpClient)
-  private _currentUser = signal<User | null>(null)
-  currentUser = this._currentUser.asReadonly()
-  isConnected = computed(() => this.currentUser() !== null)
+    private httpClient = inject(HttpClient);
+    private _currentUser = signal<User | null>(null);
+    currentUser = this._currentUser.asReadonly();
+    isConnected = computed(() => this.currentUser() !== null);
+    private _apiUrl = environment.apiUrl;
 
-  login(username: string, password: string): Observable<{
-    user: User
-  }> {
-    return this.http.post<{
-      user: User
-    }>('/api/login', { username, password }, { withCredentials: true })
-      .pipe(
-        tap(response => {
-          // Les deux tokens sont automatiquement stockés dans des cookies HTTP-only
-          // Nous mettons à jour l'état de l'utilisateur connecté
-          this._currentUser.set(response.user);
-        })
-      );
-  }
+    login(email: string, password: string): Observable<User> {
+        return this.httpClient
+            .post<ApiResponseDto<CurrentUserResponseDto>>(
+                `${this._apiUrl}/${CONSTANTS.API_END_POINTS.LOGIN}`,
+                { email, password },
+                { withCredentials: true },
+            )
+            .pipe(
+                // Le jeton d'accès arrive dans un cookie HTTP-only, illisible ici : seul le profil est renvoyé.
+                map((response) => response.data),
+                tap((user) => this._currentUser.set(user)),
+            );
+    }
 
-  // Restaure la session au démarrage : les cookies HTTP-only sont envoyés automatiquement.
-  loadCurrentUser(): Observable<User | null> {
-    return this.http.get<{ user: User }>('/api/me', { withCredentials: true })
-      .pipe(
-        tap(response => this._currentUser.set(response.user)),
-        map(response => response.user),
-        catchError(() => {
-          // Pas de session valide (ou API indisponible) : visiteur non connecté
-          this._currentUser.set(null);
-          return of(null);
-        })
-      );
-  }
+    // Restaure la session au démarrage : les cookies HTTP-only sont envoyés automatiquement.
+    loadCurrentUser(): Observable<User | null> {
+        return this.httpClient
+            .get<ApiResponseDto<CurrentUserResponseDto>>(
+                `${this._apiUrl}/${CONSTANTS.API_END_POINTS.ME}`,
+                { withCredentials: true },
+            )
+            .pipe(
+                map((response) => response.data),
+                tap((user) => this._currentUser.set(user)),
+                catchError(() => {
+                    // Pas de session valide (ou API indisponible) : visiteur non connecté
+                    this._currentUser.set(null);
+                    return of(null);
+                }),
+            );
+    }
 
-  register(payload: RegisterPayload): Observable<{ user: User }> {
-    return this.http.post<{ user: User }>('/api/register', payload, { withCredentials: true })
-      .pipe(
-        tap(response => {
-          // Comme pour login : les tokens arrivent dans des cookies HTTP-only
-          this._currentUser.set(response.user);
-        })
-      );
-  }
+    register(payload: RegisterPayload): Observable<{ user: User }> {
+        return this.httpClient
+            .post<{ user: User }>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.REGISTER}`, payload, {
+                withCredentials: true,
+            })
+            .pipe(
+                tap((response) => {
+                    // Comme pour login : les tokens arrivent dans des cookies HTTP-only
+                    this._currentUser.set(response.user);
+                }),
+            );
+    }
 
-  // Méthode pour rafraîchir les tokens. Utilisée par l'intercepteur HTTP
-  revokeToken(): Observable<any> {
-    return this.http.post<any>('/api/revoke-token', {}, { withCredentials: true })
-      .pipe(
-        tap(response => {
-          // Les nouveaux tokens sont automatiquement stockés dans des cookies HTTP-only
-          console.log('Tokens refreshed successfully');
-        })
-      );
-  }
+    // Méthode pour rafraîchir les tokens. Utilisée par l'intercepteur HTTP
+    revokeToken(): Observable<any> {
+        return this.httpClient.post<any>('/api/revoke-token', {}, { withCredentials: true }).pipe(
+            tap((response) => {
+                // Les nouveaux tokens sont automatiquement stockés dans des cookies HTTP-only
+                console.log('Tokens refreshed successfully');
+            }),
+        );
+    }
 
-  logout(): Observable<any> {
-    return this.http.post<any>('/api/logout', {}, { withCredentials: true })
-      .pipe(
-        tap(() => {
-          // Le backend devrait supprimer les cookies
-          this._currentUser.set(null);
-        })
-      );
-  }
+    logout(): Observable<any> {
+        return this.httpClient
+            .post<any>(
+                `${this._apiUrl}/${CONSTANTS.API_END_POINTS.LOGOUT}`,
+                {},
+                { withCredentials: true },
+            )
+            .pipe(
+                tap(() => {
+                    // Le backend devrait supprimer les cookies
+                    this._currentUser.set(null);
+                }),
+            );
+    }
 }

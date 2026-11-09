@@ -1,0 +1,113 @@
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-10 col-md-7 col-lg-5 col-xl-4">
+            <div class="card rounded-4 overflow-hidden">
+                <div class="text-center pt-4 pb-1">
+                    <h1 class="d-inline-block fs-6 fw-semibold text-uppercase text-secondary border-bottom border-2 border-primary pb-2 mb-0">S'identifier</h1>
+                </div>
+
+                <div class="card-body p-4">
+                    @if (serverError(); as error) {
+                    <div
+                        class="alert alert-danger d-flex align-items-center gap-2 py-2 small"
+                        role="alert"
+                    >
+                        <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                        {{ error }}
+                    </div>
+                    }
+
+                    <form [formRoot]="loginForm">
+                        <div class="mb-3">
+                            <label for="login-email" class="form-label fw-medium text-secondary">
+                                Adresse e-mail
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary-subtle text-primary">
+                                    <i class="bi bi-envelope" aria-hidden="true"></i>
+                                </span>
+                                <input
+                                    id="login-email"
+                                    type="email"
+                                    class="form-control"
+                                    autocomplete="email"
+                                    placeholder="vous@exemple.fr"
+                                    [formField]="loginForm.email"
+                                    [class.is-invalid]="loginForm.email().touched() && loginForm.email().invalid()"
+                                    [attr.aria-describedby]="loginForm.email().touched() && loginForm.email().invalid() ? 'login-email-errors' : null"
+                                />
+                            </div>
+                            @if (loginForm.email().touched() && loginForm.email().invalid()) {
+                            <div id="login-email-errors" class="invalid-feedback d-block">
+                                @for (error of loginForm.email().errors(); track error.kind) {
+                                <div>{{ error.message }}</div>
+                                }
+                            </div>
+                            }
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="login-password" class="form-label fw-medium text-secondary">
+                                Mot de passe
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary-subtle text-primary">
+                                    <i class="bi bi-lock" aria-hidden="true"></i>
+                                </span>
+                                <input
+                                    id="login-password"
+                                    class="form-control"
+                                    autocomplete="current-password"
+                                    [type]="showPassword() ? 'text' : 'password'"
+                                    [formField]="loginForm.password"
+                                    [class.is-invalid]="loginForm.password().touched() && loginForm.password().invalid()"
+                                    [attr.aria-describedby]="loginForm.password().touched() && loginForm.password().invalid() ? 'login-password-errors' : null"
+                                />
+                                <button
+                                    class="btn btn-outline-secondary"
+                                    type="button"
+                                    [attr.aria-label]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+                                    [attr.aria-pressed]="showPassword()"
+                                    (click)="togglePasswordVisibility()"
+                                >
+                                    <i
+                                        class="bi"
+                                        [class]="showPassword() ? 'bi-eye-slash' : 'bi-eye'"
+                                        aria-hidden="true"
+                                    ></i>
+                                </button>
+                            </div>
+                            @if (loginForm.password().touched() && loginForm.password().invalid()) {
+                            <div id="login-password-errors" class="invalid-feedback d-block">
+                                @for (error of loginForm.password().errors(); track error.kind) {
+                                <div>{{ error.message }}</div>
+                                }
+                            </div>
+                            }
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary rounded-pill fw-medium w-100 py-2"
+                            [disabled]="loginForm().submitting()"
+                        >
+                            @if (loginForm().submitting()) {
+                            <span
+                                class="spinner-border spinner-border-sm me-2"
+                                aria-hidden="true"
+                            ></span>
+                            Connexion… } @else { Se connecter }
+                        </button>
+                    </form>
+
+                    <p class="text-center text-secondary small mt-4 mb-0">
+                        Pas encore de compte ?
+                        <a class="link-primary fw-medium link-underline-opacity-0 link-underline-opacity-100-hover" routerLink="/register">
+                            Créer un compte
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

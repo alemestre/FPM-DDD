@@ -7,11 +7,11 @@ export class CreateProducerUseCase {
   constructor(@Inject(ProducerRepository) private readonly repository: ProducerRepository) {}
 
   async execute(input: CreateProducerInput): Promise<Producer> {
-    const { name, contactEmail, phoneNumber, vatNumber, addressLine1, addressLine2, postalCode, city } = input;
+    const { name, email, phone, vatNumber, addressLine1, addressLine2, postalCode, city } = input;
     const producer = Producer.create(
       name,
-      contactEmail,
-      phoneNumber,
+      email,
+      phone,
       vatNumber,
       addressLine1,
       postalCode,
