@@ -4,11 +4,11 @@
 }
 
 .app-navbar {
-    --bs-navbar-color: #3f3a36;
-    --bs-navbar-hover-color: var(--colorbase);
-    --bs-navbar-active-color: var(--colorbase);
-    --bs-navbar-brand-color: var(--colorbase);
-    --bs-navbar-brand-hover-color: var(--colorbase);
+    --bs-navbar-color: var(--bs-secondary);
+    --bs-navbar-hover-color: var(--bs-primary);
+    --bs-navbar-active-color: var(--bs-primary);
+    --bs-navbar-brand-color: var(--bs-primary);
+    --bs-navbar-brand-hover-color: var(--bs-primary);
     --bs-navbar-toggler-border-color: transparent;
     --bs-navbar-toggler-focus-width: 0.15rem;
     background-color: rgb(255 255 255 / 92%);
@@ -39,28 +39,23 @@
     left: 0.5rem;
     height: 2px;
     border-radius: 2px;
-    background-color: var(--colorbase);
+    background-color: var(--bs-primary);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.2s ease;
 }
 
 .nav-link:hover::before,
-.nav-link.active::before,
-.nav-item.active > .nav-link::before {
+.nav-link.active::before {
     transform: scaleX(1);
-}
-
-.nav-item.active > .nav-link {
-    color: var(--colorbase);
 }
 
 .dropdown-menu {
     --bs-dropdown-border-color: transparent;
     --bs-dropdown-border-radius: 0.75rem;
-    --bs-dropdown-link-active-bg: var(--colorbase);
-    --bs-dropdown-link-hover-bg: color-mix(in srgb, var(--colorbase) 8%, transparent);
-    --bs-dropdown-link-hover-color: var(--colorbase);
+    --bs-dropdown-link-active-bg: var(--bs-primary);
+    --bs-dropdown-link-hover-bg: color-mix(in srgb, var(--bs-primary) 8%, transparent);
+    --bs-dropdown-link-hover-color: var(--bs-primary);
     padding: 0.5rem;
     box-shadow: 0 10px 30px rgb(0 0 0 / 12%);
 }
@@ -77,10 +72,11 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    font-size: 0.875rem;
 }
 
 .app-cart-badge {
-    background-color: var(--colorbase);
+    background-color: var(--bs-primary);
     color: #fff;
 }
 
@@ -91,26 +87,31 @@
 }
 
 .btn {
+    --bs-btn-font-size: 0.875rem;
+    --bs-btn-padding-y: 0.25rem;
+    --bs-btn-padding-x: 0.85rem;
     border-radius: 999px;
     font-weight: 500;
-    padding-inline: 1.1rem;
 }
 
 .app-btn-link {
-    --bs-btn-color: var(--colorbase);
-    --bs-btn-hover-color: var(--colorbase);
-    --bs-btn-hover-bg: color-mix(in srgb, var(--colorbase) 8%, transparent);
-    --bs-btn-active-color: var(--colorbase);
-    --bs-btn-active-bg: color-mix(in srgb, var(--colorbase) 14%, transparent);
+    --bs-btn-color: var(--bs-primary);
+    --bs-btn-hover-color: var(--bs-primary);
+    --bs-btn-hover-bg: color-mix(in srgb, var(--bs-primary) 8%, transparent);
+    --bs-btn-active-color: var(--bs-primary);
+    --bs-btn-active-bg: color-mix(in srgb, var(--bs-primary) 14%, transparent);
+    --bs-btn-border-color: var(--bs-primary);
+    --bs-btn-hover-border-color: var(--bs-primary);
+    --bs-btn-active-border-color: var(--bs-primary);
 }
 
 .app-btn-primary {
     --bs-btn-color: #fff;
-    --bs-btn-bg: var(--colorbase);
+    --bs-btn-bg: var(--bs-primary);
     --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: color-mix(in srgb, var(--colorbase) 85%, #000);
+    --bs-btn-hover-bg: color-mix(in srgb, var(--bs-primary) 85%, #000);
     --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: color-mix(in srgb, var(--colorbase) 75%, #000);
+    --bs-btn-active-bg: color-mix(in srgb, var(--bs-primary) 75%, #000);
 }
 
 .app-profile-toggle {
@@ -154,13 +155,17 @@
     }
 
     .app-auth-actions {
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr;
         align-items: stretch;
+        width: fit-content;
         padding-block: 0.75rem;
     }
 
     .app-auth-actions .btn {
-        padding-block: 0.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .app-profile-toggle {
@@ -168,18 +173,57 @@
     }
 }
 
-/* Barre complète */
+/* Header sur deux lignes */
 @media (min-width: 992px) {
-    .navbar-nav .nav-link {
+    .app-navbar {
+        --bs-navbar-padding-y: 0;
+    }
+
+    .app-navbar > .container-fluid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: center;
+        padding-inline: 0;
+    }
+
+    /* Le menu burger reste un seul bloc : ses enfants se placent dans la grille ci-dessus. */
+    .app-navbar .navbar-collapse {
+        display: contents !important;
+    }
+
+    .app-brand {
+        grid-area: 1 / 1;
+        margin: 0;
+        padding-block: 0.5rem;
+        padding-left: 1rem;
+    }
+
+    .app-header-actions {
+        grid-area: 1 / 2;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        padding-right: 1rem;
+    }
+
+    .app-categories {
+        --bs-navbar-color: #fff;
+        --bs-navbar-hover-color: #fff;
+        --bs-navbar-active-color: #fff;
+        grid-area: 2 / 1 / 2 / -1;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding-inline: 1rem;
+        background-color: var(--bs-primary);
+    }
+
+    .app-categories .nav-link {
         padding-inline: 0.75rem;
     }
 
-    .app-cart-nav {
-        margin-right: 0.5rem;
-    }
-
-    .app-profile {
-        margin-left: 0.75rem;
+    .app-categories .nav-link::before {
+        background-color: #fff;
     }
 
     .dropdown-menu {
