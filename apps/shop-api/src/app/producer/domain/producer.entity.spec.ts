@@ -22,8 +22,8 @@ describe('Producer', () => {
 
       expect(producer.id).toBeDefined();
       expect(producer.name).toBe('Ferme du Moulin');
-      expect(producer.contactEmail).toBe('contact@ferme-moulin.fr');
-      expect(producer.phoneNumber).toBe('+33612345678');
+      expect(producer.email).toBe('contact@ferme-moulin.fr');
+      expect(producer.phone).toBe('+33612345678');
       expect(producer.vatNumber).toBe('FR40303265045');
       expect(producer.postalCode).toBe('75001');
       expect(producer.addressLine2).toBe('');
@@ -49,18 +49,18 @@ describe('Producer', () => {
     it('change et normalise email, téléphone et numéro de TVA', () => {
       const producer = Producer.create(...validArgs());
 
-      producer.changeContactEmail(' Nouveau@Ferme-Moulin.FR ');
-      producer.changePhoneNumber('01 45 67 89 10');
+      producer.changeEmail(' Nouveau@Ferme-Moulin.FR ');
+      producer.changePhone('01 45 67 89 10');
       producer.changeVatNumber(' fr 02 000 000 029 ');
 
-      expect(producer.contactEmail).toBe('nouveau@ferme-moulin.fr');
-      expect(producer.phoneNumber).toBe('+33145678910');
+      expect(producer.email).toBe('nouveau@ferme-moulin.fr');
+      expect(producer.phone).toBe('+33145678910');
       expect(producer.vatNumber).toBe('FR02000000029');
     });
 
     it.each([
-      ['email', (p: Producer) => p.changeContactEmail('pas-un-email'), (p: Producer) => p.contactEmail, 'contact@ferme-moulin.fr'],
-      ['téléphone', (p: Producer) => p.changePhoneNumber('12345'), (p: Producer) => p.phoneNumber, '+33612345678'],
+      ['email', (p: Producer) => p.changeEmail('pas-un-email'), (p: Producer) => p.email, 'contact@ferme-moulin.fr'],
+      ['téléphone', (p: Producer) => p.changePhone('12345'), (p: Producer) => p.phone, '+33612345678'],
       ['numéro de TVA', (p: Producer) => p.changeVatNumber('FR41303265045'), (p: Producer) => p.vatNumber, 'FR40303265045'],
     ])('rejette un %s invalide et conserve la valeur précédente', (_label, change, read, previous) => {
       const producer = Producer.create(...validArgs());
@@ -135,7 +135,7 @@ describe('Producer', () => {
       );
 
       expect(producer.id).toBe('a3bb189e-8bf9-3888-9912-ace4e6543002');
-      expect(producer.phoneNumber).toBe('+33612345678');
+      expect(producer.phone).toBe('+33612345678');
       expect(producer.postalCode).toBe('75001');
       expect(producer.addressLine2).toBe('Bâtiment B');
       expect(producer.isActive).toBe(false);

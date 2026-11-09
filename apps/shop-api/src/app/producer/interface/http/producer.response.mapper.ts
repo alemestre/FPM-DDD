@@ -9,8 +9,8 @@ export function toProducerResponse(producer: Producer): ProducerResponseDto {
   return {
     id: producer.id,
     name: producer.name,
-    contactEmail: producer.contactEmail,
-    phoneNumber: producer.phoneNumber,
+    email: producer.email,
+    phone: producer.phone,
     vatNumber: producer.vatNumber,
     addressLine1: producer.addressLine1,
     addressLine2: producer.addressLine2,

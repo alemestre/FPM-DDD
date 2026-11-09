@@ -22,8 +22,8 @@ export class Producer {
   private constructor(
     public readonly id: string,
     private _name: Name,
-    private _contactEmail: Email,
-    private _phoneNumber: PhoneNumber,
+    private _email: Email,
+    private _phone: PhoneNumber,
     private _vatNumber: VatNumber,
     private _addressLine1: string,
     private _postalCode: PostalCode,
@@ -86,16 +86,16 @@ export class Producer {
     return this._name.toString();
   }
 
-  get phoneNumber(): string {
-    return this._phoneNumber.toString();
+  get phone(): string {
+    return this._phone.toString();
   }
 
   get vatNumber(): string {
     return this._vatNumber.toString();
   }
 
-  get contactEmail(): string {
-    return this._contactEmail.toString();
+  get email(): string {
+    return this._email.toString();
   }
 
   get postalCode(): string {
@@ -134,12 +134,12 @@ export class Producer {
     this._name = Name.create(name);
   }
 
-  changeContactEmail(contactEmail: string): void {
-    this._contactEmail = Email.create(contactEmail);
+  changeEmail(contactEmail: string): void {
+    this._email = Email.create(contactEmail);
   }
 
-  changePhoneNumber(phoneNumber: string): void {
-    this._phoneNumber = PhoneNumber.create(phoneNumber);
+  changePhone(phoneNumber: string): void {
+    this._phone = PhoneNumber.create(phoneNumber);
   }
 
   changeVatNumber(vatNumber: string): void {

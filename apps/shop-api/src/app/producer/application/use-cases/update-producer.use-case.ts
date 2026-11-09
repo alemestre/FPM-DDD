@@ -15,8 +15,8 @@ export class UpdateProducerUseCase {
     const producer = await this.repository.findByIdOrFail(id);
 
     if (name !== undefined) producer.changeName(name);
-    if (contactEmail !== undefined) producer.changeContactEmail(contactEmail);
-    if (phoneNumber !== undefined) producer.changePhoneNumber(phoneNumber);
+    if (contactEmail !== undefined) producer.changeEmail(contactEmail);
+    if (phoneNumber !== undefined) producer.changePhone(phoneNumber);
     if (vatNumber !== undefined) producer.changeVatNumber(vatNumber);
     producer.changeAddress({ addressLine1, addressLine2, postalCode, city });
 

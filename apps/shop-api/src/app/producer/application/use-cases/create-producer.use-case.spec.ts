@@ -43,8 +43,8 @@ describe('CreateProducerUseCase', () => {
 
     expect(repository.save).toHaveBeenCalledWith(producer);
     expect(producer.id).toBe('12345678-1234-4123-8123-123456789abc');
-    expect(producer.contactEmail).toBe('contact@ferme-moulin.fr');
-    expect(producer.phoneNumber).toBe('+33612345678');
+    expect(producer.email).toBe('contact@ferme-moulin.fr');
+    expect(producer.phone).toBe('+33612345678');
     expect(producer.addressLine2).toBe('');
     expect(producer.isActive).toBe(true);
   });

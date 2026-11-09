@@ -10,8 +10,8 @@ import { Producer } from "../domain/producer.entity";
  */
 const PRODUCER_FIELD_TO_COLUMN = {
   name: "name",
-  contactEmail: "contactEmail",
-  phoneNumber: "phoneNumber",
+  email: "email",
+  phone: "phone",
   vatNumber: "tvaNumber",
   addressLine1: "addressLine1",
   addressLine2: "addressLine2",
@@ -118,8 +118,8 @@ export class PrismaProducerRepository implements ProducerRepository {
     return Producer.reconstitute(
       row.id,
       row.name,
-      row.contactEmail,
-      row.phoneNumber,
+      row.email,
+      row.phone,
       row.tvaNumber,
       row.addressLine1,
       row.postalCode,

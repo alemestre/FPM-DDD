@@ -48,33 +48,23 @@ model Admin {
 }
 
 model Customer {
-  id   String @id @db.Uuid
-  user User   @relation(fields: [id], references: [id], onDelete: Cascade)
-
+  id           String @id @db.Uuid
+  user         User   @relation(fields: [id], references: [id], onDelete: Cascade)
+  phone        String
   addressLine1 String
   addressLine2 String @default("")
   postalCode   String
   city         String
 
-  proProfile Pro?
-  orders     Order[]
-}
-
-model Pro {
-  id       String   @id @db.Uuid
-  customer Customer @relation(fields: [id], references: [id], onDelete: Cascade)
-
-  companyName String
-  vatNumber   String
-  siret       String
+  orders Order[]
 }
 
 model Producer {
   uid          Int      @unique @default(autoincrement())
   id           String   @id @db.Uuid
   name         String
-  contactEmail String
-  phoneNumber  String
+  email        String
+  phone        String
   tvaNumber    String
   addressLine1 String
   addressLine2 String   @default("")

@@ -45,8 +45,8 @@ describe('UpdateProducerUseCase', () => {
     repository.findByIdOrFail.mockResolvedValue(existingProducer());
 
     const updated = await useCase.execute(PRODUCER_ID, {
-      contactEmail: ' Nouveau@Ferme-Moulin.FR ',
-      phoneNumber: '01 45 67 89 10',
+      email: ' Nouveau@Ferme-Moulin.FR ',
+      phone: '01 45 67 89 10',
       vatNumber: 'fr02000000029',
       postalCode: '69 002',
       city: 'Lyon',
@@ -55,8 +55,8 @@ describe('UpdateProducerUseCase', () => {
     expect(repository.findByIdOrFail).toHaveBeenCalledWith(PRODUCER_ID);
     expect(repository.save).toHaveBeenCalledWith(updated);
     expect(repository.update).not.toHaveBeenCalled();
-    expect(updated.contactEmail).toBe('nouveau@ferme-moulin.fr');
-    expect(updated.phoneNumber).toBe('+33145678910');
+    expect(updated.email).toBe('nouveau@ferme-moulin.fr');
+    expect(updated.phone).toBe('+33145678910');
     expect(updated.vatNumber).toBe('FR02000000029');
     expect(updated.postalCode).toBe('69002');
     expect(updated.city).toBe('Lyon');
