@@ -1,10 +1,11 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NgbCollapseModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { CategoriesService } from '../../services/categories.service';
 import { CategoryResponseDto } from '@fpm/contracts';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TitleCasePipe } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -13,20 +14,30 @@ import { TitleCasePipe } from '@angular/common';
     NgbCollapseModule,
     NgbDropdownModule,
     TitleCasePipe],
-  templateUrl: './navbar.html',
-  styleUrl: './navbar.css'
+  templateUrl: './main-layout.html',
+  styleUrl: './main-layout.css'
 })
-export class Navbar implements OnInit {
+export class MainLayout implements OnInit {
   protected readonly categoriesService = inject(CategoriesService);
+  protected readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   protected readonly categories = signal<CategoryResponseDto[]>([]);
   protected readonly cartItemCount = signal(0);
-  // Provisoire : à brancher sur l'authentification quand elle existera.
-  protected readonly isAuthenticated = signal(false);
+  protected readonly isAuthenticated = this.authService.isConnected;
   protected isMenuCollapsed = true;
 
   ngOnInit(): void {
     this.getAllCategories();
+  }
+
+  protected logout(): void {
+    this.isMenuCollapsed = true;
+    this.authService.logout().subscribe({
+      // Même si l'API échoue, l'utilisateur quitte les pages protégées.
+      complete: () => this.router.navigateByUrl('/home'),
+      error: () => this.router.navigateByUrl('/home')
+    });
   }
 
   getAllCategories() {

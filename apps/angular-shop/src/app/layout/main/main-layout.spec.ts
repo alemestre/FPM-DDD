@@ -1,13 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CategoriesService } from '../../services/categories.service';
-import { provideRouter } from '@angular/router';
-import { Navbar } from './navbar';
+import { provideRouter, Router } from '@angular/router';
+import { signal } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
+import { MainLayout } from './main-layout';
 import { of } from 'rxjs';
 
 describe('Navbar', () => {
-    let component: Navbar;
-    let fixture: ComponentFixture<Navbar>;
+    let component: MainLayout;
+    let fixture: ComponentFixture<MainLayout>;
     let element: HTMLElement;
+    const isConnected = signal(false);
+    const authService = { isConnected, logout: vi.fn(() => of(null)) };
 
     const clickAndWait = async (target: HTMLElement) => {
         target.click();
@@ -15,10 +19,13 @@ describe('Navbar', () => {
     };
 
     beforeEach(async () => {
+        isConnected.set(false);
+        authService.logout.mockClear();
         await TestBed.configureTestingModule({
-            imports: [Navbar],
+            imports: [MainLayout],
             providers: [
                 provideRouter([]),
+                { provide: AuthService, useValue: authService },
                 {
                     provide: CategoriesService,
                     useValue: {
@@ -32,7 +39,7 @@ describe('Navbar', () => {
             ],
         }).compileComponents();
 
-        fixture = TestBed.createComponent(Navbar);
+        fixture = TestBed.createComponent(MainLayout);
         component = fixture.componentInstance;
         element = fixture.nativeElement as HTMLElement;
         await fixture.whenStable();
@@ -104,12 +111,31 @@ describe('Navbar', () => {
     });
 
     it('should show the profile and no auth buttons when logged in', async () => {
-        component['isAuthenticated'].set(true);
+        isConnected.set(true);
         await fixture.whenStable();
 
         expect(element.querySelector('.app-profile')).toBeTruthy();
         expect(element.querySelector('a[href="/login"]')).toBeNull();
         expect(element.querySelector('a[href="/register"]')).toBeNull();
+    });
+
+    it('should log out then go home when clicking "Se déconnecter"', async () => {
+        const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+        isConnected.set(true);
+        await fixture.whenStable();
+
+        const logout = Array.from(element.querySelectorAll<HTMLButtonElement>('.app-profile button')).find(
+            (button) => button.textContent?.includes('Se déconnecter'),
+        );
+        if (!logout) throw new Error('Logout button not found');
+        await clickAndWait(logout);
+
+        expect(authService.logout).toHaveBeenCalledOnce();
+        expect(navigate).toHaveBeenCalledWith('/home');
+    });
+
+    it('should render the page content in a router outlet', () => {
+        expect(element.querySelector('main router-outlet')).toBeTruthy();
     });
 
     it('should not have a Produits dropdown', () => {

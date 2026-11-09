@@ -52,6 +52,11 @@ Follow the guidelines defined in `.claude/rules/`:
 - Use Zod validation
 - The backend follows Domain-Driven Design (DDD).
 
+## Angular Shop
+
+- Angular (v 22.0.0)
+- Bootstrap 5.3 : utilise les classes utilitaires pour la mise en page et le style plutot que des fichiers CSS personnalisés.
+
 ## Commands
 
 ```sh

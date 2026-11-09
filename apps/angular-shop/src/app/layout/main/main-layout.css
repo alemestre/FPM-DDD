@@ -27,6 +27,10 @@
     --bs-dropdown-link-hover-color: var(--bs-primary);
 }
 
+.app-cart {
+    font-size: 0.8125rem;
+}
+
 /* Menu burger */
 @media (max-width: 991.98px) {
     .app-profile-toggle {

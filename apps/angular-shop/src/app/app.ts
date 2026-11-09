@@ -1,10 +1,8 @@
-import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { Navbar } from './layout/navbar/navbar';
+import { Component } from '@angular/core';
 
 @Component({
     imports: [
-      Navbar,
       RouterModule],
     selector: 'app-root',
     templateUrl: './app.html',

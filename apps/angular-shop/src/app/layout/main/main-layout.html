@@ -65,7 +65,7 @@
                 <ul class="navbar-nav pt-3 pt-lg-0">
                     <li class="nav-item">
                         <a
-                            class="nav-link position-relative fw-medium py-3 py-lg-2 d-inline-flex align-items-center gap-2 small app-cart"
+                            class="nav-link position-relative fw-medium py-3 py-lg-2 d-inline-flex align-items-center gap-2 app-cart"
                             routerLink="/panier"
                             routerLinkActive="active"
                             ariaCurrentWhenActive="page"
@@ -108,11 +108,11 @@
                             </li>
                             <li><hr class="dropdown-divider" /></li>
                             <li>
-                                <!-- L'action de déconnexion reste à brancher. -->
                                 <button
                                     class="d-flex align-items-center gap-2 rounded-3 py-2"
                                     ngbDropdownItem
                                     type="button"
+                                    (click)="logout()"
                                 >
                                     <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
                                     Se déconnecter
@@ -127,13 +127,7 @@
                         class="btn btn-sm btn-outline-primary rounded-pill fw-medium px-3"
                         routerLink="/login"
                         (click)="isMenuCollapsed = true"
-                        >S'identifier</a
-                    >
-                    <a
-                        class="btn btn-sm btn-primary rounded-pill fw-medium px-3"
-                        routerLink="/register"
-                        (click)="isMenuCollapsed = true"
-                        >Créer un compte</a
+                        >Se connecter</a
                     >
                 </div>
                 }
@@ -141,3 +135,7 @@
         </div>
     </div>
 </nav>
+
+<main>
+    <router-outlet />
+</main>
