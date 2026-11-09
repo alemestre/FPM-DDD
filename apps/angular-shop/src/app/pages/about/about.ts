@@ -5,6 +5,6 @@ import { Component } from '@angular/core';
   selector: 'app-about',
   imports: [NgbCarouselModule],
   templateUrl: './about.html',
-  styleUrl: './about'
+  styleUrl: './about.css'
 })
 export class About {}

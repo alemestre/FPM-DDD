@@ -1,12 +1,20 @@
-<nav class="navbar navbar-expand-lg sticky-top app-navbar" aria-label="Navigation principale">
-    <div class="container-fluid">
-        <a class="navbar-brand app-brand" routerLink="/home" (click)="isMenuCollapsed = true">
+<nav
+    class="navbar navbar-expand-lg sticky-top shadow-sm py-lg-0 app-navbar"
+    aria-label="Navigation principale"
+>
+    <div class="container-fluid d-lg-grid align-items-lg-center px-lg-0">
+        <a
+            class="navbar-brand d-inline-flex align-items-center gap-2 fw-bold me-lg-0 py-lg-2 ps-lg-3 app-brand"
+            routerLink="/home"
+            (click)="isMenuCollapsed = true"
+        >
             <img
                 src="./images/logo.png"
                 alt="Logo de l'application"
                 width="100%"
                 height="40"
-                class="d-inline-block align-text-top">
+                class="d-inline-block align-text-top"
+            />
         </a>
 
         <button
@@ -21,24 +29,26 @@
         </button>
 
         <div class="navbar-collapse" id="main-navbar" [ngbCollapse]="isMenuCollapsed">
-            <ul class="navbar-nav app-categories">
+            <ul
+                class="navbar-nav pt-3 pt-lg-0 flex-lg-wrap justify-content-lg-center px-lg-3 app-categories"
+            >
                 @for (category of categories(); track category.id) {
-                    <li class="nav-item">
-                        <a
-                            class="nav-link"
-                            [routerLink]="['/products', category.id]"
-                            routerLinkActive="active"
-                            ariaCurrentWhenActive="page"
-                            (click)="isMenuCollapsed = true"
-                        >
-                            {{ category.name | titlecase }}
-                        </a>
-                    </li>
+                <li class="nav-item">
+                    <a
+                        class="nav-link position-relative fw-medium py-3 py-lg-2"
+                        [routerLink]="['/products', category.id]"
+                        routerLinkActive="active"
+                        ariaCurrentWhenActive="page"
+                        (click)="isMenuCollapsed = true"
+                    >
+                        {{ category.name | titlecase }}
+                    </a>
+                </li>
                 }
 
                 <li class="nav-item">
                     <a
-                        class="nav-link"
+                        class="nav-link position-relative fw-medium py-3 py-lg-2"
                         routerLink="/about"
                         routerLinkActive="active"
                         ariaCurrentWhenActive="page"
@@ -49,11 +59,13 @@
                 </li>
             </ul>
 
-            <div class="app-header-actions">
-                <ul class="navbar-nav app-cart-nav">
+            <div
+                class="d-lg-flex align-items-lg-center justify-content-lg-end gap-lg-3 pe-lg-3 app-header-actions"
+            >
+                <ul class="navbar-nav pt-3 pt-lg-0">
                     <li class="nav-item">
                         <a
-                            class="nav-link app-cart"
+                            class="nav-link position-relative fw-medium py-3 py-lg-2 d-inline-flex align-items-center gap-2 small app-cart"
                             routerLink="/panier"
                             routerLinkActive="active"
                             ariaCurrentWhenActive="page"
@@ -61,7 +73,7 @@
                         >
                             <i class="bi bi-cart3" aria-hidden="true"></i>
                             Votre panier
-                            <span class="badge rounded-pill app-cart-badge">
+                            <span class="badge rounded-pill text-bg-primary app-cart-badge">
                                 {{ cartItemCount() }}
                                 <span class="visually-hidden">
                                     {{ cartItemCount() > 1 ? 'articles' : 'article' }}
@@ -72,53 +84,58 @@
                 </ul>
 
                 @if (isAuthenticated()) {
-                    <ul class="navbar-nav app-profile">
-                        <li class="nav-item" ngbDropdown display="static">
-                            <button
-                                class="nav-link app-profile-toggle"
-                                type="button"
-                                aria-label="Mon compte"
-                                ngbDropdownToggle
-                            >
-                                <i class="bi bi-person-circle" aria-hidden="true"></i>
-                            </button>
-                            <ul class="dropdown-menu-end" ngbDropdownMenu>
-                                <li>
-                                    <a
-                                        ngbDropdownItem
-                                        routerLink="/profil"
-                                        (click)="isMenuCollapsed = true"
-                                    >
-                                        <i class="bi bi-person" aria-hidden="true"></i>
-                                        Mon profil
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider" /></li>
-                                <li>
-                                    <!-- L'action de déconnexion reste à brancher. -->
-                                    <button ngbDropdownItem type="button">
-                                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
-                                        Se déconnecter
-                                    </button>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
+                <ul class="navbar-nav pt-3 pt-lg-0 app-profile">
+                    <li class="nav-item" ngbDropdown display="static">
+                        <button
+                            class="nav-link position-relative fw-medium py-3 py-lg-2 d-inline-flex align-items-center gap-1 text-start app-profile-toggle"
+                            type="button"
+                            aria-label="Mon compte"
+                            ngbDropdownToggle
+                        >
+                            <i class="bi bi-person-circle fs-3 lh-1" aria-hidden="true"></i>
+                        </button>
+                        <ul class="dropdown-menu-end border-0 px-2 py-0 py-lg-2" ngbDropdownMenu>
+                            <li>
+                                <a
+                                    class="d-flex align-items-center gap-2 rounded-3 py-2"
+                                    ngbDropdownItem
+                                    routerLink="/profil"
+                                    (click)="isMenuCollapsed = true"
+                                >
+                                    <i class="bi bi-person" aria-hidden="true"></i>
+                                    Mon profil
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li>
+                                <!-- L'action de déconnexion reste à brancher. -->
+                                <button
+                                    class="d-flex align-items-center gap-2 rounded-3 py-2"
+                                    ngbDropdownItem
+                                    type="button"
+                                >
+                                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                                    Se déconnecter
+                                </button>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
                 } @else {
-                    <div class="app-auth-actions">
-                        <a
-                            class="btn app-btn-link"
-                            routerLink="/login"
-                            (click)="isMenuCollapsed = true"
-                            >S'identifier</a
-                        >
-                        <a
-                            class="btn app-btn-primary"
-                            routerLink="/register"
-                            (click)="isMenuCollapsed = true"
-                            >Créer un compte</a
-                        >
-                    </div>
+                <div class="d-inline-grid d-lg-flex align-items-lg-center gap-2 py-3 py-lg-0">
+                    <a
+                        class="btn btn-sm btn-outline-primary rounded-pill fw-medium px-3"
+                        routerLink="/login"
+                        (click)="isMenuCollapsed = true"
+                        >S'identifier</a
+                    >
+                    <a
+                        class="btn btn-sm btn-primary rounded-pill fw-medium px-3"
+                        routerLink="/register"
+                        (click)="isMenuCollapsed = true"
+                        >Créer un compte</a
+                    >
+                </div>
                 }
             </div>
         </div>

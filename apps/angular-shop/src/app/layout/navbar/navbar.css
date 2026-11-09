@@ -1,3 +1,8 @@
+/*
+ * La mise en page passe par les classes Bootstrap du template.
+ * Ne restent ici que les réglages sans équivalent en classe utilitaire.
+ */
+
 /* Sans cela, sticky-top reste limité à la hauteur de l'élément app-navbar. */
 :host {
     display: contents;
@@ -13,177 +18,30 @@
     --bs-navbar-toggler-focus-width: 0.15rem;
     background-color: rgb(255 255 255 / 92%);
     backdrop-filter: blur(10px);
-    box-shadow: 0 1px 12px rgb(0 0 0 / 8%);
-}
-
-.app-brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-}
-
-.nav-link {
-    position: relative;
-    font-weight: 500;
-    transition: color 0.2s ease;
-}
-
-/* ::before, car Bootstrap utilise ::after pour la flèche des menus déroulants. */
-.nav-link::before {
-    content: '';
-    position: absolute;
-    right: 0.5rem;
-    bottom: 0.25rem;
-    left: 0.5rem;
-    height: 2px;
-    border-radius: 2px;
-    background-color: var(--bs-primary);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.2s ease;
-}
-
-.nav-link:hover::before,
-.nav-link.active::before {
-    transform: scaleX(1);
 }
 
 .dropdown-menu {
-    --bs-dropdown-border-color: transparent;
     --bs-dropdown-border-radius: 0.75rem;
     --bs-dropdown-link-active-bg: var(--bs-primary);
     --bs-dropdown-link-hover-bg: color-mix(in srgb, var(--bs-primary) 8%, transparent);
     --bs-dropdown-link-hover-color: var(--bs-primary);
-    padding: 0.5rem;
-    box-shadow: 0 10px 30px rgb(0 0 0 / 12%);
-}
-
-.dropdown-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    border-radius: 0.5rem;
-    padding-block: 0.5rem;
-}
-
-.app-cart {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.app-cart-badge {
-    background-color: var(--bs-primary);
-    color: #fff;
-}
-
-.app-auth-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn {
-    --bs-btn-font-size: 0.875rem;
-    --bs-btn-padding-y: 0.25rem;
-    --bs-btn-padding-x: 0.85rem;
-    border-radius: 999px;
-    font-weight: 500;
-}
-
-.app-btn-link {
-    --bs-btn-color: var(--bs-primary);
-    --bs-btn-hover-color: var(--bs-primary);
-    --bs-btn-hover-bg: color-mix(in srgb, var(--bs-primary) 8%, transparent);
-    --bs-btn-active-color: var(--bs-primary);
-    --bs-btn-active-bg: color-mix(in srgb, var(--bs-primary) 14%, transparent);
-    --bs-btn-border-color: var(--bs-primary);
-    --bs-btn-hover-border-color: var(--bs-primary);
-    --bs-btn-active-border-color: var(--bs-primary);
-}
-
-.app-btn-primary {
-    --bs-btn-color: #fff;
-    --bs-btn-bg: var(--bs-primary);
-    --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: color-mix(in srgb, var(--bs-primary) 85%, #000);
-    --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: color-mix(in srgb, var(--bs-primary) 75%, #000);
-}
-
-.app-profile-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.app-profile-toggle .bi {
-    font-size: 1.5rem;
-    line-height: 1;
-}
-
-.app-profile-toggle::before {
-    content: none;
 }
 
 /* Menu burger */
 @media (max-width: 991.98px) {
-    .navbar-nav {
-        padding-top: 0.75rem;
-    }
-
-    .nav-link {
-        padding-block: 0.75rem;
-    }
-
-    .nav-link::before {
-        content: none;
-    }
-
-    .nav-item > button.nav-link {
+    .app-profile-toggle {
         width: 100%;
-        text-align: left;
     }
 
     .dropdown-menu {
-        box-shadow: none;
         background-color: transparent;
-        padding-block: 0;
-    }
-
-    .app-auth-actions {
-        display: grid;
-        grid-template-columns: 1fr;
-        align-items: stretch;
-        width: fit-content;
-        padding-block: 0.75rem;
-    }
-
-    .app-auth-actions .btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .app-profile-toggle {
-        justify-content: flex-start;
     }
 }
 
 /* Header sur deux lignes */
 @media (min-width: 992px) {
-    .app-navbar {
-        --bs-navbar-padding-y: 0;
-    }
-
     .app-navbar > .container-fluid {
-        display: grid;
         grid-template-columns: auto 1fr;
-        align-items: center;
-        padding-inline: 0;
     }
 
     /* Le menu burger reste un seul bloc : ses enfants se placent dans la grille ci-dessus. */
@@ -193,46 +51,56 @@
 
     .app-brand {
         grid-area: 1 / 1;
-        margin: 0;
-        padding-block: 0.5rem;
-        padding-left: 1rem;
     }
 
     .app-header-actions {
         grid-area: 1 / 2;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 0.75rem;
-        padding-right: 1rem;
     }
 
     .app-categories {
         --bs-navbar-color: #fff;
         --bs-navbar-hover-color: #fff;
         --bs-navbar-active-color: #fff;
+        --bs-navbar-nav-link-padding-x: 0.75rem;
         grid-area: 2 / 1 / 2 / -1;
-        flex-wrap: wrap;
-        justify-content: center;
-        padding-inline: 1rem;
         background-color: var(--bs-primary);
     }
 
-    .app-categories .nav-link {
-        padding-inline: 0.75rem;
+    .dropdown-menu {
+        --bs-dropdown-spacer: 0.5rem;
+        box-shadow: 0 10px 30px rgb(0 0 0 / 12%);
+    }
+
+    /* Soulignement animé. ::before, car Bootstrap utilise ::after pour la flèche des menus déroulants. */
+    .nav-link::before {
+        content: '';
+        position: absolute;
+        right: 0.5rem;
+        bottom: 0.25rem;
+        left: 0.5rem;
+        height: 2px;
+        border-radius: 2px;
+        background-color: var(--bs-primary);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.2s ease;
+    }
+
+    .nav-link:hover::before,
+    .nav-link.active::before {
+        transform: scaleX(1);
     }
 
     .app-categories .nav-link::before {
         background-color: #fff;
     }
 
-    .dropdown-menu {
-        --bs-dropdown-spacer: 0.5rem;
+    .app-profile-toggle::before {
+        content: none;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .nav-link,
     .nav-link::before {
         transition: none;
     }
