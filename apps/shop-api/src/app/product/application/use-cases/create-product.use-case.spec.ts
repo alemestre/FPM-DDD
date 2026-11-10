@@ -64,20 +64,40 @@ describe('CreateProductUseCase', () => {
     expect(product.unit).toBe('KG');
   });
 
-  it("crée le produit avec son unité de quantité", async () => {
-    const product = await useCase.execute({ ...input, quantityUnit: 'g' });
+  it('crée le produit avec sa quantité', async () => {
+    const product = await useCase.execute({ ...input, quantity: 250, quantityUnit: 'g' });
 
+    expect(product.quantity).toBe(250);
     expect(product.quantityUnit).toBe('g');
   });
 
-  it("crée le produit sans unité de quantité quand elle n'est pas fournie", async () => {
+  it("crée le produit sans quantité quand elle n'est pas fournie", async () => {
     const product = await useCase.execute(input);
 
+    expect(product.quantity).toBeNull();
     expect(product.quantityUnit).toBeNull();
   });
 
+  it('crée une bouteille avec sa quantité', async () => {
+    const product = await useCase.execute({ ...input, unit: 'BOUTEILLE', quantity: 0.75, quantityUnit: 'l' });
+
+    expect(repository.save).toHaveBeenCalledWith(product);
+    expect(product.unit).toBe('BOUTEILLE');
+    expect(product.quantity).toBe(0.75);
+  });
+
+  it.each(['CONDITIONNEMENT', 'BOUTEILLE'])('rejette un produit vendu en %s sans quantité sans sauvegarder', async (unit) => {
+    await expect(useCase.execute({ ...input, unit })).rejects.toBeInstanceOf(DomainValidationError);
+    expect(repository.save).not.toHaveBeenCalled();
+  });
+
+  it('rejette une quantité sans unité sans sauvegarder', async () => {
+    await expect(useCase.execute({ ...input, quantity: 1 })).rejects.toBeInstanceOf(DomainValidationError);
+    expect(repository.save).not.toHaveBeenCalled();
+  });
+
   it('rejette une unité de quantité inconnue sans sauvegarder', async () => {
-    await expect(useCase.execute({ ...input, quantityUnit: 'cl' })).rejects.toBeInstanceOf(
+    await expect(useCase.execute({ ...input, quantity: 1, quantityUnit: 'cl' })).rejects.toBeInstanceOf(
       DomainValidationError,
     );
     expect(repository.save).not.toHaveBeenCalled();

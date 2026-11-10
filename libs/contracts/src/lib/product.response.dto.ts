@@ -18,6 +18,7 @@ export const ProductResponseSchema = z.object({
     producerId: z.uuid(),
     categoryId: z.uuid(),
     unit: ProductUnitSchema,
+    quantity: z.number().positive().nullable(),
     quantityUnit: QuantityUnitSchema.nullable(),
 });
 

@@ -16,6 +16,7 @@ export function toProductResponse(product: Product): ProductResponseDto {
     producerId: product.producerId,
     categoryId: product.categoryId,
     unit: product.unit,
+    quantity: product.quantity,
     quantityUnit: product.quantityUnit
   };
 }

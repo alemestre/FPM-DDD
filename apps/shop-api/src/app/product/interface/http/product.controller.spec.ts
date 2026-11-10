@@ -114,6 +114,7 @@ describe('ProductController (HTTP)', () => {
     producerId: PRODUCER_ID,
     categoryId: CATEGORY_A,
     unit: 'KG',
+    quantity: null,
     quantityUnit: null,
   };
 
@@ -136,15 +137,29 @@ describe('ProductController (HTTP)', () => {
       expect(body).toEqual({ ...expectedProduct, id: NEW_ID, unit: 'KG' });
     });
 
-    it("crée le produit avec son unité de quantité", async () => {
-      const { status, body } = await request('POST', '', { ...payload, quantityUnit: 'g' });
+    it('crée une bouteille avec sa quantité', async () => {
+      const { status, body } = await request('POST', '', { ...payload, unit: 'BOUTEILLE', quantity: 0.75, quantityUnit: 'l' });
 
       expect(status).toBe(201);
-      expect(body).toEqual({ ...expectedProduct, id: NEW_ID, quantityUnit: 'g' });
+      expect(body).toEqual({ ...expectedProduct, id: NEW_ID, unit: 'BOUTEILLE', quantity: 0.75, quantityUnit: 'l' });
+    });
+
+    it.each(['CONDITIONNEMENT', 'BOUTEILLE'])('renvoie 400 pour un produit vendu en %s sans quantité', async (unit) => {
+      const { status } = await request('POST', '', { ...payload, unit });
+
+      expect(status).toBe(400);
+      expect(repository.products.size).toBe(0);
+    });
+
+    it('renvoie 400 pour une quantité sans unité', async () => {
+      const { status } = await request('POST', '', { ...payload, quantity: 2 });
+
+      expect(status).toBe(400);
+      expect(repository.products.size).toBe(0);
     });
 
     it("renvoie 400 si l'unité de quantité est inconnue", async () => {
-      const { status } = await request('POST', '', { ...payload, quantityUnit: 'cl' });
+      const { status } = await request('POST', '', { ...payload, quantity: 1, quantityUnit: 'cl' });
 
       expect(status).toBe(400);
       expect(repository.products.size).toBe(0);
@@ -217,15 +232,26 @@ describe('ProductController (HTTP)', () => {
       expect(body).toEqual({ ...expectedProduct, price: 4, minStock: 10 });
     });
 
-    it("définit puis retire l'unité de quantité", async () => {
+    it('définit puis retire la quantité', async () => {
       seedProduct();
 
-      const set = await request('PATCH', `/${PRODUCT_ID}`, { quantityUnit: 'ml' });
-      expect(set.body).toEqual({ ...expectedProduct, quantityUnit: 'ml' });
+      const set = await request('PATCH', `/${PRODUCT_ID}`, { quantity: 500, quantityUnit: 'ml' });
+      expect(set.body).toEqual({ ...expectedProduct, quantity: 500, quantityUnit: 'ml' });
 
-      const cleared = await request('PATCH', `/${PRODUCT_ID}`, { quantityUnit: null });
+      const cleared = await request('PATCH', `/${PRODUCT_ID}`, { quantity: null, quantityUnit: null });
       expect(cleared.status).toBe(200);
       expect(cleared.body).toEqual(expectedProduct);
+    });
+
+    it('passe un produit en BOUTEILLE avec sa quantité (200), refuse sans quantité (400)', async () => {
+      seedProduct();
+
+      const refused = await request('PATCH', `/${PRODUCT_ID}`, { unit: 'BOUTEILLE' });
+      expect(refused.status).toBe(400);
+
+      const { status, body } = await request('PATCH', `/${PRODUCT_ID}`, { unit: 'BOUTEILLE', quantity: 75, quantityUnit: 'ml' });
+      expect(status).toBe(200);
+      expect(body).toEqual({ ...expectedProduct, unit: 'BOUTEILLE', quantity: 75, quantityUnit: 'ml' });
     });
 
     it('refuse une modification directe du stock (400)', async () => {

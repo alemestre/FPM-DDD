@@ -8,11 +8,16 @@ import {
   ProductUnit,
   type ProductUnitValue
 } from "./value-objects/product-unit.value-object";
-import { QuantityUnit, type QuantityUnitValue } from "./value-objects/quantity-unit.value-object";
+import { ProductQuantity } from "./value-objects/product-quantity.value-object";
+import type { QuantityUnitValue } from "./value-objects/quantity-unit.value-object";
+import { DomainValidationError } from "../../shared/domain/errors/domain-validation.error";
 
 /**
  * A product sold by a producer, classified in exactly one category.
  * Producer and category are other aggregates and are referenced by id only.
+ *
+ * Sale unit rules: the quantity (amount + unit) is optional, except for
+ * CONDITIONNEMENT and BOUTEILLE where it is required.
  */
 export class Product {
   private constructor(
@@ -24,7 +29,7 @@ export class Product {
     private _producerId: string,
     private _categoryId: string,
     private _unit: ProductUnit,
-    private _quantityUnit: QuantityUnit | null
+    private _quantity: ProductQuantity | null
   ) {}
 
   static create(
@@ -36,6 +41,7 @@ export class Product {
     producerId: string,
     categoryId: string,
     unit: string = DEFAULT_PRODUCT_UNIT,
+    quantity: number | null = null,
     quantityUnit: string | null = null
   ): Product {
     return Product.reconstitute(
@@ -48,6 +54,7 @@ export class Product {
       producerId,
       categoryId,
       unit,
+      quantity,
       quantityUnit
     );
   }
@@ -62,8 +69,13 @@ export class Product {
     producerId: string,
     categoryId: string,
     unit: string,
+    quantity: number | null = null,
     quantityUnit: string | null = null
   ): Product {
+    const saleUnit = ProductUnit.create(unit);
+    const productQuantity = ProductQuantity.fromNullable(quantity, quantityUnit);
+    Product.assertQuantityAllowed(saleUnit, productQuantity);
+
     return new Product(
       id,
       Name.create(name),
@@ -72,8 +84,8 @@ export class Product {
       Stock.create(stock, minStock),
       Product.validateId(producerId),
       Product.validateId(categoryId),
-      ProductUnit.create(unit),
-      Product.toQuantityUnit(quantityUnit)
+      saleUnit,
+      productQuantity
     );
   }
 
@@ -109,8 +121,12 @@ export class Product {
     return this._unit.value;
   }
 
+  get quantity(): number | null {
+    return this._quantity?.amount ?? null;
+  }
+
   get quantityUnit(): QuantityUnitValue | null {
-    return this._quantityUnit?.value ?? null;
+    return this._quantity?.unit ?? null;
   }
 
   changeName(name: string): void {
@@ -156,19 +172,49 @@ export class Product {
     this._categoryId = Product.validateId(categoryId);
   }
 
+  /**
+   * Changes the sale unit and keeps the current quantity.
+   *
+   * @throws {DomainValidationError} If the new unit requires a quantity the product does not have.
+   */
   changeUnit(unit: string): void {
-    this._unit = ProductUnit.create(unit);
+    this.changeSaleUnit(unit, this.quantity, this.quantityUnit);
   }
 
   /**
-   * Sets the quantity unit, or removes it with `null`.
+   * Sets the quantity and its unit, or removes both with `null`.
+   *
+   * @throws {DomainValidationError} If only one is given, or if the sale unit requires a quantity.
    */
-  changeQuantityUnit(quantityUnit: string | null): void {
-    this._quantityUnit = Product.toQuantityUnit(quantityUnit);
+  changeQuantity(quantity: number | null, quantityUnit: string | null): void {
+    this.changeSaleUnit(this.unit, quantity, quantityUnit);
   }
 
-  private static toQuantityUnit(quantityUnit: string | null): QuantityUnit | null {
-    return quantityUnit === null ? null : QuantityUnit.create(quantityUnit);
+  /**
+   * Changes the sale unit and the quantity together, so a product can switch
+   * to a unit that requires a quantity in a single valid step.
+   * Nothing changes if a rule is broken.
+   *
+   * @throws {DomainValidationError} If a value is invalid or the sale unit rules are broken.
+   */
+  changeSaleUnit(unit: string, quantity: number | null, quantityUnit: string | null): void {
+    const saleUnit = ProductUnit.create(unit);
+    const productQuantity = ProductQuantity.fromNullable(quantity, quantityUnit);
+    Product.assertQuantityAllowed(saleUnit, productQuantity);
+
+    this._unit = saleUnit;
+    this._quantity = productQuantity;
+  }
+
+  /**
+   * @throws {DomainValidationError} If the sale unit requires a quantity and none is given.
+   */
+  private static assertQuantityAllowed(unit: ProductUnit, quantity: ProductQuantity | null): void {
+    if (unit.requiresQuantity() && quantity === null) {
+      throw new DomainValidationError(
+        `Un produit vendu en ${unit.value} doit avoir une quantité et une unité de quantité`
+      );
+    }
   }
 
   private static validateId(id: string): string {

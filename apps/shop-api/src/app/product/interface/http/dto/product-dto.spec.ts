@@ -38,6 +38,10 @@ describe('Product schemas', () => {
       expect(parsed.unit).toBeUndefined();
     });
 
+    it.each([0.75, 500, null])('accepte une quantité de %p', (quantity) => {
+      expect(CreateProductSchema.safeParse({ ...validProduct, quantity }).success).toBe(true);
+    });
+
     it.each(['pcs', 'g', 'ml', 'kg', 'l', null])("accepte l'unité de quantité %p", (quantityUnit) => {
       expect(CreateProductSchema.safeParse({ ...validProduct, quantityUnit }).success).toBe(true);
     });
@@ -52,6 +56,9 @@ describe('Product schemas', () => {
       ['categoryId non UUID', { categoryId: 'abc' }],
       ['unité inconnue', { unit: 'GRAMME' }],
       ['unité en minuscules', { unit: 'kg' }],
+      ['quantité nulle', { quantity: 0 }],
+      ['quantité négative', { quantity: -1 }],
+      ['quantité en texte', { quantity: '500' }],
       ['unité de quantité inconnue', { quantityUnit: 'cl' }],
       ['unité de quantité en majuscules', { quantityUnit: 'KG' }],
     ])('rejette un %s', (_label, override) => {
@@ -87,8 +94,11 @@ describe('Product schemas', () => {
       expect(UpdateProductSchema.safeParse({ unit: 'GRAMME' }).success).toBe(false);
     });
 
-    it("accepte de retirer l'unité de quantité avec null", () => {
-      expect(UpdateProductSchema.parse({ quantityUnit: null })).toEqual({ quantityUnit: null });
+    it('accepte de retirer la quantité avec null', () => {
+      expect(UpdateProductSchema.parse({ quantity: null, quantityUnit: null })).toEqual({
+        quantity: null,
+        quantityUnit: null,
+      });
     });
 
     it('refuse de modifier le stock directement', () => {

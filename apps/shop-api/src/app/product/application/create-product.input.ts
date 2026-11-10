@@ -8,5 +8,6 @@ export interface CreateProductInput {
   readonly categoryId: string;
   /** Defaults to KG when omitted. */
   readonly unit?: string;
+  readonly quantity?: number | null;
   readonly quantityUnit?: string | null;
 }

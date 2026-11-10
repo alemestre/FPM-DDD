@@ -16,6 +16,7 @@ export const CreateProductSchema = z.object({
   producerId: z.uuid(),
   categoryId: z.uuid(),
   unit: z.enum(PRODUCT_UNITS).optional(),
+  quantity: z.number().positive().nullable().optional(),
   quantityUnit: z.enum(QUANTITY_UNITS).nullable().optional()
 });
 

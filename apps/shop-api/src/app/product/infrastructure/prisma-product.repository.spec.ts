@@ -34,6 +34,7 @@ const productRow = (overrides: Record<string, unknown> = {}) => ({
   updatedAt: new Date(),
   categoryId: CATEGORY_A,
   unit: 'KG',
+  quantity: null,
   quantityUnit: null,
   ...overrides,
 });
@@ -79,6 +80,7 @@ describe('PrismaProductRepository', () => {
         producerId: PRODUCER_ID,
         categoryId: CATEGORY_B,
         unit: 'KG',
+        quantity: null,
         quantityUnit: null,
       };
       expect(prisma.product.upsert).toHaveBeenCalledWith({
@@ -126,16 +128,17 @@ describe('PrismaProductRepository', () => {
       expect(updated.categoryId).toBe(CATEGORY_B);
     });
 
-    it("enregistre l'unité de quantité de l'agrégat", async () => {
+    it("enregistre la quantité de l'agrégat", async () => {
       const product = existingProduct();
-      product.changeQuantityUnit('g');
-      prisma.product.upsert.mockResolvedValue(productRow({ quantityUnit: 'g' }));
+      product.changeQuantity(250, 'g');
+      prisma.product.upsert.mockResolvedValue(productRow({ quantity: decimal(250), quantityUnit: 'g' }));
 
       const saved = await repository.save(product);
 
       expect(prisma.product.upsert).toHaveBeenCalledWith(
-        expect.objectContaining({ update: expect.objectContaining({ quantityUnit: 'g' }) }),
+        expect.objectContaining({ update: expect.objectContaining({ quantity: 250, quantityUnit: 'g' }) }),
       );
+      expect(saved.quantity).toBe(250);
       expect(saved.quantityUnit).toBe('g');
     });
 
@@ -151,14 +154,14 @@ describe('PrismaProductRepository', () => {
       expect(updated.unit).toBe('BOTTE');
     });
 
-    it("retire l'unité de quantité avec null", async () => {
+    it('retire la quantité avec null', async () => {
       prisma.product.update.mockResolvedValue(productRow());
 
-      await repository.update(PRODUCT_ID, { quantityUnit: null });
+      await repository.update(PRODUCT_ID, { quantity: null, quantityUnit: null });
 
       expect(prisma.product.update).toHaveBeenCalledWith({
         where: { id: PRODUCT_ID },
-        data: { quantityUnit: null },
+        data: { quantity: null, quantityUnit: null },
       });
     });
 
@@ -209,23 +212,26 @@ describe('PrismaProductRepository', () => {
       expect(product?.producerId).toBe(PRODUCER_ID);
       expect(product?.categoryId).toBe(CATEGORY_A);
       expect(product?.unit).toBe('KG');
+      expect(product?.quantity).toBeNull();
       expect(product?.quantityUnit).toBeNull();
     });
 
     it.each(['pcs', 'g', 'ml', 'kg', 'l'])("reconstitue l'unité de quantité %s", async (quantityUnit) => {
-      prisma.product.findUnique.mockResolvedValue(productRow({ quantityUnit }));
+      prisma.product.findUnique.mockResolvedValue(productRow({ quantity: decimal(1), quantityUnit }));
 
       const product = await repository.findById(PRODUCT_ID);
 
       expect(product?.quantityUnit).toBe(quantityUnit);
     });
 
-    it.each(['CONDITIONNEMENT', 'BOUTEILLE'])("reconstitue un produit vendu en %s", async (unit) => {
-      prisma.product.findUnique.mockResolvedValue(productRow({ unit }));
+    it.each(['CONDITIONNEMENT', 'BOUTEILLE'])("reconstitue un produit vendu en %s avec sa quantité", async (unit) => {
+      prisma.product.findUnique.mockResolvedValue(productRow({ unit, quantity: decimal(0.75), quantityUnit: 'l' }));
 
       const product = await repository.findById(PRODUCT_ID);
 
       expect(product?.unit).toBe(unit);
+      expect(product?.quantity).toBe(0.75);
+      expect(product?.quantityUnit).toBe('l');
     });
 
     it("retourne null si le produit n'existe pas", async () => {

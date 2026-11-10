@@ -123,6 +123,7 @@ model Product {
   minStock     Int
   vatRate      Decimal       @db.Decimal(5, 2)
   unit         ProductUnit   @default(KG)
+  quantity     Decimal?      @db.Decimal(10, 3)
   quantityUnit QuantityUnit?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime?     @updatedAt

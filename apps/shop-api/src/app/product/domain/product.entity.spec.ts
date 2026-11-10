@@ -29,13 +29,15 @@ describe('Product', () => {
       expect(product.producerId).toBe(PRODUCER_ID);
       expect(product.categoryId).toBe(CATEGORY_A);
       expect(product.unit).toBe('KG');
+      expect(product.quantity).toBeNull();
       expect(product.quantityUnit).toBeNull();
     });
 
     it.each(['pcs', 'g', 'ml', 'kg', 'l'])("accepte l'unité de quantité %s", (quantityUnit) => {
-      expect(Product.create('Poires', 2, 5.5, 1, 0, PRODUCER_ID, CATEGORY_A, 'KG', quantityUnit).quantityUnit).toBe(
-        quantityUnit,
-      );
+      const product = Product.create('Poires', 2, 5.5, 1, 0, PRODUCER_ID, CATEGORY_A, 'KG', 1.5, quantityUnit);
+
+      expect(product.quantity).toBe(1.5);
+      expect(product.quantityUnit).toBe(quantityUnit);
     });
 
     it("utilise KG quand l'unité n'est pas précisée", () => {
@@ -43,7 +45,7 @@ describe('Product', () => {
     });
 
     it.each(['KG', 'BOTTE', 'PIECE', 'CONDITIONNEMENT', 'BOUTEILLE'])("accepte l'unité %s", (unit) => {
-      expect(Product.create('Poires', 2, 5.5, 1, 0, PRODUCER_ID, CATEGORY_A, unit).unit).toBe(unit);
+      expect(Product.create('Poires', 2, 5.5, 1, 0, PRODUCER_ID, CATEGORY_A, unit, 1, 'kg').unit).toBe(unit);
     });
 
     it.each([
@@ -59,8 +61,8 @@ describe('Product', () => {
       ['unité inconnue', () => Product.create('Poires', 2, 5.5, 1, 0, PRODUCER_ID, CATEGORY_A, 'GRAMME')],
       ['unité en minuscules', () => Product.create('Poires', 2, 5.5, 1, 0, PRODUCER_ID, CATEGORY_A, 'kg')],
       ['unité vide', () => Product.create('Poires', 2, 5.5, 1, 0, PRODUCER_ID, CATEGORY_A, '')],
-      ['unité de quantité inconnue', () => Product.create('Poires', 2, 5.5, 1, 0, PRODUCER_ID, CATEGORY_A, 'KG', 'cl')],
-      ['unité de quantité en majuscules', () => Product.create('Poires', 2, 5.5, 1, 0, PRODUCER_ID, CATEGORY_A, 'KG', 'KG')],
+      ['unité de quantité inconnue', () => Product.create('Poires', 2, 5.5, 1, 0, PRODUCER_ID, CATEGORY_A, 'KG', 1, 'cl')],
+      ['unité de quantité en majuscules', () => Product.create('Poires', 2, 5.5, 1, 0, PRODUCER_ID, CATEGORY_A, 'KG', 1, 'KG')],
     ])('rejette un %s', (_label, create) => {
       expect(create).toThrow(DomainValidationError);
     });
@@ -133,7 +135,8 @@ describe('Product', () => {
       ['producteur', (p: Product) => p.changeProducer('x'), (p: Product) => p.producerId, PRODUCER_ID],
       ['catégorie', (p: Product) => p.changeCategory('x'), (p: Product) => p.categoryId, CATEGORY_A],
       ['unité', (p: Product) => p.changeUnit('GRAMME'), (p: Product) => p.unit, 'KG'],
-      ['unité de quantité', (p: Product) => p.changeQuantityUnit('cl'), (p: Product) => p.quantityUnit, null],
+      ['unité de quantité', (p: Product) => p.changeQuantity(1, 'cl'), (p: Product) => p.quantityUnit, null],
+      ['quantité', (p: Product) => p.changeQuantity(0, 'g'), (p: Product) => p.quantity, null],
     ])('rejette un %s invalide et conserve la valeur précédente', (_label, change, read, previous) => {
       const product = createProduct();
 
@@ -142,23 +145,108 @@ describe('Product', () => {
     });
   });
 
-  describe('unité de quantité', () => {
-    it("définit puis retire l'unité de quantité", () => {
-      const product = createProduct();
+  describe('quantité', () => {
+    const create = (unit: string, quantity: number | null, quantityUnit: string | null) =>
+      Product.create('Poires', 2, 5.5, 1, 0, PRODUCER_ID, CATEGORY_A, unit, quantity, quantityUnit);
 
-      product.changeQuantityUnit('g');
-      expect(product.quantityUnit).toBe('g');
+    it.each(['KG', 'BOTTE', 'PIECE'])('est facultative pour un produit vendu en %s', (unit) => {
+      const product = create(unit, null, null);
 
-      product.changeQuantityUnit(null);
+      expect(product.quantity).toBeNull();
       expect(product.quantityUnit).toBeNull();
     });
 
-    it("rejette une unité de quantité invalide et conserve l'unité précédente", () => {
-      const product = createProduct();
-      product.changeQuantityUnit('ml');
+    it('accepte le poids ou le volume d\'une pièce', () => {
+      const product = create('PIECE', 250, 'g');
 
-      expect(() => product.changeQuantityUnit('cl')).toThrow(DomainValidationError);
+      expect(product.quantity).toBe(250);
+      expect(product.quantityUnit).toBe('g');
+    });
+
+    it.each([
+      ['CONDITIONNEMENT', 500, 'g'],
+      ['BOUTEILLE', 0.75, 'l'],
+    ])('accepte un produit vendu en %s avec sa quantité', (unit, quantity, quantityUnit) => {
+      const product = create(unit, quantity, quantityUnit);
+
+      expect(product.quantity).toBe(quantity);
+      expect(product.quantityUnit).toBe(quantityUnit);
+    });
+
+    it.each(['CONDITIONNEMENT', 'BOUTEILLE'])('est obligatoire pour un produit vendu en %s', (unit) => {
+      expect(() => create(unit, null, null)).toThrow(
+        new DomainValidationError(`Un produit vendu en ${unit} doit avoir une quantité et une unité de quantité`),
+      );
+    });
+
+    it.each([
+      ['KG', 1, null],
+      ['PIECE', null, 'g'],
+      ['CONDITIONNEMENT', 500, null],
+      ['BOUTEILLE', null, 'l'],
+    ])('refuse en %s une quantité sans unité ou une unité sans quantité (%p, %p)', (unit, quantity, quantityUnit) => {
+      expect(() => create(unit, quantity, quantityUnit)).toThrow(
+        new DomainValidationError('La quantité et son unité doivent être renseignées ensemble'),
+      );
+    });
+
+    it.each([0, -1, Number.NaN])('refuse une quantité de %p', (quantity) => {
+      expect(() => create('PIECE', quantity, 'g')).toThrow(DomainValidationError);
+    });
+
+    it('définit puis retire la quantité', () => {
+      const product = createProduct();
+
+      product.changeQuantity(1.5, 'kg');
+      expect(product.quantity).toBe(1.5);
+      expect(product.quantityUnit).toBe('kg');
+
+      product.changeQuantity(null, null);
+      expect(product.quantity).toBeNull();
+      expect(product.quantityUnit).toBeNull();
+    });
+
+    it("refuse de retirer la quantité d'une bouteille et la conserve", () => {
+      const product = create('BOUTEILLE', 75, 'ml');
+
+      expect(() => product.changeQuantity(null, null)).toThrow(DomainValidationError);
+      expect(product.quantity).toBe(75);
       expect(product.quantityUnit).toBe('ml');
+    });
+
+    it("refuse de passer en BOUTEILLE sans quantité et conserve l'unité", () => {
+      const product = createProduct();
+
+      expect(() => product.changeUnit('BOUTEILLE')).toThrow(DomainValidationError);
+      expect(product.unit).toBe('KG');
+    });
+
+    it('passe en BOUTEILLE en conservant la quantité existante', () => {
+      const product = createProduct();
+      product.changeQuantity(1, 'l');
+
+      product.changeUnit('BOUTEILLE');
+
+      expect(product.unit).toBe('BOUTEILLE');
+      expect(product.quantity).toBe(1);
+    });
+
+    it("change l'unité de vente et la quantité en une seule étape", () => {
+      const product = createProduct();
+
+      product.changeSaleUnit('CONDITIONNEMENT', 6, 'pcs');
+
+      expect(product.unit).toBe('CONDITIONNEMENT');
+      expect(product.quantity).toBe(6);
+      expect(product.quantityUnit).toBe('pcs');
+    });
+
+    it('ne change rien si le changement atomique est invalide', () => {
+      const product = createProduct();
+
+      expect(() => product.changeSaleUnit('BOUTEILLE', 75, null)).toThrow(DomainValidationError);
+      expect(product.unit).toBe('KG');
+      expect(product.quantity).toBeNull();
     });
   });
 
@@ -175,13 +263,20 @@ describe('Product', () => {
     });
 
     it("reconstitue l'unité de quantité persistée", () => {
-      const product = Product.reconstitute('e3bb189e-8bf9-4888-9912-ace4e6543002', 'Lait', 1.2, 5.5, 8, 3, PRODUCER_ID, CATEGORY_B, 'BOUTEILLE', 'l');
+      const product = Product.reconstitute('e3bb189e-8bf9-4888-9912-ace4e6543002', 'Lait', 1.2, 5.5, 8, 3, PRODUCER_ID, CATEGORY_B, 'BOUTEILLE', 1, 'l');
 
+      expect(product.quantity).toBe(1);
       expect(product.quantityUnit).toBe('l');
     });
 
     it('rejette une unité de quantité persistée inconnue', () => {
-      expect(() => Product.reconstitute('e3bb189e-8bf9-4888-9912-ace4e6543002', 'Lait', 1.2, 5.5, 8, 3, PRODUCER_ID, CATEGORY_B, 'BOUTEILLE', 'cl')).toThrow(
+      expect(() => Product.reconstitute('e3bb189e-8bf9-4888-9912-ace4e6543002', 'Lait', 1.2, 5.5, 8, 3, PRODUCER_ID, CATEGORY_B, 'BOUTEILLE', 1, 'cl')).toThrow(
+        DomainValidationError,
+      );
+    });
+
+    it('rejette une bouteille persistée sans quantité', () => {
+      expect(() => Product.reconstitute('e3bb189e-8bf9-4888-9912-ace4e6543002', 'Lait', 1.2, 5.5, 8, 3, PRODUCER_ID, CATEGORY_B, 'BOUTEILLE')).toThrow(
         DomainValidationError,
       );
     });

@@ -60,7 +60,7 @@ const QUANTITY_UNIT_TO_ROW = {
  * Product fields accepted by {@link PrismaProductRepository.update}.
  */
 type ProductPatch = Partial<
-  Pick<Product, "name" | "price" | "vatRate" | "stock" | "minStock" | "producerId" | "categoryId" | "unit" | "quantityUnit">
+  Pick<Product, "name" | "price" | "vatRate" | "stock" | "minStock" | "producerId" | "categoryId" | "unit" | "quantity" | "quantityUnit">
 >;
 
 @Injectable()
@@ -135,6 +135,7 @@ export class PrismaProductRepository implements ProductRepository {
       producerId: entity.producerId,
       categoryId: entity.categoryId,
       unit: UNIT_TO_ROW[entity.unit],
+      quantity: entity.quantity,
       quantityUnit: entity.quantityUnit === null ? null : QUANTITY_UNIT_TO_ROW[entity.quantityUnit]
     };
   }
@@ -143,7 +144,7 @@ export class PrismaProductRepository implements ProductRepository {
    * Maps only the defined fields of a patch onto Prisma update data.
    */
   private toUpdateData(patch: ProductPatch): Prisma.ProductUncheckedUpdateInput {
-    const { name, price, vatRate, stock, minStock, producerId, categoryId, unit, quantityUnit } = patch;
+    const { name, price, vatRate, stock, minStock, producerId, categoryId, unit, quantity, quantityUnit } = patch;
 
     return {
       ...(name !== undefined && { name }),
@@ -154,6 +155,7 @@ export class PrismaProductRepository implements ProductRepository {
       ...(producerId !== undefined && { producerId }),
       ...(categoryId !== undefined && { categoryId }),
       ...(unit !== undefined && { unit: UNIT_TO_ROW[unit] }),
+      ...(quantity !== undefined && { quantity }),
       ...(quantityUnit !== undefined && {
         quantityUnit: quantityUnit === null ? null : QUANTITY_UNIT_TO_ROW[quantityUnit]
       })
@@ -189,6 +191,7 @@ export class PrismaProductRepository implements ProductRepository {
       row.producerId,
       row.categoryId,
       UNIT_TO_DOMAIN[row.unit],
+      row.quantity === null ? null : row.quantity.toNumber(),
       row.quantityUnit === null ? null : QUANTITY_UNIT_TO_DOMAIN[row.quantityUnit]
     );
   }

@@ -66,29 +66,74 @@ describe('UpdateProductUseCase', () => {
     expect(updated.unit).toBe('PIECE');
   });
 
-  it("définit puis retire l'unité de quantité", async () => {
-    const withUnit = await useCase.execute(PRODUCT_ID, { quantityUnit: 'kg' });
-    expect(withUnit.quantityUnit).toBe('kg');
+  it('définit puis retire la quantité', async () => {
+    const withQuantity = await useCase.execute(PRODUCT_ID, { quantity: 1.5, quantityUnit: 'kg' });
+    expect(withQuantity.quantity).toBe(1.5);
+    expect(withQuantity.quantityUnit).toBe('kg');
 
-    repository.findByIdOrFail.mockResolvedValue(withUnit);
-    const withoutUnit = await useCase.execute(PRODUCT_ID, { quantityUnit: null });
+    repository.findByIdOrFail.mockResolvedValue(withQuantity);
+    const withoutQuantity = await useCase.execute(PRODUCT_ID, { quantity: null, quantityUnit: null });
 
-    expect(withoutUnit.quantityUnit).toBeNull();
-    expect(repository.save).toHaveBeenLastCalledWith(withoutUnit);
+    expect(withoutQuantity.quantity).toBeNull();
+    expect(withoutQuantity.quantityUnit).toBeNull();
+    expect(repository.save).toHaveBeenLastCalledWith(withoutQuantity);
   });
 
-  it("ne touche pas à l'unité de quantité quand elle n'est pas fournie", async () => {
+  it("change seulement l'unité de quantité en gardant la quantité", async () => {
     const product = existingProduct();
-    product.changeQuantityUnit('ml');
+    product.changeQuantity(500, 'g');
+    repository.findByIdOrFail.mockResolvedValue(product);
+
+    const updated = await useCase.execute(PRODUCT_ID, { quantityUnit: 'ml' });
+
+    expect(updated.quantity).toBe(500);
+    expect(updated.quantityUnit).toBe('ml');
+  });
+
+  it("ne touche pas à la quantité quand elle n'est pas fournie", async () => {
+    const product = existingProduct();
+    product.changeQuantity(500, 'g');
     repository.findByIdOrFail.mockResolvedValue(product);
 
     const updated = await useCase.execute(PRODUCT_ID, { price: 4 });
 
-    expect(updated.quantityUnit).toBe('ml');
+    expect(updated.quantity).toBe(500);
+    expect(updated.quantityUnit).toBe('g');
+  });
+
+  it('passe un produit en BOUTEILLE avec sa quantité dans la même mise à jour', async () => {
+    const updated = await useCase.execute(PRODUCT_ID, { unit: 'BOUTEILLE', quantity: 75, quantityUnit: 'ml' });
+
+    expect(repository.save).toHaveBeenCalledWith(updated);
+    expect(updated.unit).toBe('BOUTEILLE');
+    expect(updated.quantity).toBe(75);
+  });
+
+  it('ne sauvegarde rien si le produit passe en BOUTEILLE sans quantité', async () => {
+    await expect(useCase.execute(PRODUCT_ID, { unit: 'BOUTEILLE' })).rejects.toBeInstanceOf(
+      DomainValidationError,
+    );
+    expect(repository.save).not.toHaveBeenCalled();
+  });
+
+  it("ne sauvegarde rien si l'on retire la quantité d'un conditionnement", async () => {
+    repository.findByIdOrFail.mockResolvedValue(
+      Product.reconstitute(PRODUCT_ID, 'Œufs', 3, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A, 'CONDITIONNEMENT', 6, 'pcs'),
+    );
+
+    await expect(useCase.execute(PRODUCT_ID, { quantity: null, quantityUnit: null })).rejects.toBeInstanceOf(
+      DomainValidationError,
+    );
+    expect(repository.save).not.toHaveBeenCalled();
+  });
+
+  it('ne sauvegarde rien si seule la quantité est fournie sur un produit sans quantité', async () => {
+    await expect(useCase.execute(PRODUCT_ID, { quantity: 2 })).rejects.toBeInstanceOf(DomainValidationError);
+    expect(repository.save).not.toHaveBeenCalled();
   });
 
   it('ne sauvegarde rien si la nouvelle unité de quantité est inconnue', async () => {
-    await expect(useCase.execute(PRODUCT_ID, { quantityUnit: 'cl' })).rejects.toBeInstanceOf(
+    await expect(useCase.execute(PRODUCT_ID, { quantity: 1, quantityUnit: 'cl' })).rejects.toBeInstanceOf(
       DomainValidationError,
     );
     expect(repository.save).not.toHaveBeenCalled();
