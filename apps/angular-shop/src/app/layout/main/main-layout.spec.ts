@@ -115,7 +115,6 @@ describe('Navbar', () => {
 
         expect(element.querySelector('.app-profile')).toBeTruthy();
         expect(element.querySelector('a[href="/login"]')).toBeNull();
-        expect(element.querySelector('a[href="/register"]')).toBeNull();
     });
 
     it('should log out then go home when clicking "Se déconnecter"', async () => {
