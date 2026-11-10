@@ -23,3 +23,19 @@ export const ProductResponseSchema = z.object({
 });
 
 export type ProductResponseDto = z.infer<typeof ProductResponseSchema>;
+
+export const ProducerSummarySchema = z.object({
+    id: z.uuid(),
+    name: z.string(),
+});
+
+export type ProducerSummaryDto = z.infer<typeof ProducerSummarySchema>;
+
+/**
+ * Product as returned by the read endpoints: the producer is embedded instead of its id.
+ */
+export const ProductWithProducerResponseSchema = ProductResponseSchema.omit({ producerId: true }).extend({
+    producer: ProducerSummarySchema,
+});
+
+export type ProductWithProducerResponseDto = z.infer<typeof ProductWithProducerResponseSchema>;

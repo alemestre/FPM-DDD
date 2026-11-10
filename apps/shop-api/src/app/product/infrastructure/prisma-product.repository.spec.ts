@@ -254,6 +254,56 @@ describe('PrismaProductRepository', () => {
       expect(prisma.product.findMany).toHaveBeenCalledWith();
       expect(products.map((p: Product) => p.id)).toEqual([PRODUCT_ID, CATEGORY_B]);
     });
+
+    describe('avec le producteur', () => {
+      const PRODUCER = { id: PRODUCER_ID, name: 'Ferme des Lilas' };
+      const WITH_PRODUCER = { producer: { select: { id: true, name: true } } };
+      const rowWithProducer = (overrides: Record<string, unknown> = {}) => ({ ...productRow(overrides), producer: PRODUCER });
+
+      it('findManyWithProducer liste tous les produits avec leur producteur', async () => {
+        prisma.product.findMany.mockResolvedValue([rowWithProducer()]);
+
+        const results = await repository.findManyWithProducer();
+
+        expect(prisma.product.findMany).toHaveBeenCalledWith({ where: {}, include: WITH_PRODUCER });
+        expect(results).toHaveLength(1);
+        expect(results[0].product).toBeInstanceOf(Product);
+        expect(results[0].product.price).toBe(3.5);
+        expect(results[0].producer).toEqual(PRODUCER);
+      });
+
+      it('findManyWithProducer filtre sur la catégorie quand elle est fournie', async () => {
+        prisma.product.findMany.mockResolvedValue([rowWithProducer()]);
+
+        const results = await repository.findManyWithProducer(CATEGORY_A);
+
+        expect(prisma.product.findMany).toHaveBeenCalledWith({ where: { categoryId: CATEGORY_A }, include: WITH_PRODUCER });
+        expect(results[0].product.categoryId).toBe(CATEGORY_A);
+      });
+
+      it("findManyWithProducer retourne une liste vide si aucun produit n'est dans la catégorie", async () => {
+        prisma.product.findMany.mockResolvedValue([]);
+
+        await expect(repository.findManyWithProducer(CATEGORY_A)).resolves.toEqual([]);
+      });
+
+      it('findByIdWithProducerOrFail charge le produit et son producteur', async () => {
+        prisma.product.findUnique.mockResolvedValue(rowWithProducer({ quantity: decimal(0.75), quantityUnit: 'l', unit: 'BOUTEILLE' }));
+
+        const result = await repository.findByIdWithProducerOrFail(PRODUCT_ID);
+
+        expect(prisma.product.findUnique).toHaveBeenCalledWith({ where: { id: PRODUCT_ID }, include: WITH_PRODUCER });
+        expect(result.product.id).toBe(PRODUCT_ID);
+        expect(result.product.quantity).toBe(0.75);
+        expect(result.producer).toEqual(PRODUCER);
+      });
+
+      it("findByIdWithProducerOrFail lève NotFoundException si le produit n'existe pas", async () => {
+        prisma.product.findUnique.mockResolvedValue(null);
+
+        await expect(repository.findByIdWithProducerOrFail(PRODUCT_ID)).rejects.toBeInstanceOf(NotFoundException);
+      });
+    });
   });
 
   it('delete supprime le produit par id', async () => {

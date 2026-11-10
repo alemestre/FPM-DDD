@@ -30,7 +30,7 @@ const createGenericRepositoryMock = <T>() => ({
 });
 
 const createProductRepositoryMock = (): jest.Mocked<ProductRepository> =>
-  createGenericRepositoryMock<Product>() as jest.Mocked<ProductRepository>;
+  ({ ...createGenericRepositoryMock<Product>(), findManyWithProducer: jest.fn(), findByIdWithProducerOrFail: jest.fn() }) as jest.Mocked<ProductRepository>;
 
 const OTHER_PRODUCER_ID = 'd3bb189e-8bf9-4888-9912-ace4e6543002';
 

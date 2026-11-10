@@ -24,7 +24,7 @@ const createGenericRepositoryMock = <T>() => ({
 });
 
 const createProductRepositoryMock = (): jest.Mocked<ProductRepository> =>
-  createGenericRepositoryMock<Product>() as jest.Mocked<ProductRepository>;
+  ({ ...createGenericRepositoryMock<Product>(), findManyWithProducer: jest.fn(), findByIdWithProducerOrFail: jest.fn() }) as jest.Mocked<ProductRepository>;
 
 describe('CreateProductUseCase', () => {
   let repository: ReturnType<typeof createProductRepositoryMock>;

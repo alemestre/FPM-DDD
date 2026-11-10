@@ -1,5 +1,5 @@
 import { ProductReferenceNotFoundError } from "../domain/errors/product-reference-not-found.error";
-import { ProductRepository } from "../domain/product.repository";
+import { ProductRepository, type ProductWithProducer } from "../domain/product.repository";
 import { PrismaService } from "../../../prisma/prisma.service";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import {
@@ -57,6 +57,13 @@ const QUANTITY_UNIT_TO_ROW = {
 } as const satisfies Record<QuantityUnitValue, QuantityUnitRow>;
 
 /**
+ * Loads only the producer fields exposed with a product.
+ */
+const WITH_PRODUCER = { producer: { select: { id: true, name: true } } } as const;
+
+type ProductWithProducerRow = Prisma.ProductGetPayload<{ include: typeof WITH_PRODUCER }>;
+
+/**
  * Product fields accepted by {@link PrismaProductRepository.update}.
  */
 type ProductPatch = Partial<
@@ -103,6 +110,23 @@ export class PrismaProductRepository implements ProductRepository {
     } catch (error) {
       throw this.translateWriteError(error);
     }
+  }
+
+  async findManyWithProducer(categoryId?: string): Promise<ProductWithProducer[]> {
+    const rows = await this.prisma.product.findMany({
+      where: categoryId ? { categoryId } : {},
+      include: WITH_PRODUCER
+    });
+    return rows.map((row) => this.toDomainWithProducer(row));
+  }
+
+  /**
+   * @throws {NotFoundException} If the product does not exist.
+   */
+  async findByIdWithProducerOrFail(id: string): Promise<ProductWithProducer> {
+    const row = await this.prisma.product.findUnique({ where: { id }, include: WITH_PRODUCER });
+    if (!row) throw new NotFoundException(`Produit ${id} introuvable`);
+    return this.toDomainWithProducer(row);
   }
 
   async findById(id: string): Promise<Product | null> {
@@ -175,6 +199,10 @@ export class PrismaProductRepository implements ProductRepository {
     }
 
     return error;
+  }
+
+  private toDomainWithProducer(row: ProductWithProducerRow): ProductWithProducer {
+    return { product: this.toDomain(row), producer: { id: row.producer.id, name: row.producer.name } };
   }
 
   /**

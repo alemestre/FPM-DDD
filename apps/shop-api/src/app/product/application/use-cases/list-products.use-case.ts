@@ -1,11 +1,10 @@
-import { ProductRepository } from "../../domain/product.repository";
-import type { Product } from "../../domain/product.entity";
+import { ProductRepository, type ProductWithProducer } from "../../domain/product.repository";
 import { Inject } from "@nestjs/common";
 
 export class ListProductsUseCase {
   constructor(@Inject(ProductRepository) private readonly repository: ProductRepository) {}
 
-  execute(): Promise<Product[]> {
-    return this.repository.findAll();
+  execute(): Promise<ProductWithProducer[]> {
+    return this.repository.findManyWithProducer();
   }
 }

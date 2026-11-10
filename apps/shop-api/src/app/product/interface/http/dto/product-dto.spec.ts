@@ -1,6 +1,7 @@
 import { CreateProductSchema } from './create-product.dto';
 import { StockMovementSchema } from './stock-movement.dto';
 import { UpdateProductSchema } from './update-product.dto';
+import { ListProductsQuerySchema } from './list-products-query.dto';
 
 const PRODUCER_ID = 'a3bb189e-8bf9-4888-9912-ace4e6543002';
 const CATEGORY_ID = 'b3bb189e-8bf9-4888-9912-ace4e6543002';
@@ -113,6 +114,20 @@ describe('Product schemas', () => {
 
     it('accepte une quantité entière positive', () => {
       expect(StockMovementSchema.safeParse({ quantity: 3 }).success).toBe(true);
+    });
+  });
+
+  describe('ListProductsQuerySchema', () => {
+    it('accepte une query sans filtre', () => {
+      expect(ListProductsQuerySchema.safeParse({}).success).toBe(true);
+    });
+
+    it('accepte un categoryId UUID', () => {
+      expect(ListProductsQuerySchema.parse({ categoryId: CATEGORY_ID })).toEqual({ categoryId: CATEGORY_ID });
+    });
+
+    it("refuse un categoryId qui n'est pas un UUID", () => {
+      expect(ListProductsQuerySchema.safeParse({ categoryId: 'abc' }).success).toBe(false);
     });
   });
 });

@@ -1,4 +1,4 @@
-import { ProductResponseSchema } from './product.response.dto';
+import { ProductResponseSchema, ProductWithProducerResponseSchema } from './product.response.dto';
 
 describe('ProductResponseSchema', () => {
     const validProduct = {
@@ -82,6 +82,57 @@ describe('ProductResponseSchema', () => {
 
     it('rejects a payload with a missing field', () => {
         const result = ProductResponseSchema.safeParse({ ...validProduct, price: undefined });
+
+        expect(result.success).toBe(false);
+    });
+});
+
+describe('ProductWithProducerResponseSchema', () => {
+    const { producerId, ...productFields } = {
+        id: '3f0c9a52-8a6e-4c1b-9d57-2b1e7f4a6c10',
+        name: 'Pomme',
+        price: 2.5,
+        vatRate: 5.5,
+        stock: 10,
+        minStock: 2,
+        producerId: '8b2d4e16-1c7a-4f3e-a0b9-6d5c3e2f1a70',
+        categoryId: 'c4e7a1d3-5f2b-4a86-b1c9-0e3d7f6a2b54',
+        unit: 'KG',
+        quantity: null,
+        quantityUnit: null,
+    };
+    const validProduct = { ...productFields, producer: { id: producerId, name: 'Ferme des Lilas' } };
+
+    it('accepts a product with its producer', () => {
+        expect(ProductWithProducerResponseSchema.safeParse(validProduct).success).toBe(true);
+    });
+
+    it('strips the producer id field, which is replaced by the producer', () => {
+        const result = ProductWithProducerResponseSchema.safeParse({ ...validProduct, producerId });
+
+        expect(result.success && 'producerId' in result.data).toBe(false);
+    });
+
+    it('rejects a missing producer', () => {
+        const result = ProductWithProducerResponseSchema.safeParse({ ...validProduct, producer: undefined });
+
+        expect(result.success).toBe(false);
+    });
+
+    it('rejects a producer id that is not a UUID', () => {
+        const result = ProductWithProducerResponseSchema.safeParse({
+            ...validProduct,
+            producer: { id: 'not-a-uuid', name: 'Ferme des Lilas' },
+        });
+
+        expect(result.success).toBe(false);
+    });
+
+    it('rejects a producer without a name', () => {
+        const result = ProductWithProducerResponseSchema.safeParse({
+            ...validProduct,
+            producer: { id: producerId },
+        });
 
         expect(result.success).toBe(false);
     });

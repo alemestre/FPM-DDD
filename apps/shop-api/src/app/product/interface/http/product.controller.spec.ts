@@ -1,7 +1,7 @@
 import { DomainValidationErrorFilter } from '../../../shared/interface/http/domain-validation-error.filter';
 import { ProductReferenceNotFoundError } from '../../domain/errors/product-reference-not-found.error';
 import { type INestApplication, NotFoundException } from '@nestjs/common';
-import { ProductRepository } from '../../domain/product.repository';
+import { ProductRepository, type ProductWithProducer } from '../../domain/product.repository';
 import { Product } from '../../domain/product.entity';
 import { ProductModule } from '../../product.module';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
@@ -22,6 +22,9 @@ const PRODUCT_ID = 'e3bb189e-8bf9-4888-9912-ace4e6543002';
 const PRODUCER_ID = 'a3bb189e-8bf9-4888-9912-ace4e6543002';
 const MISSING_PRODUCER_ID = 'f3bb189e-8bf9-4888-9912-ace4e6543002';
 const CATEGORY_A = 'b3bb189e-8bf9-4888-9912-ace4e6543002';
+const CATEGORY_B = 'c3bb189e-8bf9-4888-9912-ace4e6543002';
+const OTHER_PRODUCT_ID = 'd3bb189e-8bf9-4888-9912-ace4e6543002';
+const PRODUCER = { id: PRODUCER_ID, name: 'Ferme des Lilas' };
 
 /**
  * In-memory ProductRepository honouring the port contract, including
@@ -48,6 +51,21 @@ class InMemoryProductRepository extends ProductRepository {
 
   async findAll(): Promise<Product[]> {
     return [...this.products.values()];
+  }
+
+  async findManyWithProducer(categoryId?: string): Promise<ProductWithProducer[]> {
+    return [...this.products.values()]
+      .filter((product) => categoryId === undefined || product.categoryId === categoryId)
+      .map((product) => this.withProducer(product));
+  }
+
+  async findByIdWithProducerOrFail(id: string): Promise<ProductWithProducer> {
+    return this.withProducer(await this.findByIdOrFail(id));
+  }
+
+  private withProducer(product: Product): ProductWithProducer {
+    if (product.producerId !== PRODUCER.id) throw new Error(`unknown producer ${product.producerId}`);
+    return { product, producer: PRODUCER };
   }
 
   async update(): Promise<Product> {
@@ -112,6 +130,21 @@ describe('ProductController (HTTP)', () => {
     stock: 20,
     minStock: 5,
     producerId: PRODUCER_ID,
+    categoryId: CATEGORY_A,
+    unit: 'KG',
+    quantity: null,
+    quantityUnit: null,
+  };
+
+  // Les lectures renvoient le producteur à la place de son id.
+  const expectedReadProduct = {
+    id: PRODUCT_ID,
+    name: 'Pommes Golden',
+    price: 3.5,
+    vatRate: 5.5,
+    stock: 20,
+    minStock: 5,
+    producer: PRODUCER,
     categoryId: CATEGORY_A,
     unit: 'KG',
     quantity: null,
@@ -201,7 +234,34 @@ describe('ProductController (HTTP)', () => {
       const { status, body } = await request('GET', '');
 
       expect(status).toBe(200);
-      expect(body).toEqual([expectedProduct]);
+      expect(body).toEqual([expectedReadProduct]);
+      expect(body[0]).not.toHaveProperty('producerId');
+    });
+
+    it('filtre les produits par catégorie avec ?categoryId', async () => {
+      seedProduct();
+      repository.products.set(
+        OTHER_PRODUCT_ID,
+        Product.reconstitute(OTHER_PRODUCT_ID, 'Carottes', 2, 5.5, 10, 1, PRODUCER_ID, CATEGORY_B, 'KG'),
+      );
+
+      const { status, body } = await request('GET', `?categoryId=${CATEGORY_A}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual([expectedReadProduct]);
+    });
+
+    it("renvoie une liste vide si la catégorie n'a aucun produit", async () => {
+      seedProduct();
+
+      const { status, body } = await request('GET', `?categoryId=${CATEGORY_B}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual([]);
+    });
+
+    it("renvoie 400 si categoryId n'est pas un UUID", async () => {
+      expect((await request('GET', '?categoryId=abc')).status).toBe(400);
     });
 
     it('renvoie un produit par id', async () => {
@@ -210,7 +270,7 @@ describe('ProductController (HTTP)', () => {
       const { status, body } = await request('GET', `/${PRODUCT_ID}`);
 
       expect(status).toBe(200);
-      expect(body).toEqual(expectedProduct);
+      expect(body).toEqual(expectedReadProduct);
     });
 
     it("renvoie 404 si le produit n'existe pas", async () => {
