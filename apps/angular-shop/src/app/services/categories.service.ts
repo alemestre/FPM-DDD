@@ -18,4 +18,12 @@ export class CategoriesService {
         map((response) => response.data),
       )
   }
+
+  getCategoryBySlug(slug: string): Observable<CategoryResponseDto> {
+    return this.httpClient
+      .get<ApiResponseDto<CategoryResponseDto>>(
+        `${this._apiUrl}/${CONSTANTS.API_END_POINTS.CATEGORY_BY_SLUG}/${encodeURIComponent(slug)}`
+      )
+      .pipe(map((response) => response.data));
+  }
 }

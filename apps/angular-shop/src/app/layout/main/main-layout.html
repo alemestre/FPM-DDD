@@ -36,7 +36,7 @@
                 <li class="nav-item">
                     <a
                         class="nav-link position-relative fw-medium py-3 py-lg-2"
-                        [routerLink]="['/products', category.id]"
+                        [routerLink]="['/produits', category.slug]"
                         routerLinkActive="active"
                         ariaCurrentWhenActive="page"
                         (click)="isMenuCollapsed = true"
@@ -49,7 +49,7 @@
                 <li class="nav-item">
                     <a
                         class="nav-link position-relative fw-medium py-3 py-lg-2"
-                        routerLink="/about"
+                        routerLink="/a-propos"
                         routerLinkActive="active"
                         ariaCurrentWhenActive="page"
                         (click)="isMenuCollapsed = true"

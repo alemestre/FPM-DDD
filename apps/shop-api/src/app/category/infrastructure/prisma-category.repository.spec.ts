@@ -1,4 +1,5 @@
 import { CategoryInUseError } from '../domain/errors/category-in-use.error';
+import { CategorySlugAlreadyUsedError } from '../domain/errors/category-slug-already-used.error';
 import { PrismaCategoryRepository } from './prisma-category.repository';
 import { Prisma } from '../../../generated/prisma/client';
 import type { PrismaService } from '../../../prisma/prisma.service';
@@ -20,10 +21,14 @@ const categoryRow = (overrides: Record<string, unknown> = {}) => ({
   uid: 1,
   id: CATEGORY_ID,
   name: 'Fruits',
+  slug: 'fruits',
   createdAt: new Date(),
   updatedAt: null,
   ...overrides,
 });
+
+const uniqueViolation = () =>
+  new Prisma.PrismaClientKnownRequestError('Unique violation', { code: 'P2002', clientVersion: 'test' });
 
 const createPrismaMock = () => ({
   category: {
@@ -47,27 +52,64 @@ describe('PrismaCategoryRepository', () => {
   it("save renvoie la catégorie avec l'id persisté (pas un nouvel id)", async () => {
     prisma.category.upsert.mockResolvedValue(categoryRow());
 
-    const saved = await repository.save(Category.reconstitute(CATEGORY_ID, 'Fruits'));
+    const saved = await repository.save(Category.reconstitute(CATEGORY_ID, 'Fruits', 'fruits'));
 
     expect(prisma.category.upsert).toHaveBeenCalledWith({
       where: { id: CATEGORY_ID },
-      update: { name: 'Fruits', updatedAt: expect.any(Date) },
-      create: { id: CATEGORY_ID, name: 'Fruits' },
+      update: { name: 'Fruits', slug: 'fruits', updatedAt: expect.any(Date) },
+      create: { id: CATEGORY_ID, name: 'Fruits', slug: 'fruits' },
     });
     expect(saved.id).toBe(CATEGORY_ID);
+    expect(saved.slug).toBe('fruits');
+  });
+
+  it('save lève CategorySlugAlreadyUsedError si le slug est déjà pris (P2002)', async () => {
+    const cause = uniqueViolation();
+    prisma.category.upsert.mockRejectedValue(cause);
+
+    const error = await repository.save(Category.create('Fruits')).catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(CategorySlugAlreadyUsedError);
+    expect((error as Error).cause).toBe(cause);
+  });
+
+  it('save propage les autres erreurs telles quelles', async () => {
+    const cause = new Error('connexion perdue');
+    prisma.category.upsert.mockRejectedValue(cause);
+
+    await expect(repository.save(Category.create('Fruits'))).rejects.toBe(cause);
   });
 
   it('update ne transmet que le nom, sans étaler la source', async () => {
-    prisma.category.update.mockResolvedValue(categoryRow({ name: 'Légumes' }));
+    prisma.category.update.mockResolvedValue(categoryRow({ name: 'Légumes', slug: 'legumes' }));
     const patch = { name: 'Légumes', id: 'ignoré' } as unknown as Partial<Category>;
 
     const updated = await repository.update(CATEGORY_ID, patch);
 
     expect(prisma.category.update).toHaveBeenCalledWith({
       where: { id: CATEGORY_ID },
-      data: { name: 'Légumes', updatedAt: expect.any(Date) },
+      data: { name: 'Légumes', slug: 'legumes', updatedAt: expect.any(Date) },
     });
     expect(updated.name).toBe('Légumes');
+    expect(updated.slug).toBe('legumes');
+  });
+
+  it('update lève CategorySlugAlreadyUsedError si le nouveau slug est déjà pris (P2002)', async () => {
+    prisma.category.update.mockRejectedValue(uniqueViolation());
+
+    await expect(repository.update(CATEGORY_ID, { name: 'Légumes' })).rejects.toBeInstanceOf(
+      CategorySlugAlreadyUsedError,
+    );
+  });
+
+  it('findBySlug reconstitue la catégorie, ou renvoie null si le slug est inconnu', async () => {
+    prisma.category.findUnique.mockResolvedValueOnce(categoryRow()).mockResolvedValueOnce(null);
+
+    const found = await repository.findBySlug('fruits');
+
+    expect(prisma.category.findUnique).toHaveBeenCalledWith({ where: { slug: 'fruits' } });
+    expect([found?.id, found?.slug]).toEqual([CATEGORY_ID, 'fruits']);
+    await expect(repository.findBySlug('inconnue')).resolves.toBeNull();
   });
 
   it("findById renvoie null et findByIdOrFail lève NotFoundException si la catégorie n'existe pas", async () => {

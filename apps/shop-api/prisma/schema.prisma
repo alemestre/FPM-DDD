@@ -17,6 +17,7 @@ model Category {
   uid       Int       @unique @default(autoincrement())
   id        String    @id @db.Uuid
   name      String
+  slug      String    @unique
   createdAt DateTime  @default(now())
   updatedAt DateTime?
 

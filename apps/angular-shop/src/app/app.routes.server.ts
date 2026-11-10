@@ -6,11 +6,11 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client,
   },
   {
-    path: 'about', // This page is static, so we prerender it (SSG)
+    path: 'a-propos', // This page is static, so we prerender it (SSG)
     renderMode: RenderMode.Prerender,
   },
   {
-    path: 'products/:id', // This page requires specific data, so we use SSR
+    path: 'produits/:slug', // This page requires specific data, so we use SSR
     renderMode: RenderMode.Server,
   },
   {

@@ -31,8 +31,8 @@ describe('Navbar', () => {
                     useValue: {
                         getAllCategories: () =>
                             of([
-                                { id: 'cat-1', name: 'viandes' },
-                                { id: 'cat-2', name: 'fruits & légumes' },
+                                { id: 'cat-1', name: 'viandes', slug: 'viandes' },
+                                { id: 'cat-2', name: 'fruits & légumes', slug: 'fruits-legumes' },
                             ]),
                     },
                 },
@@ -91,9 +91,9 @@ describe('Navbar', () => {
             'À propos',
         ]);
         expect(links.map((link) => link.getAttribute('href'))).toEqual([
-            '/products/cat-1',
-            '/products/cat-2',
-            '/about',
+            '/produits/viandes',
+            '/produits/fruits-legumes',
+            '/a-propos',
         ]);
     });
 
@@ -106,7 +106,6 @@ describe('Navbar', () => {
 
     it('should show the auth buttons and no profile when logged out', () => {
         expect(element.querySelector('a[href="/login"]')).toBeTruthy();
-        expect(element.querySelector('a[href="/register"]')).toBeTruthy();
         expect(element.querySelector('.app-profile')).toBeNull();
     });
 

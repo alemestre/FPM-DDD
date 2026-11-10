@@ -6,6 +6,7 @@ import { DeleteCategoryUseCase } from './delete-category.use-case';
 import { ListCategoriesUseCase } from './list-categories.use-case';
 import { UpdateCategoryUseCase } from './update-category.use-case';
 import { GetCategoryUseCase } from './get-category.use-case';
+import { GetCategoryBySlugUseCase } from './get-category-by-slug.use-case';
 import { Category } from '../../domain/category.entity';
 import { NotFoundException } from '@nestjs/common';
 
@@ -18,12 +19,13 @@ jest.mock('uuid', () => ({
 
 const CATEGORY_ID = 'b3bb189e-8bf9-4888-9912-ace4e6543002';
 
-const existingCategory = () => Category.reconstitute(CATEGORY_ID, 'Fruits');
+const existingCategory = () => Category.reconstitute(CATEGORY_ID, 'Fruits', 'fruits');
 
 const createRepositoryMock = (): jest.Mocked<CategoryRepository> => ({
   save: jest.fn(async (category: Category) => category),
   findById: jest.fn(),
   findByIdOrFail: jest.fn(),
+  findBySlug: jest.fn(),
   findAll: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
@@ -62,6 +64,7 @@ describe('use cases des catégories', () => {
       expect(repository.update).not.toHaveBeenCalled();
       expect(category.id).toBe(CATEGORY_ID);
       expect(category.name).toBe('Légumes');
+      expect(category.slug).toBe('legumes');
     });
 
     it('ne sauvegarde rien si le nom est invalide', async () => {
@@ -123,5 +126,23 @@ describe('use cases des catégories', () => {
     repository.findByIdOrFail.mockResolvedValue(category);
 
     await expect(new GetCategoryUseCase(repository).execute(CATEGORY_ID)).resolves.toBe(category);
+  });
+
+  describe('GetCategoryBySlugUseCase', () => {
+    it('charge la catégorie par slug', async () => {
+      const category = existingCategory();
+      repository.findBySlug.mockResolvedValue(category);
+
+      await expect(new GetCategoryBySlugUseCase(repository).execute('fruits')).resolves.toBe(category);
+      expect(repository.findBySlug).toHaveBeenCalledWith('fruits');
+    });
+
+    it("lève NotFoundException si aucune catégorie n'a ce slug", async () => {
+      repository.findBySlug.mockResolvedValue(null);
+
+      await expect(new GetCategoryBySlugUseCase(repository).execute('inconnue')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
   });
 });

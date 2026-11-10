@@ -4,6 +4,7 @@ describe('CategoryResponseSchema', () => {
     const validCategory = {
         id: '3f0c9a52-8a6e-4c1b-9d57-2b1e7f4a6c10',
         name: 'Fruits',
+        slug: 'fruits',
     };
 
     it('accepts a valid payload', () => {
@@ -12,6 +13,12 @@ describe('CategoryResponseSchema', () => {
 
     it('rejects an id that is not a UUID', () => {
         const result = CategoryResponseSchema.safeParse({ ...validCategory, id: 'not-a-uuid' });
+
+        expect(result.success).toBe(false);
+    });
+
+    it.each(['Fruits', 'fruits legumes', ''])('rejects the slug %p', (slug) => {
+        const result = CategoryResponseSchema.safeParse({ ...validCategory, slug });
 
         expect(result.success).toBe(false);
     });

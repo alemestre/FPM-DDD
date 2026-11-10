@@ -2,6 +2,7 @@ import { DomainValidationErrorFilter } from '../../../shared/interface/http/doma
 import { type INestApplication, NotFoundException } from '@nestjs/common';
 import { CategoryRepository } from '../../domain/category.repository';
 import { Category } from '../../domain/category.entity';
+import { CategorySlugAlreadyUsedError } from '../../domain/errors/category-slug-already-used.error';
 import { CategoryModule } from '../../category.module';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
@@ -23,6 +24,8 @@ class InMemoryCategoryRepository extends CategoryRepository {
   readonly categories = new Map<string, Category>();
 
   async save(category: Category): Promise<Category> {
+    const taken = [...this.categories.values()].some((c) => c.slug === category.slug && c.id !== category.id);
+    if (taken) throw new CategorySlugAlreadyUsedError();
     this.categories.set(category.id, category);
     return category;
   }
@@ -35,6 +38,10 @@ class InMemoryCategoryRepository extends CategoryRepository {
     const category = this.categories.get(id);
     if (!category) throw new NotFoundException();
     return category;
+  }
+
+  async findBySlug(slug: string): Promise<Category | null> {
+    return [...this.categories.values()].find((category) => category.slug === slug) ?? null;
   }
 
   async findAll(): Promise<Category[]> {
@@ -65,7 +72,7 @@ describe('CategoryController (HTTP)', () => {
     return { status: response.status, body: text ? JSON.parse(text) : undefined };
   };
 
-  const seedCategory = () => repository.categories.set(CATEGORY_ID, Category.reconstitute(CATEGORY_ID, 'Fruits'));
+  const seedCategory = () => repository.categories.set(CATEGORY_ID, Category.reconstitute(CATEGORY_ID, 'Fruits', 'fruits'));
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -95,12 +102,22 @@ describe('CategoryController (HTTP)', () => {
     it('crée la catégorie à partir du label (201)', async () => {
       expect(await request('POST', '', { label: ' Fruits ' })).toEqual({
         status: 201,
-        body: { id: NEW_ID, name: 'Fruits' },
+        body: { id: NEW_ID, name: 'Fruits', slug: 'fruits' },
       });
     });
 
     it('renvoie 400 si le label manque', async () => {
       expect((await request('POST', '', {})).status).toBe(400);
+    });
+
+    it('renvoie 409 si une catégorie au nom équivalent existe déjà', async () => {
+      seedCategory();
+
+      const { status, body } = await request('POST', '', { label: 'FRUITS' });
+
+      expect(status).toBe(409);
+      expect(body.message).toBe('Une catégorie avec un nom équivalent existe déjà');
+      expect(repository.categories.size).toBe(1);
     });
 
     it('renvoie 400 si le nom est trop court', async () => {
@@ -113,7 +130,7 @@ describe('CategoryController (HTTP)', () => {
     it('liste les catégories', async () => {
       seedCategory();
 
-      expect(await request('GET', '')).toEqual({ status: 200, body: [{ id: CATEGORY_ID, name: 'Fruits' }] });
+      expect(await request('GET', '')).toEqual({ status: 200, body: [{ id: CATEGORY_ID, name: 'Fruits', slug: 'fruits' }] });
     });
 
     it('renvoie une catégorie par id', async () => {
@@ -121,12 +138,31 @@ describe('CategoryController (HTTP)', () => {
 
       expect(await request('GET', `/${CATEGORY_ID}`)).toEqual({
         status: 200,
-        body: { id: CATEGORY_ID, name: 'Fruits' },
+        body: { id: CATEGORY_ID, name: 'Fruits', slug: 'fruits' },
       });
     });
 
     it("renvoie 404 si la catégorie n'existe pas", async () => {
       expect((await request('GET', `/${CATEGORY_ID}`)).status).toBe(404);
+    });
+
+    it('renvoie une catégorie par slug', async () => {
+      seedCategory();
+
+      expect(await request('GET', '/slug/fruits')).toEqual({
+        status: 200,
+        body: { id: CATEGORY_ID, name: 'Fruits', slug: 'fruits' },
+      });
+    });
+
+    it("renvoie 404 si aucune catégorie n'a ce slug", async () => {
+      seedCategory();
+
+      expect((await request('GET', '/slug/legumes')).status).toBe(404);
+    });
+
+    it("renvoie 400 si le slug n'est pas au bon format", async () => {
+      expect((await request('GET', '/slug/Fruits')).status).toBe(400);
     });
 
     it("renvoie 400 si l'id n'est pas un UUID", async () => {
@@ -139,7 +175,7 @@ describe('CategoryController (HTTP)', () => {
 
     expect(await request('PATCH', `/${CATEGORY_ID}`, { label: 'Légumes' })).toEqual({
       status: 200,
-      body: { id: CATEGORY_ID, name: 'Légumes' },
+      body: { id: CATEGORY_ID, name: 'Légumes', slug: 'legumes' },
     });
   });
 

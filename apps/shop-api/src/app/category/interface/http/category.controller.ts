@@ -6,16 +6,20 @@ import { UpdateCategoryUseCase } from "../../application/use-cases/update-catego
 import type { CategoryResponseDto } from "@fpm/contracts";
 import { toCategoryResponse } from "./dto/category.response.mapper";
 import { GetCategoryUseCase } from "../../application/use-cases/get-category.use-case";
-import { CategoryInUseErrorFilter } from "./category-in-use-error.filter";
+import { CategoryConflictErrorFilter } from "./category-conflict-error.filter";
+import { GetCategoryBySlugUseCase } from "../../application/use-cases/get-category-by-slug.use-case";
+import { CategorySlugParamDto } from "./dto/category-slug-param.dto";
 import { CreateCategoryDTO } from "./dto/create-category.dto";
 import { UpdateCategoryDTO } from "./dto/update-category.dto";
 
 @Controller("categories")
+@UseFilters(CategoryConflictErrorFilter)
 export class CategoryController {
   constructor(
     private readonly createCategory: CreateCategoryUseCase,
     private readonly listCategories: ListCategoriesUseCase,
     private readonly getCategory: GetCategoryUseCase,
+    private readonly getCategoryBySlug: GetCategoryBySlugUseCase,
     private readonly updateCategory: UpdateCategoryUseCase,
     private readonly deleteCategory: DeleteCategoryUseCase
   ) {}
@@ -29,6 +33,11 @@ export class CategoryController {
   async findAll(): Promise<CategoryResponseDto[]> {
     const categories = await this.listCategories.execute();
     return categories.map(toCategoryResponse);
+  }
+
+  @Get("slug/:slug")
+  async findOneBySlug(@Param() { slug }: CategorySlugParamDto): Promise<CategoryResponseDto> {
+    return toCategoryResponse(await this.getCategoryBySlug.execute(slug));
   }
 
   @Get(":id")
@@ -46,7 +55,6 @@ export class CategoryController {
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseFilters(CategoryInUseErrorFilter)
   async delete(@Param("id", ParseUUIDPipe) id: string): Promise<void> {
     await this.deleteCategory.execute(id);
   }

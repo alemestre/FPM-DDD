@@ -16,6 +16,14 @@ describe('Category', () => {
     expect(category.name).toBe('Fruits');
   });
 
+  it('dérive le slug du nom à la création', () => {
+    expect(Category.create('Fruits & Légumes').slug).toBe('fruits-legumes');
+  });
+
+  it("rejette un nom qui ne donne aucun slug (ni lettre ni chiffre)", () => {
+    expect(() => Category.create('!!!')).toThrow(DomainValidationError);
+  });
+
   it.each(['', '  ', 'ab'])('rejette le nom %p', (name) => {
     expect(() => Category.create(name)).toThrow(DomainValidationError);
   });
@@ -26,6 +34,7 @@ describe('Category', () => {
     category.changeName('Légumes');
 
     expect(category.name).toBe('Légumes');
+    expect(category.slug).toBe('legumes');
   });
 
   it('rejette un nom invalide et conserve le précédent', () => {
@@ -33,12 +42,28 @@ describe('Category', () => {
 
     expect(() => category.changeName('ab')).toThrow(DomainValidationError);
     expect(category.name).toBe('Fruits');
+    expect(category.slug).toBe('fruits');
   });
 
-  it("reconstitue une catégorie en gardant son id", () => {
-    const category = Category.reconstitute('b3bb189e-8bf9-4888-9912-ace4e6543002', 'Fruits');
+  it('rejette un nom sans slug possible et conserve le nom et le slug précédents', () => {
+    const category = Category.create('Fruits');
+
+    expect(() => category.changeName('!!!')).toThrow(DomainValidationError);
+    expect(category.name).toBe('Fruits');
+    expect(category.slug).toBe('fruits');
+  });
+
+  it("reconstitue une catégorie en gardant son id et son slug", () => {
+    const category = Category.reconstitute('b3bb189e-8bf9-4888-9912-ace4e6543002', 'Fruits', 'fruits-2');
 
     expect(category.id).toBe('b3bb189e-8bf9-4888-9912-ace4e6543002');
     expect(category.name).toBe('Fruits');
+    expect(category.slug).toBe('fruits-2');
+  });
+
+  it('rejette un slug persisté invalide', () => {
+    expect(() => Category.reconstitute('b3bb189e-8bf9-4888-9912-ace4e6543002', 'Fruits', 'Fruits')).toThrow(
+      DomainValidationError,
+    );
   });
 });

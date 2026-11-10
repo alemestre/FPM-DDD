@@ -26,12 +26,12 @@ export const appRoutes: Route[] = [
             data: { breadcrumb: 'Accueil' }
           },
           {
-            path: 'about',
+            path: 'a-propos',
             component: About,
             data: { breadcrumb: 'À propos' }
           },
           {
-            path: 'products/:id',
+            path: 'produits/:slug',
             component: Products,
             data: { breadcrumb: 'Produits' }
           }]
