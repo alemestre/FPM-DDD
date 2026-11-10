@@ -20,7 +20,7 @@ model Category {
   createdAt DateTime  @default(now())
   updatedAt DateTime?
 
-  products Product[] @relation("ProductCategories")
+  products Product[]
 }
 
 enum Role {
@@ -29,16 +29,16 @@ enum Role {
 }
 
 model User {
-  uid          Int      @unique @default(autoincrement())
-  id           String   @id @db.Uuid
-  email        String   @unique
+  uid          Int       @unique @default(autoincrement())
+  id           String    @id @db.Uuid
+  email        String    @unique
   passwordHash String
   firstName    String
   lastName     String
   role         Role
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
 
   adminProfile    Admin?
   customerProfile Customer?
@@ -62,19 +62,19 @@ model Customer {
 }
 
 model Producer {
-  uid          Int      @unique @default(autoincrement())
-  id           String   @id @db.Uuid
+  uid          Int       @unique @default(autoincrement())
+  id           String    @id @db.Uuid
   name         String
   email        String
   phone        String
   tvaNumber    String
   addressLine1 String
-  addressLine2 String   @default("")
+  addressLine2 String    @default("")
   postalCode   String
   city         String
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
 
   products Product[]
 }
@@ -92,27 +92,29 @@ model Order {
   id        String      @id @db.Uuid
   status    OrderStatus
   createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  updatedAt DateTime?   @updatedAt
 
   customer   Customer @relation(fields: [customerId], references: [id])
   customerId String   @db.Uuid
 }
 
 model Product {
-  uid       Int      @unique @default(autoincrement())
-  id        String   @id @db.Uuid
+  uid       Int       @unique @default(autoincrement())
+  id        String    @id @db.Uuid
   name      String
-  price     Decimal  @db.Decimal(10, 2)
+  price     Decimal   @db.Decimal(10, 2)
   stock     Int
   minStock  Int
-  vatRate   Decimal  @db.Decimal(5, 2)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  vatRate   Decimal   @db.Decimal(5, 2)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 
   producer   Producer @relation(fields: [producerId], references: [id], onDelete: Restrict)
   producerId String   @db.Uuid
 
-  categories Category[] @relation("ProductCategories")
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  categoryId String   @db.Uuid
 
   @@index([producerId])
+  @@index([categoryId])
 }

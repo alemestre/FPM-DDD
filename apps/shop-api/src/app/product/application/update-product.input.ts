@@ -8,5 +8,5 @@ export interface UpdateProductInput {
   readonly vatRate?: number;
   readonly minStock?: number;
   readonly producerId?: string;
-  readonly categoryIds?: readonly string[];
+  readonly categoryId?: string;
 }

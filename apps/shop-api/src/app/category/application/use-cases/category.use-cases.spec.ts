@@ -1,6 +1,7 @@
 import { DomainValidationError } from '../../../shared/domain/errors/domain-validation.error';
 import type { CategoryRepository } from '../../domain/category.repository';
 import { CreateCategoryUseCase } from './create-category.use-case';
+import { CategoryInUseError } from '../../domain/errors/category-in-use.error';
 import { DeleteCategoryUseCase } from './delete-category.use-case';
 import { ListCategoriesUseCase } from './list-categories.use-case';
 import { UpdateCategoryUseCase } from './update-category.use-case';
@@ -98,6 +99,15 @@ describe('use cases des catégories', () => {
         NotFoundException,
       );
       expect(repository.delete).not.toHaveBeenCalled();
+    });
+
+    it('propage CategoryInUseError si des produits utilisent la catégorie', async () => {
+      repository.findByIdOrFail.mockResolvedValue(existingCategory());
+      repository.delete.mockRejectedValue(new CategoryInUseError());
+
+      await expect(new DeleteCategoryUseCase(repository).execute(CATEGORY_ID)).rejects.toBeInstanceOf(
+        CategoryInUseError,
+      );
     });
   });
 

@@ -8,11 +8,11 @@ export class CreateProductUseCase {
 
   /**
    * @throws {DomainValidationError} If a product invariant is broken.
-   * @throws {ProductReferenceNotFoundError} If the producer or a category does not exist.
+   * @throws {ProductReferenceNotFoundError} If the producer or the category does not exist.
    */
   async execute(input: CreateProductInput): Promise<Product> {
-    const { name, price, vatRate, stock, minStock, producerId, categoryIds = [] } = input;
-    const product = Product.create(name, price, vatRate, stock, minStock, producerId, categoryIds);
+    const { name, price, vatRate, stock, minStock, producerId, categoryId } = input;
+    const product = Product.create(name, price, vatRate, stock, minStock, producerId, categoryId);
 
     return this.repository.save(product);
   }

@@ -1,4 +1,6 @@
+import { CategoryInUseError } from '../domain/errors/category-in-use.error';
 import { PrismaCategoryRepository } from './prisma-category.repository';
+import { Prisma } from '../../../generated/prisma/client';
 import type { PrismaService } from '../../../prisma/prisma.service';
 import { Category } from '../domain/category.entity';
 import { NotFoundException } from '@nestjs/common';
@@ -89,5 +91,22 @@ describe('PrismaCategoryRepository', () => {
     await repository.delete(CATEGORY_ID);
 
     expect(prisma.category.delete).toHaveBeenCalledWith({ where: { id: CATEGORY_ID } });
+  });
+
+  it('delete lève CategoryInUseError si des produits utilisent la catégorie (P2003)', async () => {
+    const cause = new Prisma.PrismaClientKnownRequestError('FK violation', { code: 'P2003', clientVersion: 'test' });
+    prisma.category.delete.mockRejectedValue(cause);
+
+    const error = await repository.delete(CATEGORY_ID).catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(CategoryInUseError);
+    expect((error as Error).cause).toBe(cause);
+  });
+
+  it('delete propage les autres erreurs Prisma telles quelles', async () => {
+    const cause = new Prisma.PrismaClientKnownRequestError('Not found', { code: 'P2025', clientVersion: 'test' });
+    prisma.category.delete.mockRejectedValue(cause);
+
+    await expect(repository.delete(CATEGORY_ID)).rejects.toBe(cause);
   });
 });

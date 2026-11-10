@@ -8,7 +8,7 @@ export const ProductResponseSchema = z.object({
     stock: z.number().int(),
     minStock: z.number().int(),
     producerId: z.uuid(),
-    categoryIds: z.array(z.uuid()),
+    categoryId: z.uuid(),
 });
 
 export type ProductResponseDto = z.infer<typeof ProductResponseSchema>;

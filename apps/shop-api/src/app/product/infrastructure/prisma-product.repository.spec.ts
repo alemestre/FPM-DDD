@@ -32,17 +32,15 @@ const productRow = (overrides: Record<string, unknown> = {}) => ({
   producerId: PRODUCER_ID,
   createdAt: new Date(),
   updatedAt: new Date(),
-  categories: [{ id: CATEGORY_A }],
+  categoryId: CATEGORY_A,
   ...overrides,
 });
-
-const INCLUDE = { categories: { select: { id: true } } };
 
 const prismaError = (code: string) =>
   new Prisma.PrismaClientKnownRequestError(`Prisma error ${code}`, { code, clientVersion: 'test' });
 
 const existingProduct = () =>
-  Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, [CATEGORY_A]);
+  Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A);
 
 const createPrismaMock = () => ({
   product: {
@@ -64,14 +62,9 @@ describe('PrismaProductRepository', () => {
   });
 
   describe('save', () => {
-    it("upsert l'agrégat complet avec producteur et catégories", async () => {
-      const product = Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, [
-        CATEGORY_A,
-        CATEGORY_B,
-      ]);
-      prisma.product.upsert.mockResolvedValue(
-        productRow({ categories: [{ id: CATEGORY_A }, { id: CATEGORY_B }] }),
-      );
+    it("upsert l'agrégat complet avec producteur et catégorie", async () => {
+      const product = Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_B);
+      prisma.product.upsert.mockResolvedValue(productRow({ categoryId: CATEGORY_B }));
 
       const saved = await repository.save(product);
 
@@ -82,29 +75,19 @@ describe('PrismaProductRepository', () => {
         stock: 20,
         minStock: 5,
         producerId: PRODUCER_ID,
+        categoryId: CATEGORY_B,
       };
       expect(prisma.product.upsert).toHaveBeenCalledWith({
         where: { id: PRODUCT_ID },
-        create: {
-          id: PRODUCT_ID,
-          ...scalars,
-          categories: { connect: [{ id: CATEGORY_A }, { id: CATEGORY_B }] },
-        },
-        update: {
-          ...scalars,
-          categories: { set: [{ id: CATEGORY_A }, { id: CATEGORY_B }] },
-        },
-        include: INCLUDE,
+        create: { id: PRODUCT_ID, ...scalars },
+        update: scalars,
       });
       expect(saved).toBeInstanceOf(Product);
-      expect(saved.categoryIds).toEqual([CATEGORY_A, CATEGORY_B]);
+      expect(saved.categoryId).toBe(CATEGORY_B);
     });
 
-    it.each([
-      ['P2003', 'le producteur'],
-      ['P2025', 'une catégorie'],
-    ])("traduit l'erreur Prisma %s (%s introuvable) en ProductReferenceNotFoundError", async (code) => {
-      const cause = prismaError(code);
+    it("traduit la violation de clé étrangère P2003 (producteur ou catégorie introuvable) en ProductReferenceNotFoundError", async () => {
+      const cause = prismaError('P2003');
       prisma.product.upsert.mockRejectedValue(cause);
 
       const error = await repository.save(existingProduct()).catch((e: unknown) => e);
@@ -127,17 +110,16 @@ describe('PrismaProductRepository', () => {
     });
 
     it('ne transmet que les champs fournis', async () => {
-      prisma.product.update.mockResolvedValue(productRow({ price: decimal(4), categories: [] }));
+      prisma.product.update.mockResolvedValue(productRow({ price: decimal(4), categoryId: CATEGORY_B }));
 
-      const updated = await repository.update(PRODUCT_ID, { price: 4, categoryIds: [] });
+      const updated = await repository.update(PRODUCT_ID, { price: 4, categoryId: CATEGORY_B });
 
       expect(prisma.product.update).toHaveBeenCalledWith({
         where: { id: PRODUCT_ID },
-        data: { price: 4, categories: { set: [] } },
-        include: INCLUDE,
+        data: { price: 4, categoryId: CATEGORY_B },
       });
       expect(updated.price).toBe(4);
-      expect(updated.categoryIds).toEqual([]);
+      expect(updated.categoryId).toBe(CATEGORY_B);
     });
 
     it('met à jour la clé étrangère du producteur', async () => {
@@ -157,16 +139,20 @@ describe('PrismaProductRepository', () => {
       expect(prisma.product.update).not.toHaveBeenCalled();
     });
 
-    it.each(['P2003', 'P2025'])(
-      "traduit l'erreur Prisma %s en ProductReferenceNotFoundError",
-      async (code) => {
-        prisma.product.update.mockRejectedValue(prismaError(code));
+    it("traduit l'erreur Prisma P2003 en ProductReferenceNotFoundError", async () => {
+      prisma.product.update.mockRejectedValue(prismaError('P2003'));
 
-        await expect(
-          repository.update(PRODUCT_ID, { producerId: PRODUCER_ID, categoryIds: [CATEGORY_B] }),
-        ).rejects.toBeInstanceOf(ProductReferenceNotFoundError);
-      },
-    );
+      await expect(
+        repository.update(PRODUCT_ID, { producerId: PRODUCER_ID, categoryId: CATEGORY_B }),
+      ).rejects.toBeInstanceOf(ProductReferenceNotFoundError);
+    });
+
+    it('propage les autres erreurs Prisma telles quelles', async () => {
+      const cause = prismaError('P2025');
+      prisma.product.update.mockRejectedValue(cause);
+
+      await expect(repository.update(PRODUCT_ID, { price: 4 })).rejects.toBe(cause);
+    });
   });
 
   describe('lecture', () => {
@@ -175,13 +161,13 @@ describe('PrismaProductRepository', () => {
 
       const product = await repository.findById(PRODUCT_ID);
 
-      expect(prisma.product.findUnique).toHaveBeenCalledWith({ where: { id: PRODUCT_ID }, include: INCLUDE });
+      expect(prisma.product.findUnique).toHaveBeenCalledWith({ where: { id: PRODUCT_ID } });
       expect(product?.price).toBe(3.5);
       expect(product?.vatRate).toBe(5.5);
       expect(product?.stock).toBe(20);
       expect(product?.minStock).toBe(5);
       expect(product?.producerId).toBe(PRODUCER_ID);
-      expect(product?.categoryIds).toEqual([CATEGORY_A]);
+      expect(product?.categoryId).toBe(CATEGORY_A);
     });
 
     it("retourne null si le produit n'existe pas", async () => {
@@ -201,7 +187,7 @@ describe('PrismaProductRepository', () => {
 
       const products = await repository.findAll();
 
-      expect(prisma.product.findMany).toHaveBeenCalledWith({ include: INCLUDE });
+      expect(prisma.product.findMany).toHaveBeenCalledWith();
       expect(products.map((p: Product) => p.id)).toEqual([PRODUCT_ID, CATEGORY_B]);
     });
   });

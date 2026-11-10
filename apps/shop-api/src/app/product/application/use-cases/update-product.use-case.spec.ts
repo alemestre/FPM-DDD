@@ -18,7 +18,7 @@ const CATEGORY_A = 'b3bb189e-8bf9-4888-9912-ace4e6543002';
 const CATEGORY_B = 'c3bb189e-8bf9-4888-9912-ace4e6543002';
 
 const existingProduct = (): Product =>
-  Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, [CATEGORY_A]);
+  Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A);
 
 const createGenericRepositoryMock = <T>() => ({
   save: jest.fn(async (entity: T) => entity),
@@ -55,24 +55,24 @@ describe('UpdateProductUseCase', () => {
     expect(updated.minStock).toBe(10);
     expect(updated.vatRate).toBe(5.5);
     expect(updated.producerId).toBe(PRODUCER_ID);
-    expect(updated.categoryIds).toEqual([CATEGORY_A]);
+    expect(updated.categoryId).toBe(CATEGORY_A);
   });
 
-  it('change le producteur et les catégories puis sauvegarde', async () => {
+  it('change le producteur et la catégorie puis sauvegarde', async () => {
     const updated = await useCase.execute(PRODUCT_ID, {
       producerId: OTHER_PRODUCER_ID,
-      categoryIds: [CATEGORY_B],
+      categoryId: CATEGORY_B,
     });
 
     expect(repository.save).toHaveBeenCalledWith(updated);
     expect(updated.producerId).toBe(OTHER_PRODUCER_ID);
-    expect(updated.categoryIds).toEqual([CATEGORY_B]);
+    expect(updated.categoryId).toBe(CATEGORY_B);
   });
 
-  it("propage l'erreur si le nouveau producteur ou une nouvelle catégorie n'existe pas", async () => {
+  it("propage l'erreur si le nouveau producteur ou la nouvelle catégorie n'existe pas", async () => {
     repository.save.mockRejectedValue(new ProductReferenceNotFoundError());
 
-    await expect(useCase.execute(PRODUCT_ID, { categoryIds: [CATEGORY_A, CATEGORY_B] })).rejects.toBeInstanceOf(
+    await expect(useCase.execute(PRODUCT_ID, { categoryId: CATEGORY_B })).rejects.toBeInstanceOf(
       ProductReferenceNotFoundError,
     );
   });

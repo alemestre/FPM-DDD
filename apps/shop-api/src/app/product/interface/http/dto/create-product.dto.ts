@@ -12,7 +12,7 @@ export const CreateProductSchema = z.object({
   stock: z.number().int().min(0),
   minStock: z.number().int().min(0),
   producerId: z.uuid(),
-  categoryIds: z.array(z.uuid()).default([])
+  categoryId: z.uuid()
 });
 
 export class CreateProductDto extends createZodDto(CreateProductSchema) {}

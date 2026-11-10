@@ -10,10 +10,10 @@ export class UpdateProductUseCase {
    * Applies a partial update through the Product aggregate so every change
    * goes through the domain invariants, then persists the whole aggregate.
    *
-   * @throws {ProductReferenceNotFoundError} If the new producer or a new category does not exist.
+   * @throws {ProductReferenceNotFoundError} If the new producer or the new category does not exist.
    */
   async execute(id: string, input: UpdateProductInput): Promise<Product> {
-    const { name, price, vatRate, minStock, producerId, categoryIds } = input;
+    const { name, price, vatRate, minStock, producerId, categoryId } = input;
     const product = await this.repository.findByIdOrFail(id);
 
     if (name !== undefined) product.changeName(name);
@@ -21,7 +21,7 @@ export class UpdateProductUseCase {
     if (vatRate !== undefined) product.changeVatRate(vatRate);
     if (minStock !== undefined) product.changeMinStock(minStock);
     if (producerId !== undefined) product.changeProducer(producerId);
-    if (categoryIds !== undefined) product.changeCategories(categoryIds);
+    if (categoryId !== undefined) product.changeCategory(categoryId);
 
     return this.repository.save(product);
   }

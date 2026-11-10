@@ -6,7 +6,7 @@ import { DomainValidationError } from '../../../shared/domain/errors/domain-vali
  */
 export class ProductReferenceNotFoundError extends DomainValidationError {
   constructor(options?: ErrorOptions) {
-    super("Le producteur ou l'une des catégories du produit n'existe pas", options);
+    super("Le producteur ou la catégorie du produit n'existe pas", options);
     this.name = 'ProductReferenceNotFoundError';
   }
 }

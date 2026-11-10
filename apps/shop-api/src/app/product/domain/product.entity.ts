@@ -5,8 +5,8 @@ import { Uuid } from "../../shared/domain/value-objects/uuid.value-object";
 import { Stock } from "./value-objects/stock.value-object";
 
 /**
- * A product sold by a producer, classified in zero or more categories.
- * Producer and categories are other aggregates and are referenced by id only.
+ * A product sold by a producer, classified in exactly one category.
+ * Producer and category are other aggregates and are referenced by id only.
  */
 export class Product {
   private constructor(
@@ -16,7 +16,7 @@ export class Product {
     private _vatRate: Percentage,
     private _stock: Stock,
     private _producerId: string,
-    private _categoryIds: readonly string[]
+    private _categoryId: string
   ) {}
 
   static create(
@@ -26,7 +26,7 @@ export class Product {
     stock: number,
     minStock: number,
     producerId: string,
-    categoryIds: readonly string[] = []
+    categoryId: string
   ): Product {
     return Product.reconstitute(
       new Uuid().getValue(),
@@ -36,7 +36,7 @@ export class Product {
       stock,
       minStock,
       producerId,
-      categoryIds
+      categoryId
     );
   }
 
@@ -48,7 +48,7 @@ export class Product {
     stock: number,
     minStock: number,
     producerId: string,
-    categoryIds: readonly string[]
+    categoryId: string
   ): Product {
     return new Product(
       id,
@@ -57,7 +57,7 @@ export class Product {
       Percentage.create(vatRate),
       Stock.create(stock, minStock),
       Product.validateId(producerId),
-      Product.normalizeCategoryIds(categoryIds)
+      Product.validateId(categoryId)
     );
   }
 
@@ -85,8 +85,8 @@ export class Product {
     return this._producerId;
   }
 
-  get categoryIds(): string[] {
-    return [...this._categoryIds];
+  get categoryId(): string {
+    return this._categoryId;
   }
 
   changeName(name: string): void {
@@ -128,16 +128,12 @@ export class Product {
     this._producerId = Product.validateId(producerId);
   }
 
-  changeCategories(categoryIds: readonly string[]): void {
-    this._categoryIds = Product.normalizeCategoryIds(categoryIds);
+  changeCategory(categoryId: string): void {
+    this._categoryId = Product.validateId(categoryId);
   }
 
   private static validateId(id: string): string {
     Uuid.validate(id);
     return id;
-  }
-
-  private static normalizeCategoryIds(categoryIds: readonly string[]): readonly string[] {
-    return [...new Set(categoryIds)].map((id) => Product.validateId(id));
   }
 }

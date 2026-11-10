@@ -13,7 +13,7 @@ const CATEGORY_A = 'b3bb189e-8bf9-4888-9912-ace4e6543002';
 const CATEGORY_B = 'c3bb189e-8bf9-4888-9912-ace4e6543002';
 
 const createProduct = (): Product =>
-  Product.create(' Pommes Golden ', 3.5, 5.5, 20, 5, PRODUCER_ID, [CATEGORY_A]);
+  Product.create(' Pommes Golden ', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A);
 
 describe('Product', () => {
   describe('create', () => {
@@ -27,29 +27,19 @@ describe('Product', () => {
       expect(product.stock).toBe(20);
       expect(product.minStock).toBe(5);
       expect(product.producerId).toBe(PRODUCER_ID);
-      expect(product.categoryIds).toEqual([CATEGORY_A]);
-    });
-
-    it('crée un produit sans catégorie par défaut', () => {
-      expect(Product.create('Poires', 2, 5.5, 0, 0, PRODUCER_ID).categoryIds).toEqual([]);
-    });
-
-    it('dédoublonne les catégories', () => {
-      const product = Product.create('Poires', 2, 5.5, 1, 0, PRODUCER_ID, [CATEGORY_A, CATEGORY_A]);
-
-      expect(product.categoryIds).toEqual([CATEGORY_A]);
+      expect(product.categoryId).toBe(CATEGORY_A);
     });
 
     it.each([
-      ['nom trop court', () => Product.create('Po', 2, 5.5, 1, 0, PRODUCER_ID)],
-      ['prix nul', () => Product.create('Poires', 0, 5.5, 1, 0, PRODUCER_ID)],
-      ['prix négatif', () => Product.create('Poires', -1, 5.5, 1, 0, PRODUCER_ID)],
-      ['taux de TVA > 100', () => Product.create('Poires', 2, 101, 1, 0, PRODUCER_ID)],
-      ['taux de TVA négatif', () => Product.create('Poires', 2, -1, 1, 0, PRODUCER_ID)],
-      ['stock < stock minimum', () => Product.create('Poires', 2, 5.5, 4, 5, PRODUCER_ID)],
-      ['stock négatif', () => Product.create('Poires', 2, 5.5, -1, 0, PRODUCER_ID)],
-      ['producerId invalide', () => Product.create('Poires', 2, 5.5, 1, 0, 'pas-un-uuid')],
-      ['categoryId invalide', () => Product.create('Poires', 2, 5.5, 1, 0, PRODUCER_ID, ['x'])],
+      ['nom trop court', () => Product.create('Po', 2, 5.5, 1, 0, PRODUCER_ID, CATEGORY_A)],
+      ['prix nul', () => Product.create('Poires', 0, 5.5, 1, 0, PRODUCER_ID, CATEGORY_A)],
+      ['prix négatif', () => Product.create('Poires', -1, 5.5, 1, 0, PRODUCER_ID, CATEGORY_A)],
+      ['taux de TVA > 100', () => Product.create('Poires', 2, 101, 1, 0, PRODUCER_ID, CATEGORY_A)],
+      ['taux de TVA négatif', () => Product.create('Poires', 2, -1, 1, 0, PRODUCER_ID, CATEGORY_A)],
+      ['stock < stock minimum', () => Product.create('Poires', 2, 5.5, 4, 5, PRODUCER_ID, CATEGORY_A)],
+      ['stock négatif', () => Product.create('Poires', 2, 5.5, -1, 0, PRODUCER_ID, CATEGORY_A)],
+      ['producerId invalide', () => Product.create('Poires', 2, 5.5, 1, 0, 'pas-un-uuid', CATEGORY_A)],
+      ['categoryId invalide', () => Product.create('Poires', 2, 5.5, 1, 0, PRODUCER_ID, 'pas-un-uuid')],
     ])('rejette un %s', (_label, create) => {
       expect(create).toThrow(DomainValidationError);
     });
@@ -96,7 +86,7 @@ describe('Product', () => {
   });
 
   describe('modifications', () => {
-    it('change nom, prix, TVA, producteur et catégories', () => {
+    it('change nom, prix, TVA, producteur et catégorie', () => {
       const product = createProduct();
       const otherProducer = 'd3bb189e-8bf9-4888-9912-ace4e6543002';
 
@@ -104,13 +94,13 @@ describe('Product', () => {
       product.changePrice(4);
       product.changeVatRate(20);
       product.changeProducer(otherProducer);
-      product.changeCategories([CATEGORY_B]);
+      product.changeCategory(CATEGORY_B);
 
       expect(product.name).toBe('Pommes Gala');
       expect(product.price).toBe(4);
       expect(product.vatRate).toBe(20);
       expect(product.producerId).toBe(otherProducer);
-      expect(product.categoryIds).toEqual([CATEGORY_B]);
+      expect(product.categoryId).toBe(CATEGORY_B);
     });
 
     it.each([
@@ -118,38 +108,30 @@ describe('Product', () => {
       ['prix', (p: Product) => p.changePrice(0), (p: Product) => p.price, 3.5],
       ['taux de TVA', (p: Product) => p.changeVatRate(150), (p: Product) => p.vatRate, 5.5],
       ['producteur', (p: Product) => p.changeProducer('x'), (p: Product) => p.producerId, PRODUCER_ID],
+      ['catégorie', (p: Product) => p.changeCategory('x'), (p: Product) => p.categoryId, CATEGORY_A],
     ])('rejette un %s invalide et conserve la valeur précédente', (_label, change, read, previous) => {
       const product = createProduct();
 
       expect(() => change(product)).toThrow(DomainValidationError);
       expect(read(product)).toBe(previous);
     });
-
-    it('rejette des catégories invalides et conserve les précédentes', () => {
-      const product = createProduct();
-
-      expect(() => product.changeCategories([CATEGORY_B, 'x'])).toThrow(DomainValidationError);
-      expect(product.categoryIds).toEqual([CATEGORY_A]);
-    });
-
-    it("n'expose pas les catégories internes en écriture", () => {
-      const product = createProduct();
-
-      product.categoryIds.push(CATEGORY_B);
-
-      expect(product.categoryIds).toEqual([CATEGORY_A]);
-    });
   });
 
   describe('reconstitute', () => {
     it("reconstitue un produit à partir de l'état persisté", () => {
       const id = 'e3bb189e-8bf9-4888-9912-ace4e6543002';
-      const product = Product.reconstitute(id, 'Poires', 2.2, 5.5, 8, 3, PRODUCER_ID, [CATEGORY_B]);
+      const product = Product.reconstitute(id, 'Poires', 2.2, 5.5, 8, 3, PRODUCER_ID, CATEGORY_B);
 
       expect(product.id).toBe(id);
       expect(product.stock).toBe(8);
       expect(product.minStock).toBe(3);
-      expect(product.categoryIds).toEqual([CATEGORY_B]);
+      expect(product.categoryId).toBe(CATEGORY_B);
+    });
+
+    it('rejette un categoryId persisté invalide', () => {
+      expect(() => Product.reconstitute('e3bb189e-8bf9-4888-9912-ace4e6543002', 'Poires', 2.2, 5.5, 8, 3, PRODUCER_ID, 'x')).toThrow(
+        DomainValidationError,
+      );
     });
   });
 });

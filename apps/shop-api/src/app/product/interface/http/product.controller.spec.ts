@@ -77,7 +77,7 @@ describe('ProductController (HTTP)', () => {
   const seedProduct = () =>
     repository.products.set(
       PRODUCT_ID,
-      Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, [CATEGORY_A]),
+      Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A),
     );
 
   beforeAll(async () => {
@@ -112,17 +112,17 @@ describe('ProductController (HTTP)', () => {
     stock: 20,
     minStock: 5,
     producerId: PRODUCER_ID,
-    categoryIds: [CATEGORY_A],
+    categoryId: CATEGORY_A,
   };
 
   describe('POST /products', () => {
-    const payload = { name: 'Pommes Golden', price: 3.5, vatRate: 5.5, stock: 20, minStock: 5, producerId: PRODUCER_ID };
+    const payload = { name: 'Pommes Golden', price: 3.5, vatRate: 5.5, stock: 20, minStock: 5, producerId: PRODUCER_ID, categoryId: CATEGORY_A };
 
     it('crée le produit et renvoie sa représentation publique (201)', async () => {
       const { status, body } = await request('POST', '', payload);
 
       expect(status).toBe(201);
-      expect(body).toEqual({ ...expectedProduct, id: NEW_ID, categoryIds: [] });
+      expect(body).toEqual({ ...expectedProduct, id: NEW_ID });
       expect(repository.products.has(NEW_ID)).toBe(true);
     });
 
@@ -144,7 +144,7 @@ describe('ProductController (HTTP)', () => {
       const { status, body } = await request('POST', '', { ...payload, producerId: MISSING_PRODUCER_ID });
 
       expect(status).toBe(400);
-      expect(body.message).toBe("Le producteur ou l'une des catégories du produit n'existe pas");
+      expect(body.message).toBe("Le producteur ou la catégorie du produit n'existe pas");
     });
   });
 

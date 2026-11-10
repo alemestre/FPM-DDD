@@ -1,4 +1,5 @@
-import type { Category as CategoryRow } from "../../../generated/prisma/client";
+import { Prisma, type Category as CategoryRow } from "../../../generated/prisma/client";
+import { CategoryInUseError } from "../domain/errors/category-in-use.error";
 import { CategoryRepository } from "../domain/category.repository";
 import { PrismaService } from "../../../prisma/prisma.service";
 import { Injectable, NotFoundException } from "@nestjs/common";
@@ -47,10 +48,20 @@ export class PrismaCategoryRepository implements CategoryRepository {
   }
 
   /**
-   * Links with products are removed by Prisma (implicit many-to-many).
+   * Products reference their category with `onDelete: Restrict`, so the
+   * foreign key violation (P2003) means the category is still in use.
+   *
+   * @throws {CategoryInUseError} If at least one product uses the category.
    */
   async delete(id: string): Promise<void> {
-    await this.prisma.category.delete({ where: { id } });
+    try {
+      await this.prisma.category.delete({ where: { id } });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+        throw new CategoryInUseError({ cause: error });
+      }
+      throw error;
+    }
   }
 
   /**

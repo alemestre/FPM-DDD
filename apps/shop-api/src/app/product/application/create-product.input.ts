@@ -5,5 +5,5 @@ export interface CreateProductInput {
   readonly stock: number;
   readonly minStock: number;
   readonly producerId: string;
-  readonly categoryIds?: readonly string[];
+  readonly categoryId: string;
 }
