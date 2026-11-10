@@ -66,8 +66,36 @@ describe('UpdateProductUseCase', () => {
     expect(updated.unit).toBe('PIECE');
   });
 
+  it("définit puis retire l'unité de quantité", async () => {
+    const withUnit = await useCase.execute(PRODUCT_ID, { quantityUnit: 'kg' });
+    expect(withUnit.quantityUnit).toBe('kg');
+
+    repository.findByIdOrFail.mockResolvedValue(withUnit);
+    const withoutUnit = await useCase.execute(PRODUCT_ID, { quantityUnit: null });
+
+    expect(withoutUnit.quantityUnit).toBeNull();
+    expect(repository.save).toHaveBeenLastCalledWith(withoutUnit);
+  });
+
+  it("ne touche pas à l'unité de quantité quand elle n'est pas fournie", async () => {
+    const product = existingProduct();
+    product.changeQuantityUnit('ml');
+    repository.findByIdOrFail.mockResolvedValue(product);
+
+    const updated = await useCase.execute(PRODUCT_ID, { price: 4 });
+
+    expect(updated.quantityUnit).toBe('ml');
+  });
+
+  it('ne sauvegarde rien si la nouvelle unité de quantité est inconnue', async () => {
+    await expect(useCase.execute(PRODUCT_ID, { quantityUnit: 'cl' })).rejects.toBeInstanceOf(
+      DomainValidationError,
+    );
+    expect(repository.save).not.toHaveBeenCalled();
+  });
+
   it('ne sauvegarde rien si la nouvelle unité est inconnue', async () => {
-    await expect(useCase.execute(PRODUCT_ID, { unit: 'LITRE' })).rejects.toBeInstanceOf(
+    await expect(useCase.execute(PRODUCT_ID, { unit: 'GRAMME' })).rejects.toBeInstanceOf(
       DomainValidationError,
     );
     expect(repository.save).not.toHaveBeenCalled();

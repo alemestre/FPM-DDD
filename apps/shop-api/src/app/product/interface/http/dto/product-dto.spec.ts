@@ -38,6 +38,10 @@ describe('Product schemas', () => {
       expect(parsed.unit).toBeUndefined();
     });
 
+    it.each(['pcs', 'g', 'ml', 'kg', 'l', null])("accepte l'unité de quantité %p", (quantityUnit) => {
+      expect(CreateProductSchema.safeParse({ ...validProduct, quantityUnit }).success).toBe(true);
+    });
+
     it.each([
       ['prix nul', { price: 0 }],
       ['prix en texte', { price: '3.5' }],
@@ -46,8 +50,10 @@ describe('Product schemas', () => {
       ['stock minimum négatif', { minStock: -1 }],
       ['producerId non UUID', { producerId: 'abc' }],
       ['categoryId non UUID', { categoryId: 'abc' }],
-      ['unité inconnue', { unit: 'LITRE' }],
+      ['unité inconnue', { unit: 'GRAMME' }],
       ['unité en minuscules', { unit: 'kg' }],
+      ['unité de quantité inconnue', { quantityUnit: 'cl' }],
+      ['unité de quantité en majuscules', { quantityUnit: 'KG' }],
     ])('rejette un %s', (_label, override) => {
       expect(CreateProductSchema.safeParse({ ...validProduct, ...override }).success).toBe(false);
     });
@@ -72,9 +78,17 @@ describe('Product schemas', () => {
       expect(UpdateProductSchema.safeParse({ categoryIds: [CATEGORY_ID] }).success).toBe(false);
     });
 
+    it.each(['KG', 'BOTTE', 'PIECE', 'CONDITIONNEMENT', 'BOUTEILLE'])("accepte l'unité %s", (unit) => {
+      expect(UpdateProductSchema.safeParse({ unit }).success).toBe(true);
+    });
+
     it("accepte un changement d'unité et rejette une unité inconnue", () => {
       expect(UpdateProductSchema.safeParse({ unit: 'BOTTE' }).success).toBe(true);
-      expect(UpdateProductSchema.safeParse({ unit: 'LITRE' }).success).toBe(false);
+      expect(UpdateProductSchema.safeParse({ unit: 'GRAMME' }).success).toBe(false);
+    });
+
+    it("accepte de retirer l'unité de quantité avec null", () => {
+      expect(UpdateProductSchema.parse({ quantityUnit: null })).toEqual({ quantityUnit: null });
     });
 
     it('refuse de modifier le stock directement', () => {

@@ -11,6 +11,7 @@ describe('ProductResponseSchema', () => {
         producerId: '8b2d4e16-1c7a-4f3e-a0b9-6d5c3e2f1a70',
         categoryId: 'c4e7a1d3-5f2b-4a86-b1c9-0e3d7f6a2b54',
         unit: 'KG',
+        quantityUnit: null,
     };
 
     it('accepts a valid payload', () => {
@@ -32,12 +33,34 @@ describe('ProductResponseSchema', () => {
         expect(result.success).toBe(false);
     });
 
-    it.each(['KG', 'BOTTE', 'PIECE'])('accepts the unit %s', (unit) => {
+    it.each(['KG', 'BOTTE', 'PIECE', 'CONDITIONNEMENT', 'BOUTEILLE'])('accepts the unit %s', (unit) => {
         expect(ProductResponseSchema.safeParse({ ...validProduct, unit }).success).toBe(true);
     });
 
-    it('rejects an unknown unit', () => {
+    it('rejects the removed LITRE unit', () => {
         const result = ProductResponseSchema.safeParse({ ...validProduct, unit: 'LITRE' });
+
+        expect(result.success).toBe(false);
+    });
+
+    it('rejects an unknown unit', () => {
+        const result = ProductResponseSchema.safeParse({ ...validProduct, unit: 'GRAMME' });
+
+        expect(result.success).toBe(false);
+    });
+
+    it.each(['pcs', 'g', 'ml', 'kg', 'l'])('accepts the quantity unit %s', (quantityUnit) => {
+        expect(ProductResponseSchema.safeParse({ ...validProduct, quantityUnit }).success).toBe(true);
+    });
+
+    it('rejects an unknown quantity unit', () => {
+        const result = ProductResponseSchema.safeParse({ ...validProduct, quantityUnit: 'cl' });
+
+        expect(result.success).toBe(false);
+    });
+
+    it('rejects a missing quantity unit (null is required when there is none)', () => {
+        const result = ProductResponseSchema.safeParse({ ...validProduct, quantityUnit: undefined });
 
         expect(result.success).toBe(false);
     });

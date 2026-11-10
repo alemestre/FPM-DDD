@@ -1,6 +1,6 @@
 import { DomainValidationError } from "../../../shared/domain/errors/domain-validation.error";
 
-export const PRODUCT_UNITS = ["KG", "BOTTE", "PIECE"] as const;
+export const PRODUCT_UNITS = ["KG", "BOTTE", "PIECE", "CONDITIONNEMENT", "BOUTEILLE"] as const;
 
 export type ProductUnitValue = (typeof PRODUCT_UNITS)[number];
 
@@ -10,7 +10,8 @@ export type ProductUnitValue = (typeof PRODUCT_UNITS)[number];
 export const DEFAULT_PRODUCT_UNIT: ProductUnitValue = "KG";
 
 /**
- * Unit in which a product is sold: by weight (KG), by bunch (BOTTE) or by piece (PIECE).
+ * Unit in which a product is sold: by weight (KG), by bunch (BOTTE), by piece (PIECE),
+ * by package (CONDITIONNEMENT) or by bottle (BOUTEILLE).
  */
 export class ProductUnit {
   private constructor(public readonly value: ProductUnitValue) {}

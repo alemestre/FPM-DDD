@@ -8,6 +8,7 @@ import {
   ProductUnit,
   type ProductUnitValue
 } from "./value-objects/product-unit.value-object";
+import { QuantityUnit, type QuantityUnitValue } from "./value-objects/quantity-unit.value-object";
 
 /**
  * A product sold by a producer, classified in exactly one category.
@@ -22,7 +23,8 @@ export class Product {
     private _stock: Stock,
     private _producerId: string,
     private _categoryId: string,
-    private _unit: ProductUnit
+    private _unit: ProductUnit,
+    private _quantityUnit: QuantityUnit | null
   ) {}
 
   static create(
@@ -33,7 +35,8 @@ export class Product {
     minStock: number,
     producerId: string,
     categoryId: string,
-    unit: string = DEFAULT_PRODUCT_UNIT
+    unit: string = DEFAULT_PRODUCT_UNIT,
+    quantityUnit: string | null = null
   ): Product {
     return Product.reconstitute(
       new Uuid().getValue(),
@@ -44,7 +47,8 @@ export class Product {
       minStock,
       producerId,
       categoryId,
-      unit
+      unit,
+      quantityUnit
     );
   }
 
@@ -57,7 +61,8 @@ export class Product {
     minStock: number,
     producerId: string,
     categoryId: string,
-    unit: string
+    unit: string,
+    quantityUnit: string | null = null
   ): Product {
     return new Product(
       id,
@@ -67,7 +72,8 @@ export class Product {
       Stock.create(stock, minStock),
       Product.validateId(producerId),
       Product.validateId(categoryId),
-      ProductUnit.create(unit)
+      ProductUnit.create(unit),
+      Product.toQuantityUnit(quantityUnit)
     );
   }
 
@@ -101,6 +107,10 @@ export class Product {
 
   get unit(): ProductUnitValue {
     return this._unit.value;
+  }
+
+  get quantityUnit(): QuantityUnitValue | null {
+    return this._quantityUnit?.value ?? null;
   }
 
   changeName(name: string): void {
@@ -148,6 +158,17 @@ export class Product {
 
   changeUnit(unit: string): void {
     this._unit = ProductUnit.create(unit);
+  }
+
+  /**
+   * Sets the quantity unit, or removes it with `null`.
+   */
+  changeQuantityUnit(quantityUnit: string | null): void {
+    this._quantityUnit = Product.toQuantityUnit(quantityUnit);
+  }
+
+  private static toQuantityUnit(quantityUnit: string | null): QuantityUnit | null {
+    return quantityUnit === null ? null : QuantityUnit.create(quantityUnit);
   }
 
   private static validateId(id: string): string {

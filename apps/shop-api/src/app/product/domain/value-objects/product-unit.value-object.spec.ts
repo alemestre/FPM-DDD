@@ -2,11 +2,11 @@ import { DomainValidationError } from '../../../shared/domain/errors/domain-vali
 import { ProductUnit } from './product-unit.value-object';
 
 describe('ProductUnit', () => {
-  it.each(['KG', 'BOTTE', 'PIECE'])('accepte %p', (value) => {
+  it.each(['KG', 'BOTTE', 'PIECE', 'CONDITIONNEMENT', 'BOUTEILLE'])('accepte %p', (value) => {
     expect(ProductUnit.create(value).value).toBe(value);
   });
 
-  it.each(['', 'kg', 'LITRE', ' KG'])('rejette %p', (value) => {
+  it.each(['', 'kg', 'GRAMME', 'LITRE', ' KG'])('rejette %p', (value) => {
     expect(() => ProductUnit.create(value)).toThrow(DomainValidationError);
   });
 

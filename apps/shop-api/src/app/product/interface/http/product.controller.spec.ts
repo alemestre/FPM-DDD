@@ -114,6 +114,7 @@ describe('ProductController (HTTP)', () => {
     producerId: PRODUCER_ID,
     categoryId: CATEGORY_A,
     unit: 'KG',
+    quantityUnit: null,
   };
 
   describe('POST /products', () => {
@@ -135,8 +136,22 @@ describe('ProductController (HTTP)', () => {
       expect(body).toEqual({ ...expectedProduct, id: NEW_ID, unit: 'KG' });
     });
 
+    it("crée le produit avec son unité de quantité", async () => {
+      const { status, body } = await request('POST', '', { ...payload, quantityUnit: 'g' });
+
+      expect(status).toBe(201);
+      expect(body).toEqual({ ...expectedProduct, id: NEW_ID, quantityUnit: 'g' });
+    });
+
+    it("renvoie 400 si l'unité de quantité est inconnue", async () => {
+      const { status } = await request('POST', '', { ...payload, quantityUnit: 'cl' });
+
+      expect(status).toBe(400);
+      expect(repository.products.size).toBe(0);
+    });
+
     it('renvoie 400 si l\'unité est inconnue', async () => {
-      const { status } = await request('POST', '', { ...payload, unit: 'LITRE' });
+      const { status } = await request('POST', '', { ...payload, unit: 'GRAMME' });
 
       expect(status).toBe(400);
       expect(repository.products.size).toBe(0);
@@ -200,6 +215,17 @@ describe('ProductController (HTTP)', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({ ...expectedProduct, price: 4, minStock: 10 });
+    });
+
+    it("définit puis retire l'unité de quantité", async () => {
+      seedProduct();
+
+      const set = await request('PATCH', `/${PRODUCT_ID}`, { quantityUnit: 'ml' });
+      expect(set.body).toEqual({ ...expectedProduct, quantityUnit: 'ml' });
+
+      const cleared = await request('PATCH', `/${PRODUCT_ID}`, { quantityUnit: null });
+      expect(cleared.status).toBe(200);
+      expect(cleared.body).toEqual(expectedProduct);
     });
 
     it('refuse une modification directe du stock (400)', async () => {

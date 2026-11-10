@@ -10,4 +10,6 @@ export interface UpdateProductInput {
   readonly producerId?: string;
   readonly categoryId?: string;
   readonly unit?: string;
+  /** `null` removes the quantity unit. */
+  readonly quantityUnit?: string | null;
 }

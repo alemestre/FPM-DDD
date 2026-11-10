@@ -64,8 +64,27 @@ describe('CreateProductUseCase', () => {
     expect(product.unit).toBe('KG');
   });
 
+  it("crée le produit avec son unité de quantité", async () => {
+    const product = await useCase.execute({ ...input, quantityUnit: 'g' });
+
+    expect(product.quantityUnit).toBe('g');
+  });
+
+  it("crée le produit sans unité de quantité quand elle n'est pas fournie", async () => {
+    const product = await useCase.execute(input);
+
+    expect(product.quantityUnit).toBeNull();
+  });
+
+  it('rejette une unité de quantité inconnue sans sauvegarder', async () => {
+    await expect(useCase.execute({ ...input, quantityUnit: 'cl' })).rejects.toBeInstanceOf(
+      DomainValidationError,
+    );
+    expect(repository.save).not.toHaveBeenCalled();
+  });
+
   it('rejette une unité inconnue sans sauvegarder', async () => {
-    await expect(useCase.execute({ ...input, unit: 'LITRE' })).rejects.toBeInstanceOf(
+    await expect(useCase.execute({ ...input, unit: 'GRAMME' })).rejects.toBeInstanceOf(
       DomainValidationError,
     );
     expect(repository.save).not.toHaveBeenCalled();

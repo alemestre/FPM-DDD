@@ -13,7 +13,7 @@ export class UpdateProductUseCase {
    * @throws {ProductReferenceNotFoundError} If the new producer or the new category does not exist.
    */
   async execute(id: string, input: UpdateProductInput): Promise<Product> {
-    const { name, price, vatRate, minStock, producerId, categoryId, unit } = input;
+    const { name, price, vatRate, minStock, producerId, categoryId, unit, quantityUnit } = input;
     const product = await this.repository.findByIdOrFail(id);
 
     if (name !== undefined) product.changeName(name);
@@ -23,6 +23,7 @@ export class UpdateProductUseCase {
     if (producerId !== undefined) product.changeProducer(producerId);
     if (categoryId !== undefined) product.changeCategory(categoryId);
     if (unit !== undefined) product.changeUnit(unit);
+    if (quantityUnit !== undefined) product.changeQuantityUnit(quantityUnit);
 
     return this.repository.save(product);
   }
