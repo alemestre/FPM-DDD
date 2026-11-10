@@ -6,4 +6,6 @@ export interface CreateProductInput {
   readonly minStock: number;
   readonly producerId: string;
   readonly categoryId: string;
+  /** Defaults to KG when omitted. */
+  readonly unit?: string;
 }

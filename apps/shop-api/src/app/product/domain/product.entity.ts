@@ -3,6 +3,11 @@ import { Percentage } from "../../shared/domain/value-objects/percentage.value-o
 import { Name } from "../../shared/domain/value-objects/name.value-object";
 import { Uuid } from "../../shared/domain/value-objects/uuid.value-object";
 import { Stock } from "./value-objects/stock.value-object";
+import {
+  DEFAULT_PRODUCT_UNIT,
+  ProductUnit,
+  type ProductUnitValue
+} from "./value-objects/product-unit.value-object";
 
 /**
  * A product sold by a producer, classified in exactly one category.
@@ -16,7 +21,8 @@ export class Product {
     private _vatRate: Percentage,
     private _stock: Stock,
     private _producerId: string,
-    private _categoryId: string
+    private _categoryId: string,
+    private _unit: ProductUnit
   ) {}
 
   static create(
@@ -26,7 +32,8 @@ export class Product {
     stock: number,
     minStock: number,
     producerId: string,
-    categoryId: string
+    categoryId: string,
+    unit: string = DEFAULT_PRODUCT_UNIT
   ): Product {
     return Product.reconstitute(
       new Uuid().getValue(),
@@ -36,7 +43,8 @@ export class Product {
       stock,
       minStock,
       producerId,
-      categoryId
+      categoryId,
+      unit
     );
   }
 
@@ -48,7 +56,8 @@ export class Product {
     stock: number,
     minStock: number,
     producerId: string,
-    categoryId: string
+    categoryId: string,
+    unit: string
   ): Product {
     return new Product(
       id,
@@ -57,7 +66,8 @@ export class Product {
       Percentage.create(vatRate),
       Stock.create(stock, minStock),
       Product.validateId(producerId),
-      Product.validateId(categoryId)
+      Product.validateId(categoryId),
+      ProductUnit.create(unit)
     );
   }
 
@@ -87,6 +97,10 @@ export class Product {
 
   get categoryId(): string {
     return this._categoryId;
+  }
+
+  get unit(): ProductUnitValue {
+    return this._unit.value;
   }
 
   changeName(name: string): void {
@@ -130,6 +144,10 @@ export class Product {
 
   changeCategory(categoryId: string): void {
     this._categoryId = Product.validateId(categoryId);
+  }
+
+  changeUnit(unit: string): void {
+    this._unit = ProductUnit.create(unit);
   }
 
   private static validateId(id: string): string {

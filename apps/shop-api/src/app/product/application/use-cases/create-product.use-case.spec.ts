@@ -38,6 +38,7 @@ describe('CreateProductUseCase', () => {
     minStock: 5,
     producerId: PRODUCER_ID,
     categoryId: CATEGORY_A,
+    unit: 'BOTTE',
   };
 
   beforeEach(() => {
@@ -54,6 +55,20 @@ describe('CreateProductUseCase', () => {
     expect(product.stock).toBe(20);
     expect(product.minStock).toBe(5);
     expect(product.categoryId).toBe(CATEGORY_A);
+    expect(product.unit).toBe('BOTTE');
+  });
+
+  it("crée le produit en KG quand l'unité n'est pas fournie", async () => {
+    const product = await useCase.execute({ ...input, unit: undefined });
+
+    expect(product.unit).toBe('KG');
+  });
+
+  it('rejette une unité inconnue sans sauvegarder', async () => {
+    await expect(useCase.execute({ ...input, unit: 'LITRE' })).rejects.toBeInstanceOf(
+      DomainValidationError,
+    );
+    expect(repository.save).not.toHaveBeenCalled();
   });
 
   it('rejette un categoryId invalide sans sauvegarder', async () => {

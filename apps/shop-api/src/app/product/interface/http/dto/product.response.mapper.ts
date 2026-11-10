@@ -14,6 +14,7 @@ export function toProductResponse(product: Product): ProductResponseDto {
     stock: product.stock,
     minStock: product.minStock,
     producerId: product.producerId,
-    categoryId: product.categoryId
+    categoryId: product.categoryId,
+    unit: product.unit
   };
 }

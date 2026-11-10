@@ -33,6 +33,7 @@ const productRow = (overrides: Record<string, unknown> = {}) => ({
   createdAt: new Date(),
   updatedAt: new Date(),
   categoryId: CATEGORY_A,
+  unit: 'KG',
   ...overrides,
 });
 
@@ -40,7 +41,7 @@ const prismaError = (code: string) =>
   new Prisma.PrismaClientKnownRequestError(`Prisma error ${code}`, { code, clientVersion: 'test' });
 
 const existingProduct = () =>
-  Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A);
+  Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A, 'KG');
 
 const createPrismaMock = () => ({
   product: {
@@ -63,7 +64,7 @@ describe('PrismaProductRepository', () => {
 
   describe('save', () => {
     it("upsert l'agrégat complet avec producteur et catégorie", async () => {
-      const product = Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_B);
+      const product = Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_B, 'KG');
       prisma.product.upsert.mockResolvedValue(productRow({ categoryId: CATEGORY_B }));
 
       const saved = await repository.save(product);
@@ -76,6 +77,7 @@ describe('PrismaProductRepository', () => {
         minStock: 5,
         producerId: PRODUCER_ID,
         categoryId: CATEGORY_B,
+        unit: 'KG',
       };
       expect(prisma.product.upsert).toHaveBeenCalledWith({
         where: { id: PRODUCT_ID },
@@ -120,6 +122,18 @@ describe('PrismaProductRepository', () => {
       });
       expect(updated.price).toBe(4);
       expect(updated.categoryId).toBe(CATEGORY_B);
+    });
+
+    it("met à jour l'unité", async () => {
+      prisma.product.update.mockResolvedValue(productRow({ unit: 'BOTTE' }));
+
+      const updated = await repository.update(PRODUCT_ID, { unit: 'BOTTE' });
+
+      expect(prisma.product.update).toHaveBeenCalledWith({
+        where: { id: PRODUCT_ID },
+        data: { unit: 'BOTTE' },
+      });
+      expect(updated.unit).toBe('BOTTE');
     });
 
     it('met à jour la clé étrangère du producteur', async () => {
@@ -168,6 +182,7 @@ describe('PrismaProductRepository', () => {
       expect(product?.minStock).toBe(5);
       expect(product?.producerId).toBe(PRODUCER_ID);
       expect(product?.categoryId).toBe(CATEGORY_A);
+      expect(product?.unit).toBe('KG');
     });
 
     it("retourne null si le produit n'existe pas", async () => {

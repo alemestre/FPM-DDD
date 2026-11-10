@@ -77,7 +77,7 @@ describe('ProductController (HTTP)', () => {
   const seedProduct = () =>
     repository.products.set(
       PRODUCT_ID,
-      Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A),
+      Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A, 'KG'),
     );
 
   beforeAll(async () => {
@@ -113,10 +113,11 @@ describe('ProductController (HTTP)', () => {
     minStock: 5,
     producerId: PRODUCER_ID,
     categoryId: CATEGORY_A,
+    unit: 'KG',
   };
 
   describe('POST /products', () => {
-    const payload = { name: 'Pommes Golden', price: 3.5, vatRate: 5.5, stock: 20, minStock: 5, producerId: PRODUCER_ID, categoryId: CATEGORY_A };
+    const payload = { name: 'Pommes Golden', price: 3.5, vatRate: 5.5, stock: 20, minStock: 5, producerId: PRODUCER_ID, categoryId: CATEGORY_A, unit: 'KG' };
 
     it('crée le produit et renvoie sa représentation publique (201)', async () => {
       const { status, body } = await request('POST', '', payload);
@@ -124,6 +125,21 @@ describe('ProductController (HTTP)', () => {
       expect(status).toBe(201);
       expect(body).toEqual({ ...expectedProduct, id: NEW_ID });
       expect(repository.products.has(NEW_ID)).toBe(true);
+    });
+
+    it("crée le produit en KG quand l'unité est omise", async () => {
+      // `undefined` is dropped by JSON serialization, so the body has no unit.
+      const { status, body } = await request('POST', '', { ...payload, unit: undefined });
+
+      expect(status).toBe(201);
+      expect(body).toEqual({ ...expectedProduct, id: NEW_ID, unit: 'KG' });
+    });
+
+    it('renvoie 400 si l\'unité est inconnue', async () => {
+      const { status } = await request('POST', '', { ...payload, unit: 'LITRE' });
+
+      expect(status).toBe(400);
+      expect(repository.products.size).toBe(0);
     });
 
     it('renvoie 400 si le corps est invalide', async () => {

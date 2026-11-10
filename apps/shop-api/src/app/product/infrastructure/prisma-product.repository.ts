@@ -2,8 +2,13 @@ import { ProductReferenceNotFoundError } from "../domain/errors/product-referenc
 import { ProductRepository } from "../domain/product.repository";
 import { PrismaService } from "../../../prisma/prisma.service";
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { Prisma, type Product as ProductRow } from "../../../generated/prisma/client";
+import {
+  Prisma,
+  type Product as ProductRow,
+  type ProductUnit as ProductUnitRow
+} from "../../../generated/prisma/client";
 import { Product } from "../domain/product.entity";
+import type { ProductUnitValue } from "../domain/value-objects/product-unit.value-object";
 
 /**
  * Prisma error raised when a write points to a missing producer or category:
@@ -12,10 +17,25 @@ import { Product } from "../domain/product.entity";
 const FOREIGN_KEY_VIOLATION = "P2003";
 
 /**
+ * Keeps the Prisma enum and the domain units in sync at compile time.
+ */
+const UNIT_TO_DOMAIN = {
+  KG: "KG",
+  BOTTE: "BOTTE",
+  PIECE: "PIECE"
+} as const satisfies Record<ProductUnitRow, ProductUnitValue>;
+
+const UNIT_TO_ROW = {
+  KG: "KG",
+  BOTTE: "BOTTE",
+  PIECE: "PIECE"
+} as const satisfies Record<ProductUnitValue, ProductUnitRow>;
+
+/**
  * Product fields accepted by {@link PrismaProductRepository.update}.
  */
 type ProductPatch = Partial<
-  Pick<Product, "name" | "price" | "vatRate" | "stock" | "minStock" | "producerId" | "categoryId">
+  Pick<Product, "name" | "price" | "vatRate" | "stock" | "minStock" | "producerId" | "categoryId" | "unit">
 >;
 
 @Injectable()
@@ -88,7 +108,8 @@ export class PrismaProductRepository implements ProductRepository {
       stock: entity.stock,
       minStock: entity.minStock,
       producerId: entity.producerId,
-      categoryId: entity.categoryId
+      categoryId: entity.categoryId,
+      unit: UNIT_TO_ROW[entity.unit]
     };
   }
 
@@ -96,7 +117,7 @@ export class PrismaProductRepository implements ProductRepository {
    * Maps only the defined fields of a patch onto Prisma update data.
    */
   private toUpdateData(patch: ProductPatch): Prisma.ProductUncheckedUpdateInput {
-    const { name, price, vatRate, stock, minStock, producerId, categoryId } = patch;
+    const { name, price, vatRate, stock, minStock, producerId, categoryId, unit } = patch;
 
     return {
       ...(name !== undefined && { name }),
@@ -105,7 +126,8 @@ export class PrismaProductRepository implements ProductRepository {
       ...(stock !== undefined && { stock }),
       ...(minStock !== undefined && { minStock }),
       ...(producerId !== undefined && { producerId }),
-      ...(categoryId !== undefined && { categoryId })
+      ...(categoryId !== undefined && { categoryId }),
+      ...(unit !== undefined && { unit: UNIT_TO_ROW[unit] })
     };
   }
 
@@ -136,7 +158,8 @@ export class PrismaProductRepository implements ProductRepository {
       row.stock,
       row.minStock,
       row.producerId,
-      row.categoryId
+      row.categoryId,
+      UNIT_TO_DOMAIN[row.unit]
     );
   }
 }

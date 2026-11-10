@@ -98,16 +98,23 @@ model Order {
   customerId String   @db.Uuid
 }
 
+enum ProductUnit {
+  KG
+  BOTTE
+  PIECE
+}
+
 model Product {
-  uid       Int       @unique @default(autoincrement())
-  id        String    @id @db.Uuid
+  uid       Int         @unique @default(autoincrement())
+  id        String      @id @db.Uuid
   name      String
-  price     Decimal   @db.Decimal(10, 2)
+  price     Decimal     @db.Decimal(10, 2)
   stock     Int
   minStock  Int
-  vatRate   Decimal   @db.Decimal(5, 2)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  vatRate   Decimal     @db.Decimal(5, 2)
+  unit      ProductUnit @default(KG)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime?   @updatedAt
 
   producer   Producer @relation(fields: [producerId], references: [id], onDelete: Restrict)
   producerId String   @db.Uuid

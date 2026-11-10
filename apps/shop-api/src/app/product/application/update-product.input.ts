@@ -9,4 +9,5 @@ export interface UpdateProductInput {
   readonly minStock?: number;
   readonly producerId?: string;
   readonly categoryId?: string;
+  readonly unit?: string;
 }

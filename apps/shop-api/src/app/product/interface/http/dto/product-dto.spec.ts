@@ -13,6 +13,7 @@ const validProduct = {
   minStock: 5,
   producerId: PRODUCER_ID,
   categoryId: CATEGORY_ID,
+  unit: 'KG',
 };
 
 describe('Product schemas', () => {
@@ -31,6 +32,12 @@ describe('Product schemas', () => {
       },
     );
 
+    it("accepte un produit sans unité sans lui imposer de valeur (le domaine applique KG)", () => {
+      const parsed = CreateProductSchema.parse({ ...validProduct, unit: undefined });
+
+      expect(parsed.unit).toBeUndefined();
+    });
+
     it.each([
       ['prix nul', { price: 0 }],
       ['prix en texte', { price: '3.5' }],
@@ -39,6 +46,8 @@ describe('Product schemas', () => {
       ['stock minimum négatif', { minStock: -1 }],
       ['producerId non UUID', { producerId: 'abc' }],
       ['categoryId non UUID', { categoryId: 'abc' }],
+      ['unité inconnue', { unit: 'LITRE' }],
+      ['unité en minuscules', { unit: 'kg' }],
     ])('rejette un %s', (_label, override) => {
       expect(CreateProductSchema.safeParse({ ...validProduct, ...override }).success).toBe(false);
     });
@@ -61,6 +70,11 @@ describe('Product schemas', () => {
 
     it("refuse l'ancien champ categoryIds", () => {
       expect(UpdateProductSchema.safeParse({ categoryIds: [CATEGORY_ID] }).success).toBe(false);
+    });
+
+    it("accepte un changement d'unité et rejette une unité inconnue", () => {
+      expect(UpdateProductSchema.safeParse({ unit: 'BOTTE' }).success).toBe(true);
+      expect(UpdateProductSchema.safeParse({ unit: 'LITRE' }).success).toBe(false);
     });
 
     it('refuse de modifier le stock directement', () => {

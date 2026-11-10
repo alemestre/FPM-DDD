@@ -16,7 +16,7 @@ const PRODUCER_ID = 'a3bb189e-8bf9-4888-9912-ace4e6543002';
 const CATEGORY_A = 'b3bb189e-8bf9-4888-9912-ace4e6543002';
 
 const existingProduct = (): Product =>
-  Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A);
+  Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A, 'KG');
 
 const createGenericRepositoryMock = <T>() => ({
   save: jest.fn(async (entity: T) => entity),

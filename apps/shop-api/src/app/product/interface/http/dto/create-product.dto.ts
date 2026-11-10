@@ -1,4 +1,5 @@
 import { createZodDto } from "nestjs-zod";
+import { PRODUCT_UNITS } from "../../../domain/value-objects/product-unit.value-object";
 import { z } from "zod";
 
 /**
@@ -12,7 +13,8 @@ export const CreateProductSchema = z.object({
   stock: z.number().int().min(0),
   minStock: z.number().int().min(0),
   producerId: z.uuid(),
-  categoryId: z.uuid()
+  categoryId: z.uuid(),
+  unit: z.enum(PRODUCT_UNITS).optional()
 });
 
 export class CreateProductDto extends createZodDto(CreateProductSchema) {}

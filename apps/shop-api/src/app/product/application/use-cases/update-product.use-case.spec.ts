@@ -18,7 +18,7 @@ const CATEGORY_A = 'b3bb189e-8bf9-4888-9912-ace4e6543002';
 const CATEGORY_B = 'c3bb189e-8bf9-4888-9912-ace4e6543002';
 
 const existingProduct = (): Product =>
-  Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A);
+  Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A, 'KG');
 
 const createGenericRepositoryMock = <T>() => ({
   save: jest.fn(async (entity: T) => entity),
@@ -56,6 +56,21 @@ describe('UpdateProductUseCase', () => {
     expect(updated.vatRate).toBe(5.5);
     expect(updated.producerId).toBe(PRODUCER_ID);
     expect(updated.categoryId).toBe(CATEGORY_A);
+    expect(updated.unit).toBe('KG');
+  });
+
+  it("change l'unité puis sauvegarde", async () => {
+    const updated = await useCase.execute(PRODUCT_ID, { unit: 'PIECE' });
+
+    expect(repository.save).toHaveBeenCalledWith(updated);
+    expect(updated.unit).toBe('PIECE');
+  });
+
+  it('ne sauvegarde rien si la nouvelle unité est inconnue', async () => {
+    await expect(useCase.execute(PRODUCT_ID, { unit: 'LITRE' })).rejects.toBeInstanceOf(
+      DomainValidationError,
+    );
+    expect(repository.save).not.toHaveBeenCalled();
   });
 
   it('change le producteur et la catégorie puis sauvegarde', async () => {
