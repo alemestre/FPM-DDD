@@ -8,16 +8,16 @@ import {
   ProductUnit,
   type ProductUnitValue
 } from "./value-objects/product-unit.value-object";
-import { ProductQuantity } from "./value-objects/product-quantity.value-object";
-import type { QuantityUnitValue } from "./value-objects/quantity-unit.value-object";
-import { DomainValidationError } from "../../shared/domain/errors/domain-validation.error";
+import { ProductContent, type ProductContentProps } from "./value-objects/product-content.value-object";
+import type { ReferenceUnitValue } from "./value-objects/measure.value-object";
+import { ImageUrl } from "./value-objects/image-url.value-object";
 
 /**
  * A product sold by a producer, classified in exactly one category.
  * Producer and category are other aggregates and are referenced by id only.
  *
- * Sale unit rules: the quantity (amount + unit) is optional, except for
- * CONDITIONNEMENT and BOUTEILLE where it is required.
+ * The sale unit sets the rules of the content (what one sale unit contains):
+ * see {@link ProductUnit.resolveContent}.
  */
 export class Product {
   private constructor(
@@ -28,8 +28,9 @@ export class Product {
     private _stock: Stock,
     private _producerId: string,
     private _categoryId: string,
+    private _image: ImageUrl,
     private _unit: ProductUnit,
-    private _quantity: ProductQuantity | null
+    private _content: ProductContent | null
   ) {}
 
   static create(
@@ -40,9 +41,9 @@ export class Product {
     minStock: number,
     producerId: string,
     categoryId: string,
+    image: string,
     unit: string = DEFAULT_PRODUCT_UNIT,
-    quantity: number | null = null,
-    quantityUnit: string | null = null
+    content: ProductContentProps | null = null
   ): Product {
     return Product.reconstitute(
       new Uuid().getValue(),
@@ -53,9 +54,9 @@ export class Product {
       minStock,
       producerId,
       categoryId,
+      image,
       unit,
-      quantity,
-      quantityUnit
+      content
     );
   }
 
@@ -68,13 +69,12 @@ export class Product {
     minStock: number,
     producerId: string,
     categoryId: string,
+    image: string,
     unit: string,
-    quantity: number | null = null,
-    quantityUnit: string | null = null
+    content: ProductContentProps | null = null
   ): Product {
     const saleUnit = ProductUnit.create(unit);
-    const productQuantity = ProductQuantity.fromNullable(quantity, quantityUnit);
-    Product.assertQuantityAllowed(saleUnit, productQuantity);
+    const productContent = saleUnit.resolveContent(ProductContent.fromNullable(content));
 
     return new Product(
       id,
@@ -84,8 +84,9 @@ export class Product {
       Stock.create(stock, minStock),
       Product.validateId(producerId),
       Product.validateId(categoryId),
+      ImageUrl.create(image),
       saleUnit,
-      productQuantity
+      productContent
     );
   }
 
@@ -117,16 +118,30 @@ export class Product {
     return this._categoryId;
   }
 
+  get image(): string {
+    return this._image.value;
+  }
+
   get unit(): ProductUnitValue {
     return this._unit.value;
   }
 
-  get quantity(): number | null {
-    return this._quantity?.amount ?? null;
+  get content(): ProductContent | null {
+    return this._content;
   }
 
-  get quantityUnit(): QuantityUnitValue | null {
-    return this._quantity?.unit ?? null;
+  /**
+   * Price per kilogram or per litre, shown next to the price so products can be compared:
+   * the price itself for KG, computed from the content otherwise (3 € for 4 × 125 g → 6 €/kg).
+   * `null` when the content has no measure (a bunch, a dozen eggs).
+   */
+  get referencePrice(): { amount: number; unit: ReferenceUnitValue } | null {
+    if (this._unit.isSoldByWeight()) return { amount: this.price, unit: "kg" };
+
+    const total = this._content?.totalInReferenceUnit() ?? null;
+    if (total === null) return null;
+
+    return { amount: Math.round((this.price / total.amount) * 100) / 100, unit: total.unit };
   }
 
   changeName(name: string): void {
@@ -173,48 +188,46 @@ export class Product {
   }
 
   /**
-   * Changes the sale unit and keeps the current quantity.
+   * @throws {DomainValidationError} If the image is not an absolute http(s) URL.
+   */
+  changeImage(image: string): void {
+    this._image = ImageUrl.create(image);
+  }
+
+  /**
+   * Changes the sale unit and keeps the current content.
    *
-   * @throws {DomainValidationError} If the new unit requires a quantity the product does not have.
+   * @throws {DomainValidationError} If the current content breaks a rule of the new unit.
    */
   changeUnit(unit: string): void {
-    this.changeSaleUnit(unit, this.quantity, this.quantityUnit);
+    this.applySaleUnit(ProductUnit.create(unit), this._content);
   }
 
   /**
-   * Sets the quantity and its unit, or removes both with `null`.
+   * Sets the content, or removes it with `null`.
    *
-   * @throws {DomainValidationError} If only one is given, or if the sale unit requires a quantity.
+   * @throws {DomainValidationError} If the content is invalid or breaks a rule of the sale unit.
    */
-  changeQuantity(quantity: number | null, quantityUnit: string | null): void {
-    this.changeSaleUnit(this.unit, quantity, quantityUnit);
+  changeContent(content: ProductContentProps | null): void {
+    this.applySaleUnit(this._unit, ProductContent.fromNullable(content));
   }
 
   /**
-   * Changes the sale unit and the quantity together, so a product can switch
-   * to a unit that requires a quantity in a single valid step.
+   * Changes the sale unit and the content together, so a product can switch
+   * to a unit that requires a content in a single valid step.
    * Nothing changes if a rule is broken.
    *
    * @throws {DomainValidationError} If a value is invalid or the sale unit rules are broken.
    */
-  changeSaleUnit(unit: string, quantity: number | null, quantityUnit: string | null): void {
-    const saleUnit = ProductUnit.create(unit);
-    const productQuantity = ProductQuantity.fromNullable(quantity, quantityUnit);
-    Product.assertQuantityAllowed(saleUnit, productQuantity);
-
-    this._unit = saleUnit;
-    this._quantity = productQuantity;
+  changeSaleUnit(unit: string, content: ProductContentProps | null): void {
+    this.applySaleUnit(ProductUnit.create(unit), ProductContent.fromNullable(content));
   }
 
-  /**
-   * @throws {DomainValidationError} If the sale unit requires a quantity and none is given.
-   */
-  private static assertQuantityAllowed(unit: ProductUnit, quantity: ProductQuantity | null): void {
-    if (unit.requiresQuantity() && quantity === null) {
-      throw new DomainValidationError(
-        `Un produit vendu en ${unit.value} doit avoir une quantité et une unité de quantité`
-      );
-    }
+  private applySaleUnit(unit: ProductUnit, content: ProductContent | null): void {
+    const resolved = unit.resolveContent(content);
+
+    this._unit = unit;
+    this._content = resolved;
   }
 
   private static validateId(id: string): string {

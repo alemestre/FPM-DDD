@@ -5,6 +5,8 @@ import { RestockProductUseCase } from './restock-product.use-case';
 import { Product } from '../../domain/product.entity';
 import { NotFoundException } from '@nestjs/common';
 
+const IMAGE = 'https://example.com/images/produit.jpg';
+
 jest.mock('uuid', () => ({
   v4: jest.fn(() => '12345678-1234-4123-8123-123456789abc'),
   validate: jest.fn((value: string) =>
@@ -17,7 +19,7 @@ const PRODUCER_ID = 'a3bb189e-8bf9-4888-9912-ace4e6543002';
 const CATEGORY_A = 'b3bb189e-8bf9-4888-9912-ace4e6543002';
 
 const existingProduct = (): Product =>
-  Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A, 'KG');
+  Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A, IMAGE, 'KG');
 
 const createGenericRepositoryMock = <T>() => ({
   save: jest.fn(async (entity: T) => entity),

@@ -1,20 +1,13 @@
-import type { ProductUnitDto, ProductWithProducerResponseDto, QuantityUnitDto } from '@fpm/contracts';
+import type { ProductUnitDto, ProductWithProducerResponseDto as Product } from '@fpm/contracts';
 import { Component, computed, input, output } from '@angular/core';
 
 const UNIT_LABELS: Record<ProductUnitDto, string> = {
   KG: 'kg',
   BOTTE: 'botte',
   PIECE: 'pièce',
-  CONDITIONNEMENT: 'conditionnement',
+  DOUZAINE: 'douzaine',
   BOUTEILLE: 'bouteille',
-};
-
-const QUANTITY_UNIT_LABELS: Record<QuantityUnitDto, string> = {
-  pcs: 'pcs',
-  g: 'g',
-  ml: 'ml',
-  kg: 'kg',
-  l: 'l',
+  LOT: 'lot',
 };
 
 // Intl plutôt que CurrencyPipe : aucune locale fr n'est enregistrée dans l'application.
@@ -26,25 +19,36 @@ const QUANTITY_FORMAT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 
   templateUrl: './product-card.html',
 })
 export class ProductCard {
-  readonly product = input.required<ProductWithProducerResponseDto>();
-  // Le contrat produit ne porte pas encore de photo : le parent la fournit.
-  readonly imageUrl = input<string | null>(null);
+  readonly product = input.required<Product>();
 
-  readonly addToCart = output<ProductWithProducerResponseDto>();
+  readonly addToCart = output<Product>();
 
   readonly price = computed(() => PRICE_FORMAT.format(this.product().price));
   readonly unit = computed(() => UNIT_LABELS[this.product().unit]);
-  readonly quantity = computed(() => {
-    const { quantity, quantityUnit } = this.product();
-    if (quantity === null) {
+  /** « 4 × 125 g », « 1 l », « 6 pièces » ; rien pour une douzaine, l'unité le dit déjà. */
+  readonly content = computed(() => {
+    const { content, unit } = this.product();
+    if (content === null || unit === 'DOUZAINE') {
       return null;
     }
-    const formatted = QUANTITY_FORMAT.format(quantity);
-    return quantityUnit ? `${formatted} ${QUANTITY_UNIT_LABELS[quantityUnit]}` : formatted;
+    const { itemCount, itemSize } = content;
+    if (itemSize === null) {
+      return `${itemCount} pièces`;
+    }
+    const size = `${QUANTITY_FORMAT.format(itemSize.amount)} ${itemSize.unit}`;
+    return itemCount === 1 ? size : `${itemCount} × ${size}`;
+  });
+  /** Prix au kilo ou au litre, sauf au kilo où c'est déjà le prix affiché. */
+  readonly referencePrice = computed(() => {
+    const { referencePrice, unit } = this.product();
+    if (referencePrice === null || unit === 'KG') {
+      return null;
+    }
+    return `${PRICE_FORMAT.format(referencePrice.amount)}/${referencePrice.unit}`;
   });
   readonly isOutOfStock = computed(() => this.product().stock <= 0);
 
-  protected onAddToCart(): void {
+  protected onAddToCart() {
     if (!this.isOutOfStock()) {
       this.addToCart.emit(this.product());
     }

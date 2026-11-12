@@ -1,9 +1,12 @@
 import { RouterModule } from '@angular/router';
 import { Component } from '@angular/core';
+import { NotificationComponent } from './components/notification/notification';
 
 @Component({
-    imports: [
-      RouterModule],
+  imports: [
+    RouterModule,
+    NotificationComponent
+  ],
     selector: 'app-root',
     templateUrl: './app.html',
     styleUrl: './app.scss',

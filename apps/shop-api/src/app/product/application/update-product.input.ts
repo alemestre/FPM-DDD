@@ -1,3 +1,5 @@
+import type { ProductContentProps } from "../domain/value-objects/product-content.value-object";
+
 /**
  * Partial product update. Stock quantity is changed only through the
  * dedicated restock / withdraw use cases.
@@ -9,8 +11,8 @@ export interface UpdateProductInput {
   readonly minStock?: number;
   readonly producerId?: string;
   readonly categoryId?: string;
+  readonly image?: string;
   readonly unit?: string;
-  /** `quantity` and `quantityUnit` set to `null` remove the quantity. */
-  readonly quantity?: number | null;
-  readonly quantityUnit?: string | null;
+  /** `null` removes the content. */
+  readonly content?: ProductContentProps | null;
 }

@@ -8,6 +8,8 @@ import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { Test } from '@nestjs/testing';
 
+const IMAGE = 'https://example.com/images/produit.jpg';
+
 jest.mock('uuid', () => ({
   v4: jest.fn(() => '12345678-1234-4123-8123-123456789abc'),
   validate: jest.fn((value: string) =>
@@ -95,7 +97,7 @@ describe('ProductController (HTTP)', () => {
   const seedProduct = () =>
     repository.products.set(
       PRODUCT_ID,
-      Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A, 'KG'),
+      Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A, IMAGE, 'KG'),
     );
 
   beforeAll(async () => {
@@ -131,9 +133,10 @@ describe('ProductController (HTTP)', () => {
     minStock: 5,
     producerId: PRODUCER_ID,
     categoryId: CATEGORY_A,
+    image: IMAGE,
     unit: 'KG',
-    quantity: null,
-    quantityUnit: null,
+    content: null,
+    referencePrice: { amount: 3.5, unit: 'kg' },
   };
 
   // Les lectures renvoient le producteur à la place de son id.
@@ -146,13 +149,14 @@ describe('ProductController (HTTP)', () => {
     minStock: 5,
     producer: PRODUCER,
     categoryId: CATEGORY_A,
+    image: IMAGE,
     unit: 'KG',
-    quantity: null,
-    quantityUnit: null,
+    content: null,
+    referencePrice: { amount: 3.5, unit: 'kg' },
   };
 
   describe('POST /products', () => {
-    const payload = { name: 'Pommes Golden', price: 3.5, vatRate: 5.5, stock: 20, minStock: 5, producerId: PRODUCER_ID, categoryId: CATEGORY_A, unit: 'KG' };
+    const payload = { name: 'Pommes Golden', price: 3.5, vatRate: 5.5, stock: 20, minStock: 5, producerId: PRODUCER_ID, categoryId: CATEGORY_A, image: IMAGE, unit: 'KG' };
 
     it('crée le produit et renvoie sa représentation publique (201)', async () => {
       const { status, body } = await request('POST', '', payload);
@@ -170,29 +174,59 @@ describe('ProductController (HTTP)', () => {
       expect(body).toEqual({ ...expectedProduct, id: NEW_ID, unit: 'KG' });
     });
 
-    it('crée une bouteille avec sa quantité', async () => {
-      const { status, body } = await request('POST', '', { ...payload, unit: 'BOUTEILLE', quantity: 0.75, quantityUnit: 'l' });
+    it('crée une bouteille avec son contenu et son prix au litre', async () => {
+      const content = { itemCount: 1, itemSize: { amount: 0.75, unit: 'l' } };
+      const { status, body } = await request('POST', '', { ...payload, price: 9, unit: 'BOUTEILLE', content });
 
       expect(status).toBe(201);
-      expect(body).toEqual({ ...expectedProduct, id: NEW_ID, unit: 'BOUTEILLE', quantity: 0.75, quantityUnit: 'l' });
+      expect(body).toEqual({
+        ...expectedProduct,
+        id: NEW_ID,
+        price: 9,
+        unit: 'BOUTEILLE',
+        content,
+        referencePrice: { amount: 12, unit: 'l' },
+      });
     });
 
-    it.each(['CONDITIONNEMENT', 'BOUTEILLE'])('renvoie 400 pour un produit vendu en %s sans quantité', async (unit) => {
+    it('crée un lot de 4 pots, et une douzaine dont la mesure est omise', async () => {
+      const lot = await request('POST', '', {
+        ...payload,
+        price: 3,
+        unit: 'LOT',
+        content: { itemCount: 4, itemSize: { amount: 125, unit: 'g' } },
+      });
+      expect(lot.status).toBe(201);
+      expect(lot.body).toMatchObject({ unit: 'LOT', referencePrice: { amount: 6, unit: 'kg' } });
+
+      const dozen = await request('POST', '', { ...payload, unit: 'DOUZAINE', content: { itemCount: 12 } });
+      expect(dozen.status).toBe(201);
+      expect(dozen.body).toMatchObject({ unit: 'DOUZAINE', content: { itemCount: 12, itemSize: null }, referencePrice: null });
+    });
+
+    it.each(['LOT', 'BOUTEILLE'])('renvoie 400 pour un produit vendu en %s sans contenu', async (unit) => {
       const { status } = await request('POST', '', { ...payload, unit });
 
       expect(status).toBe(400);
       expect(repository.products.size).toBe(0);
     });
 
-    it('renvoie 400 pour une quantité sans unité', async () => {
-      const { status } = await request('POST', '', { ...payload, quantity: 2 });
+    it('renvoie 400 pour un contenu sur un produit vendu au kilo', async () => {
+      const { status } = await request('POST', '', { ...payload, content: { itemCount: 1, itemSize: { amount: 500, unit: 'g' } } });
 
       expect(status).toBe(400);
       expect(repository.products.size).toBe(0);
     });
 
-    it("renvoie 400 si l'unité de quantité est inconnue", async () => {
-      const { status } = await request('POST', '', { ...payload, quantity: 1, quantityUnit: 'cl' });
+    it("renvoie 400 pour l'ancien format de quantité", async () => {
+      const { status } = await request('POST', '', { ...payload, unit: 'LOT', contentQuantity: 500, quantityUnit: 'g' });
+
+      expect(status).toBe(400);
+      expect(repository.products.size).toBe(0);
+    });
+
+    it("renvoie 400 si l'unité de mesure est inconnue", async () => {
+      const { status } = await request('POST', '', { ...payload, unit: 'LOT', content: { itemCount: 1, itemSize: { amount: 1, unit: 'cl' } } });
 
       expect(status).toBe(400);
       expect(repository.products.size).toBe(0);
@@ -242,7 +276,7 @@ describe('ProductController (HTTP)', () => {
       seedProduct();
       repository.products.set(
         OTHER_PRODUCT_ID,
-        Product.reconstitute(OTHER_PRODUCT_ID, 'Carottes', 2, 5.5, 10, 1, PRODUCER_ID, CATEGORY_B, 'KG'),
+        Product.reconstitute(OTHER_PRODUCT_ID, 'Carottes', 2, 5.5, 10, 1, PRODUCER_ID, CATEGORY_B, IMAGE, 'KG'),
       );
 
       const { status, body } = await request('GET', `?categoryId=${CATEGORY_A}`);
@@ -289,29 +323,37 @@ describe('ProductController (HTTP)', () => {
       const { status, body } = await request('PATCH', `/${PRODUCT_ID}`, { price: 4, minStock: 10 });
 
       expect(status).toBe(200);
-      expect(body).toEqual({ ...expectedProduct, price: 4, minStock: 10 });
+      expect(body).toEqual({ ...expectedProduct, price: 4, minStock: 10, referencePrice: { amount: 4, unit: 'kg' } });
     });
 
-    it('définit puis retire la quantité', async () => {
+    it("renvoie 400 si l'image n'est pas une URL", async () => {
       seedProduct();
 
-      const set = await request('PATCH', `/${PRODUCT_ID}`, { quantity: 500, quantityUnit: 'ml' });
-      expect(set.body).toEqual({ ...expectedProduct, quantity: 500, quantityUnit: 'ml' });
-
-      const cleared = await request('PATCH', `/${PRODUCT_ID}`, { quantity: null, quantityUnit: null });
-      expect(cleared.status).toBe(200);
-      expect(cleared.body).toEqual(expectedProduct);
+      expect((await request('PATCH', `/${PRODUCT_ID}`, { image: 'gala.jpg' })).status).toBe(400);
     });
 
-    it('passe un produit en BOUTEILLE avec sa quantité (200), refuse sans quantité (400)', async () => {
+    it('passe un produit à la pièce avec un poids indicatif, puis retire le contenu', async () => {
+      seedProduct();
+      const content = { itemCount: 1, itemSize: { amount: 800, unit: 'g' } };
+
+      const set = await request('PATCH', `/${PRODUCT_ID}`, { unit: 'PIECE', content });
+      expect(set.body).toEqual({ ...expectedProduct, unit: 'PIECE', content, referencePrice: { amount: 4.38, unit: 'kg' } });
+
+      const cleared = await request('PATCH', `/${PRODUCT_ID}`, { content: null });
+      expect(cleared.status).toBe(200);
+      expect(cleared.body).toEqual({ ...expectedProduct, unit: 'PIECE', referencePrice: null });
+    });
+
+    it('passe un produit en BOUTEILLE avec son contenu (200), refuse sans contenu (400)', async () => {
       seedProduct();
 
       const refused = await request('PATCH', `/${PRODUCT_ID}`, { unit: 'BOUTEILLE' });
       expect(refused.status).toBe(400);
 
-      const { status, body } = await request('PATCH', `/${PRODUCT_ID}`, { unit: 'BOUTEILLE', quantity: 75, quantityUnit: 'ml' });
+      const content = { itemCount: 1, itemSize: { amount: 750, unit: 'ml' } };
+      const { status, body } = await request('PATCH', `/${PRODUCT_ID}`, { unit: 'BOUTEILLE', content });
       expect(status).toBe(200);
-      expect(body).toEqual({ ...expectedProduct, unit: 'BOUTEILLE', quantity: 75, quantityUnit: 'ml' });
+      expect(body).toEqual({ ...expectedProduct, unit: 'BOUTEILLE', content, referencePrice: { amount: 4.67, unit: 'l' } });
     });
 
     it('refuse une modification directe du stock (400)', async () => {

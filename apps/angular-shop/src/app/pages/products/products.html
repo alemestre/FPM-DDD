@@ -1,26 +1,36 @@
-<section class="container py-5">
+@if (isLoading()) {
+  <div class="d-flex justify-content-center mt-4">
+    <div class="spinner-border text-primary" role="status">
+  </div>
+  </div>
+
+} @else {
+  <section class="container py-5">
     @if (category(); as category) {
-    <header class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-4">
+      <header class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-4">
         <h1 class="h2 fw-bold text-secondary mb-0">{{ category.name | titlecase }}</h1>
         <p class="text-body-secondary mb-0">
-            {{ productsCount() }} {{ productsCount() > 1 ? 'produits' : 'produit' }}
+          {{ productsCount() }} {{ productsCount() > 1 ? 'produits' : 'produit' }}
         </p>
-    </header>
+      </header>
 
-    @if (hasProducts()) {
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
-        @for (product of products(); track product.id) {
-        <div class="col">
-            <app-product-card [product]="product" />
+      @if (hasProducts()) {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
+          @for (product of products(); track product.id) {
+            <div class="col">
+              <app-product-card (addToCart)="onAddToCart($event)" [product]="product"/>
+            </div>
+          }
         </div>
-        }
-    </div>
+      } @else {
+        <p class="text-body-secondary text-center py-5 mb-0">
+          <i class="bi bi-basket d-block fs-1 mb-2" aria-hidden="true"></i>
+          Aucun produit dans cette catégorie pour le moment.
+        </p>
+      }
     } @else {
-    <p class="text-body-secondary text-center py-5 mb-0">
-        <i class="bi bi-basket d-block fs-1 mb-2" aria-hidden="true"></i>
-        Aucun produit dans cette catégorie pour le moment.
-    </p>
-    } } @else {
-    <p class="text-body-secondary text-center py-5 mb-0">Cette catégorie n'existe pas.</p>
+      <p class="text-body-secondary text-center py-5 mb-0">Cette catégorie n'existe pas.</p>
     }
-</section>
+  </section>
+}
+

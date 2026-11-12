@@ -1,8 +1,6 @@
 <article class="card h-100 border-0 shadow-sm overflow-hidden">
     <div class="ratio ratio-4x3 bg-body-tertiary">
-        @if (imageUrl(); as src) {
-        <img [src]="src" [alt]="product().name" class="card-img-top object-fit-cover" loading="lazy" />
-        } @else {
+        <img [src]="product().image" [alt]="product().name" class="card-img-top object-fit-cover" loading="lazy" />
         <div
             class="d-flex align-items-center justify-content-center text-secondary opacity-50"
             role="img"
@@ -10,7 +8,6 @@
         >
             <i class="bi bi-image fs-1" aria-hidden="true"></i>
         </div>
-        }
     </div>
 
     <div class="card-body d-flex flex-column gap-1">
@@ -20,14 +17,17 @@
             <span>{{ product().producer.name }}</span>
         </p>
 
-        @if (quantity(); as quantity) {
-        <p class="small text-body-secondary mb-0">{{ quantity }}</p>
+        @if (content(); as content) {
+        <p class="small text-body-secondary mb-0">{{ content }}</p>
         }
 
         <p class="fs-5 fw-bold text-primary mt-auto mb-0 pt-2">
             {{ price() }}
             <span class="fs-6 fw-normal text-body-secondary">/ {{ unit() }}</span>
         </p>
+        @if (referencePrice(); as referencePrice) {
+        <p class="small text-body-secondary mb-0">soit {{ referencePrice }}</p>
+        }
     </div>
 
     <div class="card-footer bg-transparent border-0 pt-0 pb-3 px-3">
@@ -41,7 +41,6 @@
             Rupture de stock
             } @else {
             <i class="bi bi-cart-plus" aria-hidden="true"></i>
-            Ajouter au panier
             }
         </button>
     </div>

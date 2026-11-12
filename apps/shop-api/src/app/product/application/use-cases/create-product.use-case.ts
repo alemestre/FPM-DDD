@@ -11,7 +11,7 @@ export class CreateProductUseCase {
    * @throws {ProductReferenceNotFoundError} If the producer or the category does not exist.
    */
   async execute(input: CreateProductInput): Promise<Product> {
-    const { name, price, vatRate, stock, minStock, producerId, categoryId, unit, quantity, quantityUnit } =
+    const { name, price, vatRate, stock, minStock, producerId, categoryId, image, unit, content } =
       input;
     const product = Product.create(
       name,
@@ -21,9 +21,9 @@ export class CreateProductUseCase {
       minStock,
       producerId,
       categoryId,
+      image,
       unit,
-      quantity ?? null,
-      quantityUnit ?? null
+      content ?? null
     );
 
     return this.repository.save(product);

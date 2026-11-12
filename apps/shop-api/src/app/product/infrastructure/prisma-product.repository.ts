@@ -6,11 +6,12 @@ import {
   Prisma,
   type Product as ProductRow,
   type ProductUnit as ProductUnitRow,
-  type QuantityUnit as QuantityUnitRow
+  type MeasureUnit as MeasureUnitRow
 } from "../../../generated/prisma/client";
 import { Product } from "../domain/product.entity";
 import type { ProductUnitValue } from "../domain/value-objects/product-unit.value-object";
-import type { QuantityUnitValue } from "../domain/value-objects/quantity-unit.value-object";
+import type { MeasureUnitValue } from "../domain/value-objects/measure.value-object";
+import type { ProductContent, ProductContentProps } from "../domain/value-objects/product-content.value-object";
 
 /**
  * Prisma error raised when a write points to a missing producer or category:
@@ -25,36 +26,36 @@ const UNIT_TO_DOMAIN = {
   KG: "KG",
   BOTTE: "BOTTE",
   PIECE: "PIECE",
-  CONDITIONNEMENT: "CONDITIONNEMENT",
-  BOUTEILLE: "BOUTEILLE"
+  DOUZAINE: "DOUZAINE",
+  BOUTEILLE: "BOUTEILLE",
+  LOT: "LOT"
 } as const satisfies Record<ProductUnitRow, ProductUnitValue>;
 
 const UNIT_TO_ROW = {
   KG: "KG",
   BOTTE: "BOTTE",
   PIECE: "PIECE",
-  CONDITIONNEMENT: "CONDITIONNEMENT",
-  BOUTEILLE: "BOUTEILLE"
+  DOUZAINE: "DOUZAINE",
+  BOUTEILLE: "BOUTEILLE",
+  LOT: "LOT"
 } as const satisfies Record<ProductUnitValue, ProductUnitRow>;
 
 /**
- * Keeps the Prisma enum and the domain quantity units in sync at compile time.
+ * Keeps the Prisma enum and the domain measure units in sync at compile time.
  */
-const QUANTITY_UNIT_TO_DOMAIN = {
-  pcs: "pcs",
+const MEASURE_UNIT_TO_DOMAIN = {
   g: "g",
-  ml: "ml",
   kg: "kg",
+  ml: "ml",
   l: "l"
-} as const satisfies Record<QuantityUnitRow, QuantityUnitValue>;
+} as const satisfies Record<MeasureUnitRow, MeasureUnitValue>;
 
-const QUANTITY_UNIT_TO_ROW = {
-  pcs: "pcs",
+const MEASURE_UNIT_TO_ROW = {
   g: "g",
-  ml: "ml",
   kg: "kg",
+  ml: "ml",
   l: "l"
-} as const satisfies Record<QuantityUnitValue, QuantityUnitRow>;
+} as const satisfies Record<MeasureUnitValue, MeasureUnitRow>;
 
 /**
  * Loads only the producer fields exposed with a product.
@@ -67,7 +68,7 @@ type ProductWithProducerRow = Prisma.ProductGetPayload<{ include: typeof WITH_PR
  * Product fields accepted by {@link PrismaProductRepository.update}.
  */
 type ProductPatch = Partial<
-  Pick<Product, "name" | "price" | "vatRate" | "stock" | "minStock" | "producerId" | "categoryId" | "unit" | "quantity" | "quantityUnit">
+  Pick<Product, "name" | "price" | "vatRate" | "stock" | "minStock" | "producerId" | "categoryId" | "image" | "unit" | "content">
 >;
 
 @Injectable()
@@ -158,9 +159,9 @@ export class PrismaProductRepository implements ProductRepository {
       minStock: entity.minStock,
       producerId: entity.producerId,
       categoryId: entity.categoryId,
+      image: entity.image,
       unit: UNIT_TO_ROW[entity.unit],
-      quantity: entity.quantity,
-      quantityUnit: entity.quantityUnit === null ? null : QUANTITY_UNIT_TO_ROW[entity.quantityUnit]
+      ...this.toContentColumns(entity.content)
     };
   }
 
@@ -168,7 +169,7 @@ export class PrismaProductRepository implements ProductRepository {
    * Maps only the defined fields of a patch onto Prisma update data.
    */
   private toUpdateData(patch: ProductPatch): Prisma.ProductUncheckedUpdateInput {
-    const { name, price, vatRate, stock, minStock, producerId, categoryId, unit, quantity, quantityUnit } = patch;
+    const { name, price, vatRate, stock, minStock, producerId, categoryId, image, unit, content } = patch;
 
     return {
       ...(name !== undefined && { name }),
@@ -178,11 +179,39 @@ export class PrismaProductRepository implements ProductRepository {
       ...(minStock !== undefined && { minStock }),
       ...(producerId !== undefined && { producerId }),
       ...(categoryId !== undefined && { categoryId }),
+      ...(image !== undefined && { image }),
       ...(unit !== undefined && { unit: UNIT_TO_ROW[unit] }),
-      ...(quantity !== undefined && { quantity }),
-      ...(quantityUnit !== undefined && {
-        quantityUnit: quantityUnit === null ? null : QUANTITY_UNIT_TO_ROW[quantityUnit]
-      })
+      ...(content !== undefined && this.toContentColumns(content))
+    };
+  }
+
+  /**
+   * Flattens the content into its three columns; all `null` when there is no content.
+   */
+  private toContentColumns(content: ProductContent | null) {
+    return {
+      contentItemCount: content?.itemCount ?? null,
+      contentAmount: content?.itemSize?.amount ?? null,
+      contentUnit: content?.itemSize ? MEASURE_UNIT_TO_ROW[content.itemSize.unit] : null
+    };
+  }
+
+  /**
+   * Rebuilds the content from its columns. An amount without a unit (or the reverse)
+   * is passed on as is, so the domain rejects it instead of hiding it.
+   */
+  private toContentProps(row: ProductRow): ProductContentProps | null {
+    if (row.contentItemCount === null) return null;
+
+    const hasSize = row.contentAmount !== null || row.contentUnit !== null;
+    return {
+      itemCount: row.contentItemCount,
+      itemSize: hasSize
+        ? {
+            amount: row.contentAmount === null ? Number.NaN : row.contentAmount.toNumber(),
+            unit: row.contentUnit === null ? "" : MEASURE_UNIT_TO_DOMAIN[row.contentUnit]
+          }
+        : null
     };
   }
 
@@ -218,9 +247,9 @@ export class PrismaProductRepository implements ProductRepository {
       row.minStock,
       row.producerId,
       row.categoryId,
+      row.image,
       UNIT_TO_DOMAIN[row.unit],
-      row.quantity === null ? null : row.quantity.toNumber(),
-      row.quantityUnit === null ? null : QUANTITY_UNIT_TO_DOMAIN[row.quantityUnit]
+      this.toContentProps(row)
     );
   }
 }

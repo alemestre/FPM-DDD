@@ -1,4 +1,5 @@
-import type { ProductResponseDto, ProductWithProducerResponseDto } from "@fpm/contracts";
+import type { ProductContentDto, ProductResponseDto, ProductWithProducerResponseDto } from "@fpm/contracts";
+import type { ProductContent } from "../../../domain/value-objects/product-content.value-object";
 import type { ProductWithProducer } from "../../../domain/product.repository";
 import type { Product } from "../../../domain/product.entity";
 
@@ -16,9 +17,10 @@ export function toProductResponse(product: Product): ProductResponseDto {
     minStock: product.minStock,
     producerId: product.producerId,
     categoryId: product.categoryId,
+    image: product.image,
     unit: product.unit,
-    quantity: product.quantity,
-    quantityUnit: product.quantityUnit
+    content: toContentResponse(product.content),
+    referencePrice: product.referencePrice
   };
 }
 
@@ -35,8 +37,16 @@ export function toProductWithProducerResponse({ product, producer }: ProductWith
     minStock: product.minStock,
     producer: { id: producer.id, name: producer.name },
     categoryId: product.categoryId,
+    image: product.image,
     unit: product.unit,
-    quantity: product.quantity,
-    quantityUnit: product.quantityUnit
+    content: toContentResponse(product.content),
+    referencePrice: product.referencePrice
   };
+}
+
+function toContentResponse(content: ProductContent | null): ProductContentDto | null {
+  if (content === null) return null;
+
+  const { itemCount, itemSize } = content;
+  return { itemCount, itemSize: itemSize === null ? null : { amount: itemSize.amount, unit: itemSize.unit } };
 }

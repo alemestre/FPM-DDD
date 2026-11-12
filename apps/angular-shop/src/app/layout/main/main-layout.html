@@ -60,29 +60,30 @@
             </ul>
 
             <div
-                class="d-lg-flex align-items-lg-center justify-content-lg-end gap-lg-3 pe-lg-3 app-header-actions"
+                class="d-lg-flex align-items-lg-center justify-content-lg-end gap-4 pe-3 app-header-actions"
             >
                 <ul class="navbar-nav pt-3 pt-lg-0">
                     <li class="nav-item">
                         <a
-                            class="nav-link position-relative fw-medium py-3 py-lg-2 d-inline-flex align-items-center gap-2 app-cart"
-                            routerLink="/panier"
-                            routerLinkActive="active"
-                            ariaCurrentWhenActive="page"
-                            (click)="isMenuCollapsed = true"
+                          ariaCurrentWhenActive="page"
+                          class="nav-link position-relative d-inline-flex align-items-center gap-2  pt-1"
+                          routerLink="/panier"
+                          routerLinkActive="active"
                         >
-                            <i class="bi bi-cart3" aria-hidden="true"></i>
-                            Votre panier
-                            <span class="badge rounded-pill text-bg-primary app-cart-badge">
-                                {{ cartItemCount() }}
-                                <span class="visually-hidden">
-                                    {{ cartItemCount() > 1 ? 'articles' : 'article' }}
-                                </span>
+                          <i aria-hidden="true" class="bi bi-cart3"></i>
+                          <span
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                            {{ cartService.totalItems() }}
+                            <span
+                              aria-atomic="true"
+                              aria-live="polite"
+                              class="visually-hidden">
+                              {{ screenReaderText() }}
                             </span>
+                           </span>
                         </a>
                     </li>
                 </ul>
-
                 @if (isAuthenticated()) {
                 <ul class="navbar-nav pt-3 pt-lg-0 app-profile">
                     <li class="nav-item" ngbDropdown display="static">

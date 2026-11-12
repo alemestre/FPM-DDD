@@ -1,9 +1,12 @@
+import { DomainValidationError } from '../../shared/domain/errors/domain-validation.error';
 import { ProductReferenceNotFoundError } from '../domain/errors/product-reference-not-found.error';
 import { PrismaProductRepository } from './prisma-product.repository';
 import type { PrismaService } from '../../../prisma/prisma.service';
 import { Prisma } from '../../../generated/prisma/client';
 import { Product } from '../domain/product.entity';
 import { NotFoundException } from '@nestjs/common';
+
+const IMAGE = 'https://example.com/images/produit.jpg';
 
 jest.mock('uuid', () => ({
   v4: jest.fn(() => '12345678-1234-4123-8123-123456789abc'),
@@ -33,9 +36,11 @@ const productRow = (overrides: Record<string, unknown> = {}) => ({
   createdAt: new Date(),
   updatedAt: new Date(),
   categoryId: CATEGORY_A,
+  image: IMAGE,
   unit: 'KG',
-  quantity: null,
-  quantityUnit: null,
+  contentItemCount: null,
+  contentAmount: null,
+  contentUnit: null,
   ...overrides,
 });
 
@@ -43,7 +48,7 @@ const prismaError = (code: string) =>
   new Prisma.PrismaClientKnownRequestError(`Prisma error ${code}`, { code, clientVersion: 'test' });
 
 const existingProduct = () =>
-  Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A, 'KG');
+  Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A, IMAGE, 'KG');
 
 const createPrismaMock = () => ({
   product: {
@@ -66,7 +71,7 @@ describe('PrismaProductRepository', () => {
 
   describe('save', () => {
     it("upsert l'agrégat complet avec producteur et catégorie", async () => {
-      const product = Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_B, 'KG');
+      const product = Product.reconstitute(PRODUCT_ID, 'Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_B, IMAGE, 'KG');
       prisma.product.upsert.mockResolvedValue(productRow({ categoryId: CATEGORY_B }));
 
       const saved = await repository.save(product);
@@ -79,9 +84,11 @@ describe('PrismaProductRepository', () => {
         minStock: 5,
         producerId: PRODUCER_ID,
         categoryId: CATEGORY_B,
+        image: IMAGE,
         unit: 'KG',
-        quantity: null,
-        quantityUnit: null,
+        contentItemCount: null,
+        contentAmount: null,
+        contentUnit: null,
       };
       expect(prisma.product.upsert).toHaveBeenCalledWith({
         where: { id: PRODUCT_ID },
@@ -128,18 +135,37 @@ describe('PrismaProductRepository', () => {
       expect(updated.categoryId).toBe(CATEGORY_B);
     });
 
-    it("enregistre la quantité de l'agrégat", async () => {
+    it("enregistre le contenu de l'agrégat sur trois colonnes", async () => {
       const product = existingProduct();
-      product.changeQuantity(250, 'g');
-      prisma.product.upsert.mockResolvedValue(productRow({ quantity: decimal(250), quantityUnit: 'g' }));
+      product.changeSaleUnit('LOT', { itemCount: 4, itemSize: { amount: 125, unit: 'g' } });
+      prisma.product.upsert.mockResolvedValue(
+        productRow({ unit: 'LOT', contentItemCount: 4, contentAmount: decimal(125), contentUnit: 'g' }),
+      );
 
       const saved = await repository.save(product);
 
       expect(prisma.product.upsert).toHaveBeenCalledWith(
-        expect.objectContaining({ update: expect.objectContaining({ quantity: 250, quantityUnit: 'g' }) }),
+        expect.objectContaining({
+          update: expect.objectContaining({ unit: 'LOT', contentItemCount: 4, contentAmount: 125, contentUnit: 'g' }),
+        }),
       );
-      expect(saved.quantity).toBe(250);
-      expect(saved.quantityUnit).toBe('g');
+      expect(saved.content?.itemCount).toBe(4);
+      expect(saved.content?.itemSize?.amount).toBe(125);
+      expect(saved.content?.itemSize?.unit).toBe('g');
+    });
+
+    it('enregistre une douzaine sans mesure', async () => {
+      const product = existingProduct();
+      product.changeSaleUnit('DOUZAINE', null);
+      prisma.product.upsert.mockResolvedValue(productRow({ unit: 'DOUZAINE', contentItemCount: 12 }));
+
+      await repository.save(product);
+
+      expect(prisma.product.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          update: expect.objectContaining({ unit: 'DOUZAINE', contentItemCount: 12, contentAmount: null, contentUnit: null }),
+        }),
+      );
     });
 
     it("met à jour l'unité", async () => {
@@ -154,14 +180,24 @@ describe('PrismaProductRepository', () => {
       expect(updated.unit).toBe('BOTTE');
     });
 
-    it('retire la quantité avec null', async () => {
+    it("met à jour l'image", async () => {
+      const image = 'https://example.com/images/gala.jpg';
+      prisma.product.update.mockResolvedValue(productRow({ image }));
+
+      const updated = await repository.update(PRODUCT_ID, { image });
+
+      expect(prisma.product.update).toHaveBeenCalledWith({ where: { id: PRODUCT_ID }, data: { image } });
+      expect(updated.image).toBe(image);
+    });
+
+    it('retire le contenu avec null', async () => {
       prisma.product.update.mockResolvedValue(productRow());
 
-      await repository.update(PRODUCT_ID, { quantity: null, quantityUnit: null });
+      await repository.update(PRODUCT_ID, { content: null });
 
       expect(prisma.product.update).toHaveBeenCalledWith({
         where: { id: PRODUCT_ID },
-        data: { quantity: null, quantityUnit: null },
+        data: { contentItemCount: null, contentAmount: null, contentUnit: null },
       });
     });
 
@@ -212,26 +248,48 @@ describe('PrismaProductRepository', () => {
       expect(product?.producerId).toBe(PRODUCER_ID);
       expect(product?.categoryId).toBe(CATEGORY_A);
       expect(product?.unit).toBe('KG');
-      expect(product?.quantity).toBeNull();
-      expect(product?.quantityUnit).toBeNull();
+      expect(product?.content).toBeNull();
     });
 
-    it.each(['pcs', 'g', 'ml', 'kg', 'l'])("reconstitue l'unité de quantité %s", async (quantityUnit) => {
-      prisma.product.findUnique.mockResolvedValue(productRow({ quantity: decimal(1), quantityUnit }));
+    it.each(['g', 'ml', 'kg', 'l'])("reconstitue l'unité de mesure %s", async (contentUnit) => {
+      prisma.product.findUnique.mockResolvedValue(
+        productRow({ unit: 'PIECE', contentItemCount: 1, contentAmount: decimal(1), contentUnit }),
+      );
 
       const product = await repository.findById(PRODUCT_ID);
 
-      expect(product?.quantityUnit).toBe(quantityUnit);
+      expect(product?.content?.itemSize?.unit).toBe(contentUnit);
     });
 
-    it.each(['CONDITIONNEMENT', 'BOUTEILLE'])("reconstitue un produit vendu en %s avec sa quantité", async (unit) => {
-      prisma.product.findUnique.mockResolvedValue(productRow({ unit, quantity: decimal(0.75), quantityUnit: 'l' }));
+    it.each(['LOT', 'BOUTEILLE'])('reconstitue un produit vendu en %s avec son contenu', async (unit) => {
+      prisma.product.findUnique.mockResolvedValue(
+        productRow({ unit, contentItemCount: 1, contentAmount: decimal(0.75), contentUnit: 'l' }),
+      );
 
       const product = await repository.findById(PRODUCT_ID);
 
       expect(product?.unit).toBe(unit);
-      expect(product?.quantity).toBe(0.75);
-      expect(product?.quantityUnit).toBe('l');
+      expect(product?.content?.itemCount).toBe(1);
+      expect(product?.content?.itemSize?.amount).toBe(0.75);
+      expect(product?.content?.itemSize?.unit).toBe('l');
+    });
+
+    it('reconstitue une douzaine sans mesure', async () => {
+      prisma.product.findUnique.mockResolvedValue(productRow({ unit: 'DOUZAINE', contentItemCount: 12 }));
+
+      const product = await repository.findById(PRODUCT_ID);
+
+      expect(product?.content?.itemCount).toBe(12);
+      expect(product?.content?.itemSize).toBeNull();
+    });
+
+    it.each([
+      ['une mesure sans unité', { contentAmount: decimal(125), contentUnit: null }],
+      ['une unité sans mesure', { contentAmount: null, contentUnit: 'g' }],
+    ])('rejette un contenu persisté avec %s au lieu de le perdre', async (_label, columns) => {
+      prisma.product.findUnique.mockResolvedValue(productRow({ unit: 'LOT', contentItemCount: 4, ...columns }));
+
+      await expect(repository.findById(PRODUCT_ID)).rejects.toBeInstanceOf(DomainValidationError);
     });
 
     it("retourne null si le produit n'existe pas", async () => {
@@ -288,13 +346,13 @@ describe('PrismaProductRepository', () => {
       });
 
       it('findByIdWithProducerOrFail charge le produit et son producteur', async () => {
-        prisma.product.findUnique.mockResolvedValue(rowWithProducer({ quantity: decimal(0.75), quantityUnit: 'l', unit: 'BOUTEILLE' }));
+        prisma.product.findUnique.mockResolvedValue(rowWithProducer({ unit: 'BOUTEILLE', contentItemCount: 1, contentAmount: decimal(0.75), contentUnit: 'l' }));
 
         const result = await repository.findByIdWithProducerOrFail(PRODUCT_ID);
 
         expect(prisma.product.findUnique).toHaveBeenCalledWith({ where: { id: PRODUCT_ID }, include: WITH_PRODUCER });
         expect(result.product.id).toBe(PRODUCT_ID);
-        expect(result.product.quantity).toBe(0.75);
+        expect(result.product.content?.itemSize?.amount).toBe(0.75);
         expect(result.producer).toEqual(PRODUCER);
       });
 

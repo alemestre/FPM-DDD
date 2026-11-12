@@ -1,0 +1,41 @@
+
+<div
+  class="position-fixed top-0 end-0 p-3 d-flex flex-column gap-2"
+  style="z-index: 1100;">
+
+  @for (
+    notification of notifications();
+    track notification.id
+  ) {
+
+    <ngb-toast
+      [autohide]="notification.duration > 0"
+      [delay]="notification.duration"
+      [class.bg-success-subtle]="notification.type === 'success'"
+      [class.bg-danger-subtle]="notification.type === 'error'"
+      [class.bg-info-subtle]="notification.type === 'info'"
+      (hidden)="removeNotification(notification.id)">
+
+      <div class="d-flex align-items-center gap-2">
+
+        @switch (notification.type) {
+          @case ('success') {
+            <i class="bi bi-check-circle-fill text-success"></i>
+          }
+          @case ('error') {
+            <i class="bi bi-exclamation-circle-fill text-danger"></i>
+          }
+          @case ('info') {
+            <i class="bi bi-info-circle-fill text-info"></i>
+          }
+        }
+
+        <span>{{ notification.message }}</span>
+
+      </div>
+
+    </ngb-toast>
+
+  }
+
+</div>

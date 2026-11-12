@@ -38,6 +38,7 @@ describe('CreateProductUseCase', () => {
     minStock: 5,
     producerId: PRODUCER_ID,
     categoryId: CATEGORY_A,
+    image: 'https://example.com/images/pommes.jpg',
     unit: 'BOTTE',
   };
 
@@ -56,6 +57,7 @@ describe('CreateProductUseCase', () => {
     expect(product.minStock).toBe(5);
     expect(product.categoryId).toBe(CATEGORY_A);
     expect(product.unit).toBe('BOTTE');
+    expect(product.image).toBe('https://example.com/images/pommes.jpg');
   });
 
   it("crée le produit en KG quand l'unité n'est pas fournie", async () => {
@@ -64,42 +66,58 @@ describe('CreateProductUseCase', () => {
     expect(product.unit).toBe('KG');
   });
 
-  it('crée le produit avec sa quantité', async () => {
-    const product = await useCase.execute({ ...input, quantity: 250, quantityUnit: 'g' });
+  it('crée le produit avec son contenu', async () => {
+    const product = await useCase.execute({
+      ...input,
+      unit: 'LOT',
+      content: { itemCount: 4, itemSize: { amount: 125, unit: 'g' } },
+    });
 
-    expect(product.quantity).toBe(250);
-    expect(product.quantityUnit).toBe('g');
+    expect(product.content?.itemCount).toBe(4);
+    expect(product.content?.itemSize?.amount).toBe(125);
+    expect(product.content?.itemSize?.unit).toBe('g');
   });
 
-  it("crée le produit sans quantité quand elle n'est pas fournie", async () => {
+  it("crée le produit sans contenu quand il n'est pas fourni", async () => {
     const product = await useCase.execute(input);
 
-    expect(product.quantity).toBeNull();
-    expect(product.quantityUnit).toBeNull();
+    expect(product.content).toBeNull();
   });
 
-  it('crée une bouteille avec sa quantité', async () => {
-    const product = await useCase.execute({ ...input, unit: 'BOUTEILLE', quantity: 0.75, quantityUnit: 'l' });
+  it('crée une bouteille avec son contenu', async () => {
+    const product = await useCase.execute({
+      ...input,
+      unit: 'BOUTEILLE',
+      content: { itemCount: 1, itemSize: { amount: 0.75, unit: 'l' } },
+    });
 
     expect(repository.save).toHaveBeenCalledWith(product);
     expect(product.unit).toBe('BOUTEILLE');
-    expect(product.quantity).toBe(0.75);
+    expect(product.content?.itemSize?.amount).toBe(0.75);
   });
 
-  it.each(['CONDITIONNEMENT', 'BOUTEILLE'])('rejette un produit vendu en %s sans quantité sans sauvegarder', async (unit) => {
+  it('crée une douzaine avec ses 12 articles sans contenu fourni', async () => {
+    const product = await useCase.execute({ ...input, unit: 'DOUZAINE' });
+
+    expect(product.content?.itemCount).toBe(12);
+  });
+
+  it.each(['LOT', 'BOUTEILLE'])('rejette un produit vendu en %s sans contenu sans sauvegarder', async (unit) => {
     await expect(useCase.execute({ ...input, unit })).rejects.toBeInstanceOf(DomainValidationError);
     expect(repository.save).not.toHaveBeenCalled();
   });
 
-  it('rejette une quantité sans unité sans sauvegarder', async () => {
-    await expect(useCase.execute({ ...input, quantity: 1 })).rejects.toBeInstanceOf(DomainValidationError);
+  it('rejette un contenu sur un produit vendu au kilo sans sauvegarder', async () => {
+    await expect(
+      useCase.execute({ ...input, unit: 'KG', content: { itemCount: 1, itemSize: { amount: 500, unit: 'g' } } }),
+    ).rejects.toBeInstanceOf(DomainValidationError);
     expect(repository.save).not.toHaveBeenCalled();
   });
 
-  it('rejette une unité de quantité inconnue sans sauvegarder', async () => {
-    await expect(useCase.execute({ ...input, quantity: 1, quantityUnit: 'cl' })).rejects.toBeInstanceOf(
-      DomainValidationError,
-    );
+  it('rejette une unité de mesure inconnue sans sauvegarder', async () => {
+    await expect(
+      useCase.execute({ ...input, unit: 'LOT', content: { itemCount: 1, itemSize: { amount: 1, unit: 'cl' } } }),
+    ).rejects.toBeInstanceOf(DomainValidationError);
     expect(repository.save).not.toHaveBeenCalled();
   });
 
@@ -107,6 +125,11 @@ describe('CreateProductUseCase', () => {
     await expect(useCase.execute({ ...input, unit: 'GRAMME' })).rejects.toBeInstanceOf(
       DomainValidationError,
     );
+    expect(repository.save).not.toHaveBeenCalled();
+  });
+
+  it('rejette une image qui n\'est pas une URL sans sauvegarder', async () => {
+    await expect(useCase.execute({ ...input, image: 'pommes.jpg' })).rejects.toBeInstanceOf(DomainValidationError);
     expect(repository.save).not.toHaveBeenCalled();
   });
 

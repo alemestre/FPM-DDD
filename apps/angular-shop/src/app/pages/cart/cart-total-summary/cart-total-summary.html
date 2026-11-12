@@ -1,0 +1,88 @@
+
+<div class="card border shadow-sm position-sticky top-0">
+
+  <!-- En-tête -->
+  <div class="card-header bg-body-tertiary">
+    <h2 class="h5 mb-0">
+      Order Summary
+    </h2>
+  </div>
+
+  <!-- Contenu -->
+  <div class="card-body">
+
+    @if (!cart.isEmpty()) {
+
+      <div class="d-flex flex-column gap-2">
+
+        <!-- Sous-total -->
+        <div class="d-flex justify-content-between align-items-center py-2">
+          <span>Items ({{ cart.totalItems() }})</span>
+          <span>{{ cart.subtotal() | currency }}</span>
+        </div>
+
+        <!-- Taxes -->
+        <div class="d-flex justify-content-between align-items-center py-2">
+          <span>Tax</span>
+          <span>{{ cart.tax() | currency }}</span>
+        </div>
+
+        <!-- Séparateur -->
+        <hr class="my-2">
+
+        <!-- Total -->
+        <div class="d-flex justify-content-between align-items-center pt-2 pb-1 fs-5">
+          <strong>Total</strong>
+          <strong>{{ cart.total() | currency }}</strong>
+        </div>
+
+      </div>
+
+    } @else {
+
+      <!-- Panier vide -->
+      <div class="text-center text-secondary py-3">
+        <i class="bi bi-cart-x fs-2"></i>
+        <p class="mb-0 mt-2">No items in cart</p>
+      </div>
+
+    }
+
+  </div>
+
+  <!-- Actions -->
+  <div class="card-footer bg-transparent">
+
+    @if (cart.items().length > 0) {
+
+      <div class="d-flex flex-column gap-2 w-100">
+
+        <!-- Checkout -->
+        <button
+          type="button"
+          class="btn btn-primary w-100 py-2 fw-medium"
+          (click)="proceedToCheckout()">
+
+          <i class="bi bi-credit-card me-2"></i>
+          Proceed to Checkout
+
+        </button>
+
+        <!-- Vider le panier -->
+        <button
+          type="button"
+          class="btn btn-outline-secondary w-100"
+          (click)="clearCart()">
+
+          <i class="bi bi-trash me-2"></i>
+          Clear Cart
+
+        </button>
+
+      </div>
+
+    }
+
+  </div>
+
+</div>

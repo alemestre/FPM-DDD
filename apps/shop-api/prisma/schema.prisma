@@ -103,31 +103,34 @@ enum ProductUnit {
   KG
   BOTTE
   PIECE
-  CONDITIONNEMENT
+  DOUZAINE
   BOUTEILLE
+  LOT
 }
 
-enum QuantityUnit {
-  pcs
+enum MeasureUnit {
   g
-  ml
   kg
+  ml
   l
 }
 
 model Product {
-  uid          Int           @unique @default(autoincrement())
-  id           String        @id @db.Uuid
-  name         String
-  price        Decimal       @db.Decimal(10, 2)
-  stock        Int
-  minStock     Int
-  vatRate      Decimal       @db.Decimal(5, 2)
-  unit         ProductUnit   @default(KG)
-  quantity     Decimal?      @db.Decimal(10, 3)
-  quantityUnit QuantityUnit?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime?     @updatedAt
+  uid              Int          @unique @default(autoincrement())
+  id               String       @id @db.Uuid
+  name             String
+  price            Decimal      @db.Decimal(10, 2)
+  stock            Int
+  minStock         Int
+  vatRate          Decimal      @db.Decimal(5, 2)
+  unit             ProductUnit  @default(KG)
+  /// What one sale unit contains: contentItemCount × (contentAmount contentUnit), e.g. 4 × 125 g.
+  contentItemCount Int?
+  contentAmount    Decimal?     @db.Decimal(10, 3)
+  contentUnit      MeasureUnit?
+  image            String
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime?    @updatedAt
 
   producer   Producer @relation(fields: [producerId], references: [id], onDelete: Restrict)
   producerId String   @db.Uuid

@@ -34,7 +34,12 @@ export const appRoutes: Route[] = [
             path: 'produits/:slug',
             component: Products,
             data: { breadcrumb: 'Produits' }
-          }]
+          },
+          {
+            path: 'panier',
+            loadComponent: () => import('./pages/cart/cart').then(m => m.CartComponent)
+          }
+        ]
       }
     ]
   },

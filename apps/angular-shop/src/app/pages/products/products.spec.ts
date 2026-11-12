@@ -23,8 +23,8 @@ const product = (id: string, categoryId: string): ProductWithProducerResponseDto
     producer: { id: 'producer-1', name: 'Ferme des Lilas' },
     categoryId,
     unit: 'KG',
-    quantity: null,
-    quantityUnit: null,
+    content: null,
+    referencePrice: { amount: 2.5, unit: 'kg' },
 });
 
 describe('Products', () => {
