@@ -1,10 +1,10 @@
 import { email, form, FormField, FormRoot, minLength, required } from '@angular/forms/signals';
-import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ResendEmail } from '../register/resend-email/resend-email';
 import { AuthService } from '../../../services/auth.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { ResendEmail } from '../register/resend-email/resend-email';
 
 interface LoginModel {
   email: string;
@@ -26,7 +26,6 @@ export class Login {
   protected readonly serverError = signal<string | null>(null);
   /** Adresse saisie quand l'API répond 403 : le compte existe mais son e-mail n'est pas confirmé. */
   protected readonly unverifiedEmail = signal<string | null>(null);
-  protected readonly resendStatus = signal<'idle' | 'sending' | 'sent' | 'failed'>('idle');
 
   protected readonly loginForm = form(
     this.model,
@@ -43,7 +42,6 @@ export class Login {
         action: async (field) => {
           this.serverError.set(null);
           this.unverifiedEmail.set(null);
-          this.resendStatus.set('idle');
           const { email, password } = field().value();
           try {
             await firstValueFrom(this.authService.login(email, password));
@@ -59,21 +57,6 @@ export class Login {
       }
     }
   );
-
-  /** Renvoie l'e-mail de confirmation au compte qui n'a pas encore confirmé son adresse. */
-  protected async resendVerificationEmail(): Promise<void> {
-    const email = this.unverifiedEmail();
-    if (!email) {
-      return;
-    }
-    this.resendStatus.set('sending');
-    try {
-      await firstValueFrom(this.authService.resendVerificationEmail(email));
-      this.resendStatus.set('sent');
-    } catch {
-      this.resendStatus.set('failed');
-    }
-  }
 
   protected togglePasswordVisibility() {
     this.showPassword.update((visible) => !visible);
