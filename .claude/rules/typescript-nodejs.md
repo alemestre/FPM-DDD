@@ -24,7 +24,6 @@ Prefer explicit, maintainable TypeScript. Do not use `any`. Use `unknown` at unt
 - Mark immutable fields and properties `readonly` where appropriate.
 - Prefer `z.infer<typeof schema>` over hand-written DTO types when Zod already describes the shape.
 - Do not use `@ts-ignore`. Prefer `@ts-expect-error` with a one-line reason only when unavoidable.
-- Explicitly declare return types for exported functions, public methods and application use cases.
 - Allow TypeScript inference for simple local and private functions.
 - Avoid unnecessary type assertions.
 
@@ -57,4 +56,4 @@ Prefer explicit, maintainable TypeScript. Do not use `any`. Use `unknown` at unt
 
 - Treat process input (HTTP, queues, env, files) as untrusted. Validate with Zod before use.
 - Prefer `Promise.all` for independent async work. Do not await in a loop unless order or rate limits require it.
-- Keep secrets in env, never in source. Validate env with a Zod schema at startup.
+- Keep secrets in env, never in source.
