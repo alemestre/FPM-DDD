@@ -6,7 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { User } from '../models/entities/user';
 import { CONSTANTS } from '../constant';
 
-export type RegisterPayload = Pick<User, 'firstName' | 'lastName' | 'email'> & {
+export type RegisterPayload = Pick<User, 'firstName' | 'lastName' | 'email' | 'phone'> & {
     password: string;
 };
 

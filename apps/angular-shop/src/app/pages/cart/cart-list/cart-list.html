@@ -23,6 +23,7 @@
     <div class="d-flex flex-column gap-3">
 
       @for (item of cart.items(); track item.product.id) {
+        @let priceWithTax = item.product.price * (1 + (item.product.vatRate / 100)) ;
 
         <div class="card">
 
@@ -55,7 +56,7 @@
                 </p>
 
                 <div class="fw-semibold text-primary">
-                  {{ item.product.price | currency:'EUR' }}
+                  {{ priceWithTax | currency:'EUR' }}
                 </div>
 
               </div>
@@ -95,7 +96,7 @@
                     </div>
 
                     <strong class="text-nowrap">
-                      {{ (item.product.price * item.quantity) | currency: 'EUR' }}
+                      {{ (priceWithTax * item.quantity) | currency: 'EUR' }}
                     </strong>
 
                   </div>

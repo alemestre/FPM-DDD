@@ -1,7 +1,7 @@
 import { Route } from '@angular/router';
 import { Home } from './pages/home/home';
 import { About } from './pages/about/about';
-import { Products } from './pages/products/products';
+import { Category } from './pages/category/category';
 import { Login } from './pages/auth/login/login';
 import { Register } from './pages/auth/register/register';
 import { MainLayout } from './layout/main/main-layout';
@@ -32,7 +32,7 @@ export const appRoutes: Route[] = [
           },
           {
             path: 'produits/:slug',
-            component: Products,
+            component: Category,
             data: { breadcrumb: 'Produits' }
           },
           {

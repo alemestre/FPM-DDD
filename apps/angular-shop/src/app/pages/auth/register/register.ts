@@ -81,6 +81,7 @@ export class Register {
               this.authService.register({
                 firstName: firstName.trim(),
                 lastName: lastName.trim(),
+                phone,
                 email,
                 password
               })

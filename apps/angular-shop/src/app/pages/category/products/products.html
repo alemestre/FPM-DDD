@@ -3,12 +3,10 @@
     <div class="spinner-border text-primary" role="status">
   </div>
   </div>
-
 } @else {
   <section class="container py-5">
-    @if (category(); as category) {
       <header class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-4">
-        <h1 class="h2 fw-bold text-secondary mb-0">{{ category.name | titlecase }}</h1>
+        <h1 class="h2 fw-bold text-secondary mb-0">{{ category().name | titlecase }}</h1>
         <p class="text-body-secondary mb-0">
           {{ productsCount() }} {{ productsCount() > 1 ? 'produits' : 'produit' }}
         </p>
@@ -28,9 +26,6 @@
           Aucun produit dans cette catégorie pour le moment.
         </p>
       }
-    } @else {
-      <p class="text-body-secondary text-center py-5 mb-0">Cette catégorie n'existe pas.</p>
-    }
   </section>
 }
 

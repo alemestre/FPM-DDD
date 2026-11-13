@@ -1,8 +1,8 @@
-import { NotificationService } from '../../../components/notification/notification.service';
+import { NotificationService } from '../../../services/notification.service';
 import { CommonModule, CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CartService } from '../cart.service';
+import { CartService } from '../../../services/cart.service';
 
 @Component({
   selector: 'app-cart-list',

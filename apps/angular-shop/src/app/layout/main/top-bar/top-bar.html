@@ -1,0 +1,58 @@
+<nav aria-label="Barre principale" class="navbar py-1">
+  <div class="container-fluid gap-3">
+    <a
+      (click)="closeMenu()"
+      class="navbar-brand d-inline-flex align-items-center me-auto app-brand"
+      routerLink="/home"
+    >
+      <img
+        alt="Logo de l'application"
+        class="d-inline-block align-text-top"
+        height="40"
+        src="./images/logo.png"
+      />
+    </a>
+
+    <a
+      (click)="closeMenu()"
+      ariaCurrentWhenActive="page"
+      class="nav-link link-secondary link-opacity-75-hover position-relative fs-5 app-cart"
+      routerLink="/panier"
+      routerLinkActive="text-primary"
+    >
+      <i aria-hidden="true" class="bi bi-cart3"></i>
+      <small>
+              <span
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary smalls app-cart-badge"
+              >
+                {{ cartService.totalItems() }}
+                <span aria-atomic="true" aria-live="polite" class="visually-hidden">
+                    {{ screenReaderText() }}
+                </span>
+            </span>
+      </small>
+    </a>
+
+    @if (isAuthenticated()) {
+      <app-profile  [(menuOpen)]="menuOpen"/>
+    } @else {
+      <a
+        (click)="closeMenu()"
+        class="btn btn-sm btn-outline-primary rounded-pill fw-medium px-3"
+        routerLink="/login"
+      >Se connecter</a
+      >
+    }
+
+    <button
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="menuOpen()"
+      aria-controls="category-nav"
+      aria-label="Ouvrir ou fermer le menu des catégories"
+      class="navbar-toggler d-lg-none border-0"
+      type="button"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </div>
+</nav>

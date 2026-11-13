@@ -1,7 +1,7 @@
 import { ProductWithProducerResponseDto as Product } from '@fpm/contracts';
 import { afterNextRender, computed, effect, inject, Injectable, signal } from '@angular/core';
-import { LocalStorageService } from '../../services/local-storage.service';
-import { CartItem } from './cart-item';
+import { LocalStorageService } from './local-storage.service';
+import { CartItem } from '../pages/cart/cart-item';
 
 export const CART_STORAGE_KEY = 'fpm_cart';
 
@@ -21,7 +21,13 @@ export class CartService {
         this.cartItems().reduce((total, item) => total + item.product.price * item.quantity, 0),
     );
     isEmpty = computed(() => this.cartItems().length === 0);
-    tax = computed(() => this.subtotal() * 0.1); // 10% tax
+    tax = computed(() =>
+        this.cartItems().reduce(
+            (total, item) =>
+                total + ((item.product.price * item.product.vatRate) / 100) * item.quantity,
+            0,
+        ),
+    );
     total = computed(() => this.subtotal() + this.tax());
 
     private readonly restored = signal(false);
@@ -47,11 +53,32 @@ export class CartService {
     // localStorage peut contenir n'importe quoi (ancien format, édition manuelle) :
     // un panier qui n'est pas un tableau ferait planter totalItems et tout le rendu.
     private loadCartFromStorage(): CartItem[] {
-      const saved = this.localStorageService.getItem<CartItem[]>(CART_STORAGE_KEY)
-      return saved ? saved.slice(0, this.MAX_CART_ITEMS ) : []
+        const saved = this.localStorageService.getItem(CART_STORAGE_KEY);
+        if (!Array.isArray(saved)) return [];
+        return saved.filter((item) => this.isValidCartItem(item)).slice(0, this.MAX_CART_ITEMS);
     }
 
-    addToCart(product: Product, quantity: number = 1): { success: boolean; message: string } {
+    // Vérifie ce dont le panier a besoin : un id pour identifier le produit, un prix et
+    // un taux de TVA pour les totaux, et une quantité acceptée par addToCart.
+    private isValidCartItem(value: unknown): value is CartItem {
+        if (typeof value !== 'object' || value === null) return false;
+        const { product, quantity } = value as Record<string, unknown>;
+        if (typeof product !== 'object' || product === null) return false;
+        const { id, price, vatRate } = product as Record<string, unknown>;
+        return (
+            typeof id === 'string' &&
+            id.length > 0 &&
+            typeof price === 'number' &&
+            Number.isFinite(price) &&
+            typeof vatRate === 'number' &&
+            Number.isFinite(vatRate) &&
+            Number.isSafeInteger(quantity) &&
+            (quantity as number) > 0 &&
+            (quantity as number) <= this.MAX_QUANTITY
+        );
+    }
+
+    addToCart(product: Product, quantity = 1): { success: boolean; message: string } {
         if (!Number.isSafeInteger(quantity) || quantity <= 0) {
             return { success: false, message: 'Quantity must be greater than 0' };
         }

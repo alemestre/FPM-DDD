@@ -11,7 +11,7 @@ import { isPlatformBrowser } from '@angular/common';
 export class LocalStorageService {
     private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-    setItem(key: string, value: unknown): void {
+    setItem(key: string, value: unknown) {
         if (!this.isBrowser) return;
         try {
             localStorage.setItem(key, JSON.stringify(value));
@@ -31,7 +31,7 @@ export class LocalStorageService {
         }
     }
 
-    removeItem(key: string): void {
+    removeItem(key: string) {
         if (!this.isBrowser) return;
         try {
             localStorage.removeItem(key);

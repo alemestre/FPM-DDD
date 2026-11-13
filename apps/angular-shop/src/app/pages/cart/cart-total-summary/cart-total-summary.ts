@@ -1,7 +1,7 @@
-import { NotificationService } from '../../../components/notification/notification.service';
+import { NotificationService } from '../../../services/notification.service';
 import { Component, inject } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
-import { CartService } from '../cart.service';
+import { CartService } from '../../../services/cart.service';
 import { Router } from '@angular/router';
 
 @Component({

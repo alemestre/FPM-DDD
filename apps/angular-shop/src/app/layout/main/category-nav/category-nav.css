@@ -1,0 +1,27 @@
+/* Seule règle sans équivalent Bootstrap : le soulignement animé des liens. */
+@media (min-width: 992px) {
+    .nav-link::before {
+        content: '';
+        position: absolute;
+        right: 0.5rem;
+        bottom: 0.25rem;
+        left: 0.5rem;
+        height: 2px;
+        border-radius: 2px;
+        background-color: #fff;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.2s ease;
+    }
+
+    .nav-link:hover::before,
+    .nav-link.active::before {
+        transform: scaleX(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nav-link::before {
+        transition: none;
+    }
+}

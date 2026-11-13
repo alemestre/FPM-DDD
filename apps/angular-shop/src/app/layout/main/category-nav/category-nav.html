@@ -1,0 +1,33 @@
+<nav class="navbar navbar-expand-lg bg-primary py-0" data-bs-theme="dark" aria-label="Catégories">
+    <div class="container-fluid">
+        <div class="navbar-collapse" id="category-nav" [ngbCollapse]="!menuOpen()">
+            <ul class="navbar-nav mx-auto flex-lg-wrap justify-content-lg-center app-categories">
+                @for (category of categories(); track category.id) {
+                <li class="nav-item">
+                    <a
+                        class="nav-link position-relative fw-medium px-lg-3"
+                        [routerLink]="['/produits', category.slug]"
+                        routerLinkActive="active"
+                        ariaCurrentWhenActive="page"
+                        (click)="closeMenu()"
+                    >
+                        {{ category.name | titlecase }}
+                    </a>
+                </li>
+                }
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link position-relative fw-medium px-lg-3"
+                        routerLink="/a-propos"
+                        routerLinkActive="active"
+                        ariaCurrentWhenActive="page"
+                        (click)="closeMenu()"
+                    >
+                        À propos
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

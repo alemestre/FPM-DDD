@@ -1,104 +1,93 @@
-import type { CategoryResponseDto, ProductWithProducerResponseDto } from '@fpm/contracts';
-import { CategoriesService } from '../../services/categories.service';
-import { ProductsService } from '../../services/products.service';
-import { ActivatedRoute, convertToParamMap, type ParamMap } from '@angular/router';
+import type { ProductWithProducerResponseDto } from '@fpm/contracts';
 import { TestBed } from '@angular/core/testing';
-import { BehaviorSubject, of, throwError } from 'rxjs';
-import { Cart } from './cart';
+import { provideRouter } from '@angular/router';
+import { CartService } from '../../services/cart.service';
+import { NotificationService } from '../../services/notification.service';
+import { CartComponent } from './cart';
 
-const FRUITS: CategoryResponseDto = {
-    id: 'cat-1',
-    name: 'Fruits & Légumes',
-    slug: 'fruits-legumes',
-};
-const VIANDES: CategoryResponseDto = { id: 'cat-2', name: 'Viandes', slug: 'viandes' };
-
-const product = (id: string, categoryId: string): ProductWithProducerResponseDto => ({
+const product = (id: string, price: number): ProductWithProducerResponseDto => ({
     id,
     name: `Produit ${id}`,
-    price: 2.5,
-    vatRate: 5.5,
+    image: 'https://example.com/produit.jpg',
+    price,
+    vatRate: 10,
     stock: 10,
     minStock: 1,
     producer: { id: 'producer-1', name: 'Ferme des Lilas' },
-    categoryId,
+    categoryId: 'cat-1',
     unit: 'KG',
     content: null,
-    referencePrice: { amount: 2.5, unit: 'kg' },
+    referencePrice: { amount: price, unit: 'kg' },
 });
 
-describe('Products', () => {
-    let paramMap: BehaviorSubject<ParamMap>;
-    const categories = [FRUITS, VIANDES];
-    const productsByCategory: Record<string, ProductWithProducerResponseDto[]> = {
-        'cat-1': [product('p-1', 'cat-1'), product('p-2', 'cat-1')],
-        'cat-2': [product('p-3', 'cat-2')],
-    };
-    const categoriesService = {
-        getCategoryBySlug: vi.fn((slug: string) => {
-            const category = categories.find((c) => c.slug === slug);
-            return category ? of(category) : throwError(() => new Error('404'));
-        }),
-    };
-    const productsService = {
-        getProductsByCategoryId: vi.fn((categoryId: string) =>
-            of(productsByCategory[categoryId] ?? []),
-        ),
-    };
-
-    const createComponent = async (slug: string | null) => {
-        paramMap = new BehaviorSubject(convertToParamMap(slug ? { slug } : {}));
-        TestBed.configureTestingModule({
-            imports: [Cart],
-            providers: [
-                { provide: ActivatedRoute, useValue: { paramMap } },
-                { provide: CategoriesService, useValue: categoriesService },
-                { provide: ProductsService, useValue: productsService },
-            ],
-        });
-        const fixture = TestBed.createComponent(Cart);
-        await fixture.whenStable();
-        return fixture.componentInstance;
-    };
-
+describe('CartComponent', () => {
     beforeEach(() => {
-        categoriesService.getCategoryBySlug.mockClear();
-        productsService.getProductsByCategoryId.mockClear();
+        localStorage.clear();
     });
 
-    it("résout le slug de l'URL en catégorie, puis charge ses produits par id", async () => {
-        const component = await createComponent('fruits-legumes');
+    const createComponent = async () => {
+        TestBed.configureTestingModule({
+            imports: [CartComponent],
+            providers: [provideRouter([])],
+        });
+        const fixture = TestBed.createComponent(CartComponent);
+        const cart = TestBed.inject(CartService);
+        await fixture.whenStable();
+        const element = fixture.nativeElement as HTMLElement;
+        return { fixture, cart, element };
+    };
 
-        expect(categoriesService.getCategoryBySlug).toHaveBeenCalledWith('fruits-legumes');
-        expect(productsService.getProductsByCategoryId).toHaveBeenCalledWith('cat-1');
-        expect(component.category()).toEqual(FRUITS);
-        expect(component.products().map((p) => p.id)).toEqual(['p-1', 'p-2']);
-        expect(component.hasProducts()).toBe(true);
+    it('affiche le panier vide', async () => {
+        const { element } = await createComponent();
+
+        expect(element.textContent).toContain('Votre panier est tristement vide');
+        expect(element.textContent).toContain('No items in cart');
+        expect(element.querySelector('.btn-primary')).toBeNull();
     });
 
-    it('recharge les produits quand le slug change', async () => {
-        const component = await createComponent('fruits-legumes');
+    it('affiche les produits du panier et le récapitulatif', async () => {
+        const { fixture, cart, element } = await createComponent();
 
-        paramMap.next(convertToParamMap({ slug: 'viandes' }));
+        cart.addToCart(product('p-1', 10), 2);
+        cart.addToCart(product('p-2', 5));
+        await fixture.whenStable();
 
-        expect(productsService.getProductsByCategoryId).toHaveBeenLastCalledWith('cat-2');
-        expect(component.category()).toEqual(VIANDES);
-        expect(component.products().map((p) => p.id)).toEqual(['p-3']);
+        expect(element.querySelectorAll('app-cart-list .card')).toHaveLength(2);
+        expect(element.textContent).toContain('Produit p-1');
+        expect(element.textContent).toContain('Produit p-2');
+        expect(element.textContent).toContain('Items (3)');
+        expect(element.textContent).not.toContain('Votre panier est tristement vide');
     });
 
-    it("n'affiche aucune catégorie ni produit si le slug est inconnu", async () => {
-        const component = await createComponent('inconnue');
+    it('retire un produit avec le bouton de suppression', async () => {
+        const { fixture, cart, element } = await createComponent();
+        cart.addToCart(product('p-1', 10));
+        await fixture.whenStable();
 
-        expect(productsService.getProductsByCategoryId).not.toHaveBeenCalled();
-        expect(component.category()).toBeNull();
-        expect(component.products()).toEqual([]);
-        expect(component.hasProducts()).toBe(false);
+        element.querySelector<HTMLButtonElement>('button[aria-label="Remove item"]')?.click();
+        await fixture.whenStable();
+
+        expect(cart.isEmpty()).toBe(true);
+        expect(element.textContent).toContain('Votre panier est tristement vide');
     });
 
-    it("n'appelle pas l'API sans slug", async () => {
-        const component = await createComponent(null);
+    it('vide le panier avec le bouton "Clear Cart"', async () => {
+        const { fixture, cart, element } = await createComponent();
+        const notifications = TestBed.inject(NotificationService);
+        cart.addToCart(product('p-1', 10));
+        cart.addToCart(product('p-2', 5));
+        await fixture.whenStable();
 
-        expect(categoriesService.getCategoryBySlug).not.toHaveBeenCalled();
-        expect(component.products()).toEqual([]);
+        const clearButton = [...element.querySelectorAll<HTMLButtonElement>('button')].find((b) =>
+            b.textContent?.includes('Clear Cart'),
+        );
+        expect(clearButton).toBeDefined();
+        clearButton?.click();
+        await fixture.whenStable();
+
+        expect(cart.isEmpty()).toBe(true);
+        expect(notifications.notifications().map((n) => n.message)).toContain(
+            'Cart cleared successfully!',
+        );
     });
 });

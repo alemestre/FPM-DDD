@@ -1,0 +1,13 @@
+@if (isLoading()) {
+    <div class="d-flex justify-content-center mt-4">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+} @else {
+  @if (category(); as category) {
+    <app-products [category]="category" />
+  } @else {
+    <p class="text-body-secondary text-center py-5 mb-0">Cette catégorie n'existe pas.</p>
+  }
+}
+
+

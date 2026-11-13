@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { NgbToastModule } from '@ng-bootstrap/ng-bootstrap';
-import { NotificationService } from './notification.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-notification',

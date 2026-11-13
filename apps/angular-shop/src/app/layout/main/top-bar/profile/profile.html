@@ -1,0 +1,37 @@
+<div class="app-profile" ngbDropdown placement="bottom-end">
+        <button
+          aria-label="Mon compte"
+          class="btn btn-link link-secondary p-0 border-0"
+          ngbDropdownToggle
+          type="button"
+        >
+          <i aria-hidden="true" class="bi bi-person-circle fs-3 lh-1"></i>
+        </button>
+        <ul class="dropdown-menu border-0 shadow rounded-3 px-2" ngbDropdownMenu>
+          <li>
+            <a
+              (click)="closeMenu()"
+              class="d-flex align-items-center gap-2 rounded-2 py-2"
+              ngbDropdownItem
+              routerLink="/profil"
+            >
+              <i aria-hidden="true" class="bi bi-person"></i>
+              Mon profil
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider"/>
+          </li>
+          <li>
+            <button
+              (click)="logout()"
+              class="d-flex align-items-center gap-2 rounded-2 py-2"
+              ngbDropdownItem
+              type="button"
+            >
+              <i aria-hidden="true" class="bi bi-box-arrow-right"></i>
+              Se déconnecter
+            </button>
+          </li>
+        </ul>
+      </div>

@@ -1,9 +1,10 @@
 import { email, form, FormField, FormRoot, minLength, required } from '@angular/forms/signals';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { NotificationService } from '../../../services/notification.service';
 
 interface LoginModel {
   email: string;
