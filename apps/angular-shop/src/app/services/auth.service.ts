@@ -52,17 +52,29 @@ export class AuthService {
             );
     }
 
-    register(payload: RegisterPayload): Observable<{ user: User }> {
+    /**
+     * Crée le compte. L'API n'ouvre pas de session : le compte doit d'abord confirmer
+     * son adresse e-mail avec le lien reçu, puis se connecter.
+     */
+    register(payload: RegisterPayload): Observable<void> {
         return this.httpClient
-            .post<{ user: User }>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.REGISTER}`, payload, {
-                withCredentials: true,
-            })
-            .pipe(
-                tap((response) => {
-                    // Comme pour login : les tokens arrivent dans des cookies HTTP-only
-                    this._currentUser.set(response.user);
-                }),
-            );
+            .post<ApiResponseDto<CurrentUserResponseDto>>(
+                `${this._apiUrl}/${CONSTANTS.API_END_POINTS.REGISTER}`,
+                payload,
+            )
+            .pipe(map(() => undefined));
+    }
+
+    /** Confirme l'adresse e-mail avec le jeton reçu par e-mail. Répond 400 si le lien est invalide ou expiré. */
+    verifyEmail(token: string): Observable<void> {
+        return this.httpClient.post<void>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.VERIFY_EMAIL}`, { token });
+    }
+
+    /** Demande un nouveau lien. L'API répond toujours 204, qu'un compte existe ou non. */
+    resendVerificationEmail(email: string): Observable<void> {
+        return this.httpClient.post<void>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.RESEND_VERIFICATION}`, {
+            email,
+        });
     }
 
     // Méthode pour rafraîchir les tokens. Utilisée par l'intercepteur HTTP

@@ -4,7 +4,7 @@ import { AuthService } from '../../../services/auth.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { NotificationService } from '../../../services/notification.service';
+import { ResendEmail } from '../register/resend-email/resend-email';
 
 interface LoginModel {
   email: string;
@@ -13,7 +13,7 @@ interface LoginModel {
 
 @Component({
   selector: 'app-login',
-  imports: [FormRoot, FormField, RouterLink],
+  imports: [FormRoot, FormField, RouterLink, ResendEmail],
   templateUrl: './login.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -24,6 +24,9 @@ export class Login {
   protected readonly model = signal<LoginModel>({ email: '', password: '' });
   protected readonly showPassword = signal(false);
   protected readonly serverError = signal<string | null>(null);
+  /** Adresse saisie quand l'API répond 403 : le compte existe mais son e-mail n'est pas confirmé. */
+  protected readonly unverifiedEmail = signal<string | null>(null);
+  protected readonly resendStatus = signal<'idle' | 'sending' | 'sent' | 'failed'>('idle');
 
   protected readonly loginForm = form(
     this.model,
@@ -39,11 +42,16 @@ export class Login {
       submission: {
         action: async (field) => {
           this.serverError.set(null);
+          this.unverifiedEmail.set(null);
+          this.resendStatus.set('idle');
           const { email, password } = field().value();
           try {
             await firstValueFrom(this.authService.login(email, password));
             await this.router.navigateByUrl('/home');
           } catch (error) {
+            if (error instanceof HttpErrorResponse && error.status === 403) {
+              this.unverifiedEmail.set(email);
+            }
             this.serverError.set(this.toErrorMessage(error));
           }
           return undefined;
@@ -52,6 +60,21 @@ export class Login {
     }
   );
 
+  /** Renvoie l'e-mail de confirmation au compte qui n'a pas encore confirmé son adresse. */
+  protected async resendVerificationEmail(): Promise<void> {
+    const email = this.unverifiedEmail();
+    if (!email) {
+      return;
+    }
+    this.resendStatus.set('sending');
+    try {
+      await firstValueFrom(this.authService.resendVerificationEmail(email));
+      this.resendStatus.set('sent');
+    } catch {
+      this.resendStatus.set('failed');
+    }
+  }
+
   protected togglePasswordVisibility() {
     this.showPassword.update((visible) => !visible);
   }
@@ -59,6 +82,9 @@ export class Login {
   private toErrorMessage(error: unknown) {
     if (error instanceof HttpErrorResponse && (error.status === 400 || error.status === 401)) {
       return 'Identifiants incorrects.';
+    }
+    if (error instanceof HttpErrorResponse && error.status === 403) {
+      return 'Vous devez confirmer votre adresse e-mail avant de vous connecter. Consultez votre boîte mail.';
     }
     return 'Une erreur est survenue. Veuillez réessayer.';
   }

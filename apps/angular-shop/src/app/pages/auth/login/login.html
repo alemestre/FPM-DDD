@@ -16,7 +16,11 @@
                         {{ error }}
                     </div>
                     }
-
+                  @if (unverifiedEmail(); as email) {
+                    <div class="mb-3 small" aria-live="polite">
+                      <app-resend-email [email]="email" [displayLoginButton]="false"/>
+                    </div>
+                  }
                     <form [formRoot]="loginForm">
                         <div class="mb-3">
                             <label for="login-email" class="form-label fw-medium text-secondary">

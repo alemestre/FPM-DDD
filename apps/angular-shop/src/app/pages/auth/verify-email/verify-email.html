@@ -1,0 +1,102 @@
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-10 col-md-7 col-lg-5 col-xl-4">
+            <div class="card rounded-4 overflow-hidden">
+                <div class="text-center pt-4 pb-1">
+                    <h1 class="d-inline-block fs-6 fw-semibold text-uppercase text-secondary border-bottom border-2 border-primary pb-2 mb-0">
+                        Vérification de l'e-mail
+                    </h1>
+                </div>
+
+                <div class="card-body p-4 text-center" aria-live="polite">
+                    @switch (status()) {
+                    @case ('verifying') {
+                    <div class="spinner-border text-primary my-3" role="status">
+                        <span class="visually-hidden">Vérification en cours…</span>
+                    </div>
+                    <p class="text-secondary mb-0">Vérification de votre adresse e-mail…</p>
+                    }
+
+                    @case ('verified') {
+                    <i class="bi bi-check-circle-fill text-success display-5" aria-hidden="true"></i>
+                    <p class="fw-medium mt-3 mb-1">Votre adresse e-mail est confirmée.</p>
+                    <p class="text-secondary small mb-4">Vous pouvez maintenant vous connecter.</p>
+                    <a class="btn btn-primary rounded-pill fw-medium w-100 py-2" routerLink="/login">Se connecter</a>
+                    }
+
+                    @case ('error') {
+                    <i class="bi bi-wifi-off text-danger display-5" aria-hidden="true"></i>
+                    <p class="fw-medium mt-3 mb-4">La vérification n'a pas pu aboutir. Veuillez réessayer.</p>
+                    <button type="button" class="btn btn-primary rounded-pill fw-medium w-100 py-2" (click)="verify()">
+                        Réessayer
+                    </button>
+                    }
+
+                    @case ('invalid') {
+                    <i class="bi bi-exclamation-triangle-fill text-warning display-5" aria-hidden="true"></i>
+                    <p class="fw-medium mt-3 mb-1">Ce lien de vérification est invalide ou a expiré.</p>
+
+                    @if (resent()) {
+                    <div class="alert alert-success small mt-4 mb-0 text-start" role="status">
+                        Si un compte en attente de vérification existe pour cette adresse, un nouveau lien vient de lui
+                        être envoyé. Il est valable 24 heures.
+                    </div>
+                    } @else {
+                    <p class="text-secondary small mb-4">Saisissez votre adresse e-mail pour recevoir un nouveau lien.</p>
+
+                    @if (resendError(); as error) {
+                    <div class="alert alert-danger d-flex align-items-center gap-2 py-2 small text-start" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                        {{ error }}
+                    </div>
+                    }
+
+                    <form class="text-start" [formRoot]="resendForm">
+                        <label for="resend-email" class="form-label fw-medium text-secondary">Adresse e-mail</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-primary-subtle text-primary">
+                                <i class="bi bi-envelope" aria-hidden="true"></i>
+                            </span>
+                            <input
+                                id="resend-email"
+                                type="email"
+                                class="form-control"
+                                autocomplete="email"
+                                placeholder="vous@exemple.fr"
+                                [formField]="resendForm.email"
+                                [class.is-invalid]="resendForm.email().touched() && resendForm.email().invalid()"
+                                [attr.aria-describedby]="resendForm.email().touched() && resendForm.email().invalid() ? 'resend-email-errors' : null"
+                            />
+                        </div>
+                        @if (resendForm.email().touched() && resendForm.email().invalid()) {
+                        <div id="resend-email-errors" class="invalid-feedback d-block">
+                            @for (error of resendForm.email().errors(); track error.kind) {
+                            <div>{{ error.message }}</div>
+                            }
+                        </div>
+                        }
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary rounded-pill fw-medium w-100 py-2 mt-4"
+                            [disabled]="resendForm().submitting()"
+                        >
+                            @if (resendForm().submitting()) {
+                            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                            Envoi… } @else { Recevoir un nouveau lien }
+                        </button>
+                    </form>
+                    }
+                    }
+                    }
+
+                    <p class="text-center text-secondary small mt-4 mb-0">
+                        <a class="link-primary fw-medium link-underline-opacity-0 link-underline-opacity-100-hover" routerLink="/home">
+                            Retour à la boutique
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

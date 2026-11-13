@@ -6,6 +6,8 @@ export const CONSTANTS = {
     LOGIN: 'login',
     REGISTER: 'register',
     LOGOUT: 'logout',
-    ME: 'me'
+    ME: 'me',
+    VERIFY_EMAIL: 'verify-email',
+    RESEND_VERIFICATION: 'resend-verification'
   },
 };

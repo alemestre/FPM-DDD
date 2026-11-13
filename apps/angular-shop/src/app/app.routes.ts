@@ -4,6 +4,7 @@ import { About } from './pages/about/about';
 import { Category } from './pages/category/category';
 import { Login } from './pages/auth/login/login';
 import { Register } from './pages/auth/register/register';
+import { VerifyEmail } from './pages/auth/verify-email/verify-email';
 import { MainLayout } from './layout/main/main-layout';
 import { AuthLayout } from './layout/auth/auth-layout';
 
@@ -56,6 +57,12 @@ export const appRoutes: Route[] = [
         path: 'register',
         component: Register,
         data: { breadcrumb: 'Inscription' }
+      },
+      {
+        // Lien envoyé par l'API dans l'e-mail de vérification : /verifier-email?token=…
+        path: 'verifier-email',
+        component: VerifyEmail,
+        data: { breadcrumb: 'Vérification de l’e-mail' }
       }
     ]
   },

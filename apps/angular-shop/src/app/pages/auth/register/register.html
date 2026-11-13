@@ -7,6 +7,17 @@
                 </div>
 
                 <div class="card-body p-4">
+                  @if (registeredEmail(); as email) {
+                    <div aria-live="polite" class="text-center">
+                      <i aria-hidden="true" class="bi bi-envelope-check-fill text-success display-5"></i>
+                      <p class="fw-medium mt-3 mb-1">Consultez votre boîte mail</p>
+                      <p class="text-secondary small">
+                        Un e-mail de confirmation a été envoyé à <strong>{{ email }}</strong>. Cliquez sur le lien
+                        qu'il contient pour activer votre compte, puis connectez-vous.</p>
+                      <p class="text-secondary small mb-4">Le lien est valable 24 heures.</p>
+                      <app-resend-email [email]="email" [displayLoginButton]="true"/>
+                    </div>
+                  } @else {
                     @if (serverError(); as error) {
                     <div
                         class="alert alert-danger d-flex align-items-center gap-2 py-2 small"
@@ -103,7 +114,7 @@
 
                         <div class="mb-3">
                             <label for="register-phone" class="form-label fw-medium text-secondary">
-                                Téléphone <span class="fw-normal small">(facultatif)</span>
+                              Téléphone
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-primary-subtle text-primary">
@@ -144,7 +155,7 @@
                                     autocomplete="new-password"
                                     [formField]="registerForm.password"
                                     [class.is-invalid]="registerForm.password().touched() && registerForm.password().invalid()"
-                                    [attr.aria-describedby]="registerForm.password().touched() && registerForm.password().invalid() ? 'register-password-errors' : null"
+                                    [attr.aria-describedby]="registerForm.password().touched() && registerForm.password().invalid() ? 'register-password-hint register-password-errors' : 'register-password-hint'"
                                 />
                                 <button
                                     class="btn btn-outline-secondary"
@@ -155,6 +166,9 @@
                                 >
                                     <i class="bi" [class]="showPassword() ? 'bi-eye-slash' : 'bi-eye'" aria-hidden="true"></i>
                                 </button>
+                            </div>
+                          <div class="form-text" id="register-password-hint">
+                            8 caractères minimum, dont une majuscule, un chiffre et un caractère spécial.
                             </div>
                             @if (registerForm.password().touched() && registerForm.password().invalid()) {
                             <div id="register-password-errors" class="invalid-feedback d-block">
@@ -206,7 +220,9 @@
                         </button>
                     </form>
 
-                    <p class="text-center text-secondary small mt-4 mb-0">
+                  }
+
+                  <p class="text-center text-secondary small mt-4 mb-0">
                         Déjà un compte ?
                         <a class="link-primary fw-medium link-underline-opacity-0 link-underline-opacity-100-hover" routerLink="/login">
                             S'identifier
