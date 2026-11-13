@@ -7,6 +7,7 @@ import { EmailVerificationToken } from "../ports/email-verification-token";
 import type { RegisterAddressInput, RegisterInput } from "../register.input";
 import { UserRepository } from "../../domain/user.repository";
 import { PasswordHasher } from "../ports/password-hasher";
+import { Password } from "../../domain/password.value-object";
 import { User } from "../../domain/user.entity";
 import { Inject } from "@nestjs/common";
 
@@ -27,8 +28,9 @@ export class RegisterUseCase {
     const user = User.register(input);
     const phone = PhoneNumber.create(input.phone);
     const address = input.address ? toCustomerAddress(input.address) : undefined;
+    const password = Password.create(input.password);
 
-    const passwordHash = await this.passwordHasher.hash(input.password);
+    const passwordHash = await this.passwordHasher.hash(password.value);
     await this.repository.register({ user, passwordHash, phone, address });
 
     const token = await this.verificationToken.issue(user);

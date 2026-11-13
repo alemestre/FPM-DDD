@@ -277,7 +277,7 @@ describe('AuthController (HTTP)', () => {
   describe('inscription et vérification de l\'email', () => {
     const registration = {
       email: 'Paul.Martin@Example.FR',
-      password: 'motdepasse-solide',
+      password: 'MotDePasse1!',
       firstName: 'Paul',
       lastName: 'Martin',
       phone: '06 12 34 56 78',
@@ -347,6 +347,7 @@ describe('AuthController (HTTP)', () => {
       ['sans corps', undefined],
       ['avec un email invalide', { ...registration, email: 'pas-un-email' }],
       ['avec un mot de passe trop court', { ...registration, password: 'court' }],
+      ['avec un mot de passe trop faible', { ...registration, password: 'motdepasse-faible' }],
       ['sans téléphone', { ...registration, phone: undefined }],
       ['avec un téléphone invalide', { ...registration, phone: '123' }],
       ['avec une adresse incomplète', { ...registration, addressLine1: '1 rue des Lilas' }],

@@ -9,7 +9,7 @@ import { RegisterUseCase } from './register.use-case';
 
 const INPUT: RegisterInput = {
   email: '  Marie.Durand@Example.FR ',
-  password: 'motdepasse',
+  password: 'MotDePasse1!',
   firstName: ' Marie ',
   lastName: 'Durand',
   phone: '06 12 34 56 78',
@@ -41,7 +41,7 @@ describe('RegisterUseCase', () => {
       isActive: true,
       emailVerified: false,
     });
-    expect(passwordHasher.hash).toHaveBeenCalledWith('motdepasse');
+    expect(passwordHasher.hash).toHaveBeenCalledWith('MotDePasse1!');
 
     const registration = repository.register.mock.calls[0][0];
     expect(registration.user).toBe(user);
@@ -74,6 +74,7 @@ describe('RegisterUseCase', () => {
     ['une ville vide', { ...INPUT, address: { line1: '1 rue des Lilas', postalCode: '75001', city: ' ' } }],
     ['un prénom vide', { ...INPUT, firstName: '  ' }],
     ['un email invalide', { ...INPUT, email: 'pas-un-email' }],
+    ['un mot de passe sans majuscule, chiffre ni caractère spécial', { ...INPUT, password: 'motdepasse' }],
   ])('refuse %s sans rien enregistrer ni envoyer', async (_case, input) => {
     await expect(useCase.execute(input)).rejects.toThrow(DomainValidationError);
     expect(passwordHasher.hash).not.toHaveBeenCalled();
