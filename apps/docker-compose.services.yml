@@ -19,6 +19,17 @@ services:
     networks:
         - fpm
 
+  # Captures every email sent in dev (SMTP on 1025) and shows it at http://localhost:8025.
+  mailpit:
+    image: axllent/mailpit:v1.32.0
+    restart: always
+    container_name: mailpit
+    ports:
+        - "127.0.0.1:1025:1025"
+        - "127.0.0.1:8025:8025"
+    networks:
+        - fpm
+
 networks:
     fpm:
       external: true

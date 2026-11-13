@@ -61,6 +61,7 @@ Follow the guidelines defined in `.claude/rules/`:
 
 ```sh
 npm run serve:shop-api                                      # API on :3000, under /api
+docker compose -f apps/docker-compose.services.yml up -d mailpit  # dev inbox: SMTP :1025, UI http://localhost:8025
 npm run test:all                                            # projects tagged scope:test, with coverage
 npx nx test shop-api                                        # all shop-api tests
 npx nx test shop-api --testPathPatterns=stock.value-object  # single test file
