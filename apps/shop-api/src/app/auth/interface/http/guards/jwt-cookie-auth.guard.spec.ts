@@ -59,4 +59,12 @@ describe('JwtCookieAuthGuard', () => {
       UnauthorizedException,
     );
   });
+
+  it("refuse un jeton signé pour un autre usage, comme le lien de vérification d'email", async () => {
+    const token = await jwtService.signAsync({ sub: USER_ID, purpose: 'email-verification' });
+
+    await expect(guard.canActivate(contextWith({ access_token: token }).context)).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
+  });
 });

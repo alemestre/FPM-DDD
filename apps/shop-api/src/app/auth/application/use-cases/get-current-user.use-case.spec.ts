@@ -6,14 +6,14 @@ import { User } from '../../domain/user.entity';
 const USER_ID = 'b1c2d3e4-5f60-4a7b-8c9d-0e1f2a3b4c5d';
 
 const existingUser = (isActive = true): User =>
-  User.reconstitute(USER_ID, 'marie.durand@example.fr', 'Marie', 'Durand', 'CUSTOMER', isActive);
+  User.reconstitute(USER_ID, 'marie.durand@example.fr', 'Marie', 'Durand', 'CUSTOMER', isActive, true);
 
 describe('GetCurrentUserUseCase', () => {
   let repository: jest.Mocked<UserRepository>;
   let useCase: GetCurrentUserUseCase;
 
   beforeEach(() => {
-    repository = { findById: jest.fn(), findCredentialsByEmail: jest.fn() };
+    repository = { findById: jest.fn(), findCredentialsByEmail: jest.fn(), register: jest.fn(), save: jest.fn() };
     useCase = new GetCurrentUserUseCase(repository);
   });
 

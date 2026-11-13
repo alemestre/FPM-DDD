@@ -5,6 +5,7 @@ import { JwtService } from "@nestjs/jwt";
 
 interface AccessTokenPayload {
   sub?: unknown;
+  purpose?: unknown;
 }
 
 /**
@@ -32,7 +33,9 @@ export class JwtCookieAuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
 
-    if (typeof payload.sub !== "string" || payload.sub === "") {
+    // Access tokens carry no `purpose`: tokens signed for another use, such as
+    // the email verification link, must not open a session.
+    if (payload.purpose !== undefined || typeof payload.sub !== "string" || payload.sub === "") {
       throw new UnauthorizedException();
     }
 

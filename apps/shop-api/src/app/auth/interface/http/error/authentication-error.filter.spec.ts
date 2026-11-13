@@ -1,4 +1,4 @@
-import { AuthenticationError } from '../../domain/errors/authentication.error';
+import { AuthenticationError } from '../../../domain/errors/authentication.error';
 import { AuthenticationErrorFilter } from './authentication-error.filter';
 import type { ArgumentsHost } from '@nestjs/common';
 

@@ -1,5 +1,6 @@
 import { Email } from "../../../shared/domain/value-objects/email.value-object";
 import { AuthenticationError } from "../../domain/errors/authentication.error";
+import { EmailNotVerifiedError } from "../../domain/errors/email-not-verified.error";
 import { AccessTokenIssuer } from "../ports/access-token-issuer";
 import { UserRepository } from "../../domain/user.repository";
 import { PasswordHasher } from "../ports/password-hasher";
@@ -14,7 +15,8 @@ const INVALID_CREDENTIALS = "Email ou mot de passe incorrect";
  *
  * Every failure (unknown email, wrong password, deactivated account) raises the
  * same error after the same amount of work, so the response does not reveal
- * which accounts exist.
+ * which accounts exist. Only someone who knows the password learns that the
+ * email still has to be verified.
  */
 export class LogInUseCase {
   constructor(
@@ -31,6 +33,10 @@ export class LogInUseCase {
 
     if (!credentials || !passwordMatches || !credentials.user.isActive) {
       throw new AuthenticationError(INVALID_CREDENTIALS);
+    }
+
+    if (!credentials.user.emailVerified) {
+      throw new EmailNotVerifiedError();
     }
 
     const accessToken = await this.accessTokenIssuer.issue(credentials.user);

@@ -1,5 +1,17 @@
+import { ResendVerificationEmailUseCase } from "./application/use-cases/resend-verification-email.use-case";
+import { NestMailVerificationEmailSender } from "./infrastructure/nest-mail-verification-email.sender";
+import { EmailNotVerifiedErrorFilter } from "./interface/http/error/email-not-verified-error.filter";
+import { EmailAlreadyUsedErrorFilter } from "./interface/http/error/email-already-used-error.filter";
+import { JwtEmailVerificationToken } from "./infrastructure/jwt-email-verification.token";
+import { VerificationEmailSender } from "./application/ports/verification-email-sender";
+import { EmailVerificationToken } from "./application/ports/email-verification-token";
+import { VerifyEmailUseCase } from "./application/use-cases/verify-email.use-case";
+import { RegisterUseCase } from "./application/use-cases/register.use-case";
+import { createMailOptions } from "./infrastructure/mail/mail-options.factory";
+import { VerifyEmailMail } from "./infrastructure/mail/verify-email.mail";
+import { MailModule } from "@nestjs/mail";
 import { GetCurrentUserUseCase } from "./application/use-cases/get-current-user.use-case";
-import { AuthenticationErrorFilter } from "./interface/http/authentication-error.filter";
+import { AuthenticationErrorFilter } from "./interface/http/error/authentication-error.filter";
 import { JwtCookieAuthGuard } from "./interface/http/guards/jwt-cookie-auth.guard";
 import { JwtAccessTokenIssuer } from './infrastructure/jwt-access-token.issuer';
 import { PrismaUserRepository } from "./infrastructure/prisma-user.repository";
@@ -23,6 +35,10 @@ import { JwtModule } from "@nestjs/jwt";
         secret: config.getOrThrow<string>("JWT_SECRET"),
         signOptions: { expiresIn: ACCESS_TOKEN_TTL_SECONDS }
       })
+    }),
+    MailModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: createMailOptions
     })
   ],
   controllers: [AuthController],
@@ -30,10 +46,18 @@ import { JwtModule } from "@nestjs/jwt";
     LogInUseCase,
     JwtCookieAuthGuard,
     GetCurrentUserUseCase,
+    RegisterUseCase,
+    VerifyEmailUseCase,
+    ResendVerificationEmailUseCase,
+    VerifyEmailMail,
     { provide: UserRepository, useClass: PrismaUserRepository },
     { provide: APP_FILTER, useClass: AuthenticationErrorFilter },
     { provide: PasswordHasher, useClass: Argon2PasswordHasher },
-    { provide: AccessTokenIssuer, useClass: JwtAccessTokenIssuer }
+    { provide: APP_FILTER, useClass: EmailAlreadyUsedErrorFilter },
+    { provide: APP_FILTER, useClass: EmailNotVerifiedErrorFilter },
+    { provide: AccessTokenIssuer, useClass: JwtAccessTokenIssuer },
+    { provide: EmailVerificationToken, useClass: JwtEmailVerificationToken },
+    { provide: VerificationEmailSender, useClass: NestMailVerificationEmailSender }
   ],
   // Lets other contexts protect their routes with the same guard.
   exports: [JwtModule, JwtCookieAuthGuard]

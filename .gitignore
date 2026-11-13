@@ -45,3 +45,6 @@ apps/shop-api/src/generated/
 .vscode
 .idea
 coverage
+
+# Emails de développement (FileMailTransport)
+var/

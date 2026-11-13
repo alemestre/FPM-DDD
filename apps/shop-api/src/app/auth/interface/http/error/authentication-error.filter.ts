@@ -1,5 +1,5 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from "@nestjs/common";
-import { AuthenticationError } from "../../domain/errors/authentication.error";
+import { AuthenticationError } from "../../../domain/errors/authentication.error";
 import type { Response } from "express";
 
 /**

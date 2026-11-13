@@ -1,0 +1,7 @@
+Bonjour {{ firstName }},
+
+Merci pour votre inscription. Pour activer votre compte, confirmez votre adresse email en ouvrant ce lien :
+
+{{ url }}
+
+Ce lien est valable {{ validityHours }} heures. Si vous n'êtes pas à l'origine de cette inscription, ignorez cet email.

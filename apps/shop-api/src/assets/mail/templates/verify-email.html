@@ -1,0 +1,11 @@
+{{! Variables : firstName, url, validityHours }}
+<p>Bonjour {{ firstName }},</p>
+<p>Merci pour votre inscription. Pour activer votre compte, confirmez votre adresse email :</p>
+<p>
+  <a
+    href="{{ url }}"
+    style="display: inline-block; padding: 12px 20px; background-color: #198754; color: #ffffff; text-decoration: none; border-radius: 6px"
+    >Confirmer mon adresse email</a
+  >
+</p>
+<p>Ce lien est valable {{ validityHours }} heures. Si vous n'êtes pas à l'origine de cette inscription, ignorez cet email.</p>
