@@ -2,7 +2,7 @@ import { environment } from '../../environments/environment';
 import type { CategoryResponseDto, ApiResponseDto } from '@fpm/contracts';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { CONSTANTS } from '../constant';
+import { CONSTANTS } from '../shared/constant';
 import { map, Observable } from 'rxjs';
 
 @Injectable({

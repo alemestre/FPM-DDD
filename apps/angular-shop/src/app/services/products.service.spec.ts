@@ -20,7 +20,7 @@ describe('ProductsService', () => {
   it('getProductsByCategoryId filtre /products par categoryId et renvoie la liste déballée', async () => {
     const products = [{ id: 'p-1', categoryId: 'cat-1' }];
 
-    const result = firstValueFrom(service.getProductsByCategoryId('cat-1'));
+    const result = firstValueFrom(service.getActiveProductsByCategoryId('cat-1'));
     const request = http.expectOne(
       (req) => req.url === `${environment.apiUrl}/products` && req.params.get('categoryId') === 'cat-1',
     );

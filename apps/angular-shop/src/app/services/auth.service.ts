@@ -4,7 +4,7 @@ import { environment } from '../../environments/environment';
 import { catchError, map, Observable, of, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { User } from '../models/entities/user';
-import { CONSTANTS } from '../constant';
+import { CONSTANTS } from '../shared/constant';
 
 export type RegisterPayload = Pick<User, 'firstName' | 'lastName' | 'email' | 'phone'> & {
     password: string;

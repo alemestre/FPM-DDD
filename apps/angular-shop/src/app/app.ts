@@ -1,6 +1,6 @@
+import { NotificationComponent } from './shared/notification/notification';
 import { RouterModule } from '@angular/router';
 import { Component } from '@angular/core';
-import { NotificationComponent } from './components/notification/notification';
 
 @Component({
   imports: [

@@ -1,3 +1,5 @@
+import { ProductsState } from './interface';
+
 export const CONSTANTS = {
   API_END_POINTS: {
     CATEGORIES: 'categories',
@@ -10,4 +12,10 @@ export const CONSTANTS = {
     VERIFY_EMAIL: 'verify-email',
     RESEND_VERIFICATION: 'resend-verification'
   },
+};
+
+export const PRODUCTS_INITIAL_STATE: ProductsState = {
+    products: [],
+    loading: true,
+    error: null,
 };
