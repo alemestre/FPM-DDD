@@ -70,79 +70,22 @@
             </p>
         </div>
 
-        <ngb-carousel class="farm-carousel d-block mx-auto" [interval]="0">
-            <!-- VACHES -->
-            <ng-template ngbSlide>
-                <img
-                    src="./images/about/fpm-vaches-parc-2.jpg"
-                    class="d-block w-100 h-100 object-fit-cover"
-                    alt="Vaches Limousines dans les pâturages"
-                />
+        <ngb-carousel class="farm-carousel d-block mx-auto" [interval]="5000">
+            @for (slide of farmSlides; track slide.src) {
+                <ng-template ngbSlide>
+                    <img
+                        [src]="slide.src"
+                        [alt]="slide.alt"
+                        class="d-block w-100 h-100 object-fit-cover"
+                    />
 
-                <div class="carousel-caption z-1 text-start">
-                    <h3 class="fs-2 fw-bold mb-3">L'élevage bovin</h3>
+                    <div class="carousel-caption z-1 text-start">
+                        <h3 class="fs-2 fw-bold mb-3">{{ slide.title }}</h3>
 
-                    <p class="mb-0">
-                        Nous élevons des vaches de race Limousine. Plus de la moitié de l'année,
-                        elles profitent des pâturages avec leurs petits. En hiver, elles sont
-                        abritées à la ferme et nourries au foin.
-                    </p>
-                </div>
-            </ng-template>
-
-            <!-- VOLAILLES -->
-            <ng-template ngbSlide>
-                <img
-                    src="./images/about/fpm-volailles.jpg"
-                    class="d-block w-100 h-100 object-fit-cover"
-                    alt="Volailles élevées à la ferme"
-                />
-
-                <div class="carousel-caption z-1 text-start">
-                    <h3 class="fs-2 fw-bold mb-3">Nos volailles</h3>
-
-                    <p class="mb-0">
-                        Poulets de chair, poules pondeuses, pintades et dindes : nos volailles font
-                        également partie de la vie de la ferme.
-                    </p>
-                </div>
-            </ng-template>
-
-            <!-- CULTURES -->
-            <ng-template ngbSlide>
-                <img
-                    src="./images/about/fpm-champs.jpg"
-                    class="d-block w-100 h-100 object-fit-cover"
-                    alt="Champs de céréales de la ferme"
-                />
-
-                <div class="carousel-caption z-1 text-start">
-                    <h3 class="fs-2 fw-bold mb-3">Nos cultures céréalières</h3>
-
-                    <p class="mb-0">
-                        Les cultures représentent une grande partie de notre exploitation. Elles
-                        contribuent notamment à l'alimentation de nos animaux.
-                    </p>
-                </div>
-            </ng-template>
-
-            <!-- FRUITS ET LÉGUMES -->
-            <ng-template ngbSlide>
-                <img
-                    src="./images/about/fpm-legumes.jpg"
-                    class="d-block w-100 h-100 object-fit-cover"
-                    alt="Fruits et légumes frais cultivés à la ferme"
-                />
-
-                <div class="carousel-caption z-1 text-start">
-                    <h3 class="fs-2 fw-bold mb-3">Nos fruits et légumes</h3>
-
-                    <p class="mb-0">
-                        Depuis 2020, nous consacrons une partie de nos terres à la production de
-                        fruits et légumes, en conversion vers l'agriculture biologique.
-                    </p>
-                </div>
-            </ng-template>
+                        <p class="mb-0">{{ slide.text }}</p>
+                    </div>
+                </ng-template>
+            }
         </ngb-carousel>
     </div>
 </section>
@@ -243,11 +186,21 @@
             </div>
 
             <div class="col-lg-6">
-                <img
-                    src="./images/fpm-magasin.jpg"
-                    alt="Magasin de vente directe de la Ferme du Petit Marais"
-                    class="shop-section__image img-fluid w-100 object-fit-cover shadow-lg"
-                />
+                <ngb-carousel
+                    class="d-block rounded-4 overflow-hidden shadow-lg"
+                    [interval]="5000"
+                    [showNavigationIndicators]="shopImages.length > 1"
+                >
+                    @for (image of shopImages; track image.src) {
+                    <ng-template ngbSlide>
+                        <img
+                            [src]="image.src"
+                            [alt]="image.alt"
+                            class="shop-section__image d-block w-100 object-fit-cover"
+                        />
+                    </ng-template>
+                    }
+                </ngb-carousel>
             </div>
         </div>
 
