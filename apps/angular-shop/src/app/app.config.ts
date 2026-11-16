@@ -1,6 +1,7 @@
 import {
   ApplicationConfig,
-  inject,
+  DEFAULT_CURRENCY_CODE,
+  inject, LOCALE_ID,
   PLATFORM_ID,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners
@@ -17,6 +18,8 @@ import { firstValueFrom } from 'rxjs';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(appRoutes),
+    { provide: LOCALE_ID, useValue: 'fr-FR' },
+    { provide: DEFAULT_CURRENCY_CODE, useValue: 'EUR' },
     provideClientHydration(withEventReplay()),
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(withInterceptors([authInterceptor])),

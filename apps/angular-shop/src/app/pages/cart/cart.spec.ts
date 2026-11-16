@@ -42,7 +42,7 @@ describe('CartComponent', () => {
         const { element } = await createComponent();
 
         expect(element.textContent).toContain('Votre panier est tristement vide');
-        expect(element.textContent).toContain('No items in cart');
+        expect(element.textContent).toContain('Aucun article dans votre panier');
         expect(element.querySelector('.btn-primary')).toBeNull();
     });
 
@@ -56,7 +56,7 @@ describe('CartComponent', () => {
         expect(element.querySelectorAll('app-cart-list .card')).toHaveLength(2);
         expect(element.textContent).toContain('Produit p-1');
         expect(element.textContent).toContain('Produit p-2');
-        expect(element.textContent).toContain('Items (3)');
+        expect(element.textContent).toContain('(3) articles');
         expect(element.textContent).not.toContain('Votre panier est tristement vide');
     });
 
@@ -72,7 +72,7 @@ describe('CartComponent', () => {
         expect(element.textContent).toContain('Votre panier est tristement vide');
     });
 
-    it('vide le panier avec le bouton "Clear Cart"', async () => {
+    it('vide le panier avec le bouton "Vider le panier"', async () => {
         const { fixture, cart, element } = await createComponent();
         const notifications = TestBed.inject(NotificationService);
         cart.addToCart(product('p-1', 10));
@@ -80,7 +80,7 @@ describe('CartComponent', () => {
         await fixture.whenStable();
 
         const clearButton = [...element.querySelectorAll<HTMLButtonElement>('button')].find((b) =>
-            b.textContent?.includes('Clear Cart'),
+            b.textContent?.includes('Vider le panier'),
         );
         expect(clearButton).toBeDefined();
         clearButton?.click();
