@@ -1,0 +1,14 @@
+<div class="input-group" role="search">
+    <span class="input-group-text bg-white">
+        <i class="bi bi-search" aria-hidden="true"></i>
+    </span>
+    <input
+        #field
+        type="search"
+        class="form-control"
+        [value]="query()"
+        [placeholder]="placeholder()"
+        [attr.aria-label]="placeholder()"
+        (input)="onInput(field.value)"
+    />
+</div>

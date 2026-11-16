@@ -25,7 +25,7 @@ describe('About', () => {
         const element = fixture.nativeElement as HTMLElement;
         const activeTitle = () => element.querySelector('.carousel-item.active h3')?.textContent;
 
-        expect(element.querySelectorAll('.carousel-item').length).toBe(4);
+        expect(element.querySelectorAll('.farm-carousel .carousel-item').length).toBe(4);
         expect(activeTitle()).toBe("L'élevage bovin");
 
         element.querySelector<HTMLButtonElement>('.carousel-control-next')?.click();
