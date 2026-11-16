@@ -4,7 +4,7 @@
   "projectType": "application",
   "prefix": "app",
   "sourceRoot": "apps/angular-shop/src",
-  "tags": [],
+  "tags": ["scope:lint", "scope:test"],
   "targets": {
     "build": {
       "executor": "@angular/build:application",

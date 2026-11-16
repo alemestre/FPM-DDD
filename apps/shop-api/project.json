@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/shop-api/src",
   "projectType": "application",
-  "tags": ["scope:test"],
+  "tags": ["scope:test", "scope:lint"],
   "targets": {
     "prune-lockfile": {
       "dependsOn": [
@@ -64,7 +64,9 @@
     },
     "test": {
       "options": {
-        "passWithNoTests": true
+        "passWithNoTests": true,
+        "runInBand": true,
+        "cache": false
       }
     }
   }

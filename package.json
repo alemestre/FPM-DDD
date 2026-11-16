@@ -8,7 +8,8 @@
     "serve:shop-api": "APP=shop-api PORT=3000 DEBUG_PORT=9000 npm run serve",
     "serve:angular-shop": "APP=angular-shop PORT=4200 DEBUG_PORT=9001 npm run serve",
     "reload:node_modules": "if [ -d /node_modules ]; then cmp -s /.nmhash /srv/fpm/.nmhash || (echo 'reloading node_modules!' && rm -rf /srv/fpm/node_modules && cp -R /node_modules /srv/fpm/ && cp /.nmhash /srv/fpm/.nmhash); else [ -d node_modules ] && sha256sum package-lock.json | cmp -s - .nmhash || (echo 'installing node_modules!' && npm ci && sha256sum package-lock.json > .nmhash); fi",
-    "test:all": "nx run-many --projects=tag:scope:test --target=test --coverage --verbose --parallel=100% --skip-nx-cache --runInBand --no-cache"
+    "test:all": "nx run-many --projects=tag:scope:test --target=test --coverage --verbose --parallel=100% --skip-nx-cache",
+    "lint:all": "nx run-many --projects=tag:scope:lint --target=lint --parallel=100% --skip-nx-cache --verbose"
   },
   "dependencies": {
     "@angular-devkit/build-angular": "~22.2.0",
@@ -68,6 +69,7 @@
     "@types/node": "^22.0.0",
     "@types/validator": "^13.15.10",
     "@typescript-eslint/utils": "^8.58.0",
+    "@vitest/coverage-v8": "^4.1.12",
     "angular-eslint": "^22.5.0",
     "dotenv": "^18.0.9",
     "eslint": "^9.8.0",
