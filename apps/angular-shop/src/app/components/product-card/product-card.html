@@ -1,6 +1,11 @@
 <article class="card h-100 border-0 shadow-sm overflow-hidden">
     <div class="ratio ratio-4x3 bg-body-tertiary">
-        <img [src]="product().image" [alt]="product().name" class="card-img-top object-fit-cover" loading="lazy" />
+        <img
+            [src]="product().image"
+            [alt]="product().name"
+            class="card-img-top object-fit-cover"
+            loading="lazy"
+        />
         <div
             class="d-flex align-items-center justify-content-center text-secondary opacity-50"
             role="img"
@@ -30,18 +35,28 @@
         }
     </div>
 
-    <div class="card-footer bg-transparent border-0 pt-0 pb-3 px-3">
+    <div class="card-footer bg-transparent border-0 pt-0 pb-3 px-3 d-flex gap-2">
+        @if (!isOutOfStock()) {
+        <label [for]="'quantity-' + product().id" class="visually-hidden">Quantité</label>
+        <input
+            [id]="'quantity-' + product().id"
+            type="number"
+            class="form-control w-25"
+            min="1"
+            [max]="product().stock"
+            [value]="quantity()"
+            [class.is-invalid]="!isQuantityValid()"
+            (input)="onQuantityChange($any($event.target).value)"
+        />
+        }
         <button
             type="button"
-            class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2"
-            [disabled]="isOutOfStock()"
+            class="btn btn-primary flex-grow-1 d-inline-flex align-items-center justify-content-center gap-2"
+            [disabled]="isOutOfStock() || !isQuantityValid()"
             (click)="onAddToCart()"
         >
-            @if (isOutOfStock()) {
-            Rupture de stock
-            } @else {
-            <i class="bi bi-cart-plus" aria-hidden="true"></i>
-            }
+            @if (isOutOfStock()) { Rupture de stock } @else {
+            Ajouter au panier }
         </button>
     </div>
 </article>

@@ -94,4 +94,64 @@ describe('ProductCard', () => {
 
         expect(rendered).toContain('6 pièces');
     });
+
+    describe('quantité', () => {
+        const setup = (value: ProductWithProducerResponseDto) => {
+            const fixture = TestBed.createComponent(ProductCard);
+            fixture.componentRef.setInput('product', value);
+            const emitted: { product: ProductWithProducerResponseDto; quantity: number }[] = [];
+            fixture.componentInstance.addToCart.subscribe((event) => emitted.push(event));
+            fixture.detectChanges();
+            const root = fixture.nativeElement as HTMLElement;
+            const input = () => root.querySelector<HTMLInputElement>('input[type="number"]');
+            const button = () => {
+                const element = root.querySelector<HTMLButtonElement>('button');
+                if (!element) throw new Error('bouton « Ajouter au panier » absent');
+                return element;
+            };
+            const type = (quantity: string) => {
+                const element = input();
+                if (!element) throw new Error('champ quantité absent');
+                element.value = quantity;
+                element.dispatchEvent(new Event('input'));
+                fixture.detectChanges();
+            };
+            const click = () => {
+                button().click();
+                fixture.detectChanges();
+            };
+            return { emitted, input, button, type, click };
+        };
+
+        it('émet le produit avec la quantité saisie puis remet le champ à 1', () => {
+            const value = product();
+            const card = setup(value);
+
+            expect(card.input()?.value).toBe('1');
+            card.type('3');
+            card.click();
+
+            expect(card.emitted).toEqual([{ product: value, quantity: 3 }]);
+            expect(card.input()?.value).toBe('1');
+        });
+
+        it.each(['0', '-1', '1.5', '', '11'])('désactive le bouton pour la quantité « %s »', (quantity) => {
+            const card = setup(product({ stock: 10 }));
+
+            card.type(quantity);
+
+            expect(card.button().disabled).toBe(true);
+            card.click();
+            expect(card.emitted).toEqual([]);
+        });
+
+        it("n'affiche pas de champ quantité en rupture de stock", () => {
+            const card = setup(product({ stock: 0 }));
+
+            expect(card.input()).toBeNull();
+            expect(card.button().disabled).toBe(true);
+            card.click();
+            expect(card.emitted).toEqual([]);
+        });
+    });
 });

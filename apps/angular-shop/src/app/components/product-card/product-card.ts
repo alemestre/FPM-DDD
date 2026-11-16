@@ -1,5 +1,5 @@
 import type { ProductUnitDto, ProductWithProducerResponseDto as Product } from '@fpm/contracts';
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
 
 const UNIT_LABELS: Record<ProductUnitDto, string> = {
   KG: 'kg',
@@ -21,7 +21,9 @@ const QUANTITY_FORMAT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 
 export class ProductCard {
   readonly product = input.required<Product>();
 
-  readonly addToCart = output<Product>();
+  readonly addToCart = output<{ product: Product; quantity: number }>();
+
+  protected readonly quantity = signal(1);
 
   readonly price = computed(() => PRICE_FORMAT.format(this.product().price));
   readonly unit = computed(() => UNIT_LABELS[this.product().unit]);
@@ -47,10 +49,19 @@ export class ProductCard {
     return `${PRICE_FORMAT.format(referencePrice.amount)}/${referencePrice.unit}`;
   });
   readonly isOutOfStock = computed(() => this.product().stock <= 0);
+  readonly isQuantityValid = computed(() => {
+    const quantity = this.quantity();
+    return Number.isSafeInteger(quantity) && quantity >= 1 && quantity <= this.product().stock;
+  });
+
+  protected onQuantityChange(value: string) {
+    this.quantity.set(Number(value));
+  }
 
   protected onAddToCart() {
-    if (!this.isOutOfStock()) {
-      this.addToCart.emit(this.product());
+    if (!this.isOutOfStock() && this.isQuantityValid()) {
+      this.addToCart.emit({ product: this.product(), quantity: this.quantity() });
+      this.quantity.set(1);
     }
   }
 }
