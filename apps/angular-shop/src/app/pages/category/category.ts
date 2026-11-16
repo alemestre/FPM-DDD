@@ -5,7 +5,7 @@ import { Component, computed, effect, inject } from '@angular/core';
 import { catchError, map, of, switchMap } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { Products } from './products/products';
+import { CategoryProducts } from './products/category-products.component';
 
 
 interface CategoryState {
@@ -22,7 +22,7 @@ const INITIAL_STATE: CategoryState = {
 
 @Component({
   selector: 'app-category',
-  imports: [Products],
+  imports: [CategoryProducts],
   templateUrl: './category.html'
 })
 export class Category {

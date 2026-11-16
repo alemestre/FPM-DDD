@@ -2,7 +2,7 @@ import type { CategoryResponseDto, ProductWithProducerResponseDto } from '@fpm/c
 import { ProductsService } from '../../../services/products.service';
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { Products } from './products';
+import { CategoryProducts } from './category-products.component';
 
 const FRUITS: CategoryResponseDto = {
     id: 'cat-1',
@@ -24,6 +24,7 @@ const product = (id: string, categoryId: string): ProductWithProducerResponseDto
     unit: 'KG',
     content: null,
     referencePrice: { amount: 2.5, unit: 'kg' },
+    isAvailable: true,
     image: 'https://example.com/produit.jpg',
 });
 
@@ -33,31 +34,31 @@ describe('Products', () => {
         'cat-2': [product('p-3', 'cat-2')],
     };
     const productsService = {
-        getProductsByCategoryId: vi.fn((categoryId: string) =>
+        getActiveProductsByCategoryId: vi.fn((categoryId: string) =>
             of(productsByCategory[categoryId] ?? []),
         ),
     };
 
     const createComponent = async (category: CategoryResponseDto) => {
         TestBed.configureTestingModule({
-            imports: [Products],
+            imports: [CategoryProducts],
             providers: [{ provide: ProductsService, useValue: productsService }],
         });
-        const fixture = TestBed.createComponent(Products);
+        const fixture = TestBed.createComponent(CategoryProducts);
         fixture.componentRef.setInput('category', category);
         await fixture.whenStable();
         return fixture;
     };
 
     beforeEach(() => {
-        productsService.getProductsByCategoryId.mockClear();
+        productsService.getActiveProductsByCategoryId.mockClear();
     });
 
     it('charge les produits de la catégorie reçue en input', async () => {
         const fixture = await createComponent(FRUITS);
         const component = fixture.componentInstance;
 
-        expect(productsService.getProductsByCategoryId).toHaveBeenCalledWith('cat-1');
+        expect(productsService.getActiveProductsByCategoryId).toHaveBeenCalledWith('cat-1');
         expect(component.products().map((p) => p.id)).toEqual(['p-1', 'p-2']);
         expect(component.hasProducts()).toBe(true);
         expect(component.isLoading()).toBe(false);
@@ -69,7 +70,7 @@ describe('Products', () => {
         fixture.componentRef.setInput('category', VIANDES);
         await fixture.whenStable();
 
-        expect(productsService.getProductsByCategoryId).toHaveBeenLastCalledWith('cat-2');
+        expect(productsService.getActiveProductsByCategoryId).toHaveBeenLastCalledWith('cat-2');
         expect(fixture.componentInstance.products().map((p) => p.id)).toEqual(['p-3']);
     });
 

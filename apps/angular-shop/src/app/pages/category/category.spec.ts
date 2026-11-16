@@ -23,7 +23,7 @@ describe('Category', () => {
         }),
     };
     const productsService = {
-        getProductsByCategoryId: vi.fn(() => of([])),
+        getActiveProductsByCategoryId: vi.fn(() => of([])),
     };
 
     const createComponent = async (slug: string | null) => {
@@ -43,7 +43,7 @@ describe('Category', () => {
 
     beforeEach(() => {
         categoriesService.getCategoryBySlug.mockClear();
-        productsService.getProductsByCategoryId.mockClear();
+        productsService.getActiveProductsByCategoryId.mockClear();
     });
 
     it("résout le slug de l'URL en catégorie et la passe à Products", async () => {
@@ -51,7 +51,7 @@ describe('Category', () => {
 
         expect(categoriesService.getCategoryBySlug).toHaveBeenCalledWith('fruits-legumes');
         expect(fixture.componentInstance.category()).toEqual(FRUITS);
-        expect(productsService.getProductsByCategoryId).toHaveBeenCalledWith('cat-1');
+        expect(productsService.getActiveProductsByCategoryId).toHaveBeenCalledWith('cat-1');
     });
 
     it('recharge la catégorie quand le slug change', async () => {
@@ -61,7 +61,7 @@ describe('Category', () => {
         await fixture.whenStable();
 
         expect(fixture.componentInstance.category()).toEqual(VIANDES);
-        expect(productsService.getProductsByCategoryId).toHaveBeenLastCalledWith('cat-2');
+        expect(productsService.getActiveProductsByCategoryId).toHaveBeenLastCalledWith('cat-2');
     });
 
     it("n'affiche aucune catégorie si le slug est inconnu", async () => {
@@ -69,7 +69,7 @@ describe('Category', () => {
 
         expect(fixture.componentInstance.category()).toBeNull();
         expect(fixture.componentInstance.error()).toBe('404');
-        expect(productsService.getProductsByCategoryId).not.toHaveBeenCalled();
+        expect(productsService.getActiveProductsByCategoryId).not.toHaveBeenCalled();
     });
 
     it("n'appelle pas l'API sans slug", async () => {
