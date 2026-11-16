@@ -28,7 +28,8 @@ export const CreateProductSchema = z.object({
   categoryId: z.uuid(),
   image: z.url({ protocol: /^https?$/ }),
   unit: z.enum(PRODUCT_UNITS).optional(),
-  content: ProductContentSchema.nullable().optional()
+  content: ProductContentSchema.nullable().optional(),
+  isAvailable: z.boolean().optional()
 });
 
 export class CreateProductDto extends createZodDto(CreateProductSchema) {}

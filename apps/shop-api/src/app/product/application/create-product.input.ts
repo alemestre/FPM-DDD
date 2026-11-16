@@ -14,4 +14,6 @@ export interface CreateProductInput {
   readonly unit?: string;
   /** What one sale unit contains (4 × 125 g). Required or forbidden depending on the unit. */
   readonly content?: ProductContentProps | null;
+  /** Defaults to true when omitted. */
+  readonly isAvailable?: boolean;
 }

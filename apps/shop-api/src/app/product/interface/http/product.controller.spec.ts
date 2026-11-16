@@ -1,7 +1,7 @@
 import { DomainValidationErrorFilter } from '../../../shared/interface/http/domain-validation-error.filter';
 import { ProductReferenceNotFoundError } from '../../domain/errors/product-reference-not-found.error';
 import { type INestApplication, NotFoundException } from '@nestjs/common';
-import { ProductRepository, type ProductWithProducer } from '../../domain/product.repository';
+import { ProductRepository, type ProductFilters, type ProductWithProducer } from '../../domain/product.repository';
 import { Product } from '../../domain/product.entity';
 import { ProductModule } from '../../product.module';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
@@ -55,9 +55,10 @@ class InMemoryProductRepository extends ProductRepository {
     return [...this.products.values()];
   }
 
-  async findManyWithProducer(categoryId?: string): Promise<ProductWithProducer[]> {
+  async findManyWithProducer({ categoryId, isAvailable }: ProductFilters = {}): Promise<ProductWithProducer[]> {
     return [...this.products.values()]
       .filter((product) => categoryId === undefined || product.categoryId === categoryId)
+      .filter((product) => isAvailable === undefined || product.isAvailable === isAvailable)
       .map((product) => this.withProducer(product));
   }
 
@@ -137,6 +138,7 @@ describe('ProductController (HTTP)', () => {
     unit: 'KG',
     content: null,
     referencePrice: { amount: 3.5, unit: 'kg' },
+    isAvailable: true,
   };
 
   // Les lectures renvoient le producteur à la place de son id.
@@ -153,6 +155,7 @@ describe('ProductController (HTTP)', () => {
     unit: 'KG',
     content: null,
     referencePrice: { amount: 3.5, unit: 'kg' },
+    isAvailable: true,
   };
 
   describe('POST /products', () => {
@@ -296,6 +299,49 @@ describe('ProductController (HTTP)', () => {
 
     it("renvoie 400 si categoryId n'est pas un UUID", async () => {
       expect((await request('GET', '?categoryId=abc')).status).toBe(400);
+    });
+
+    describe('?isAvailable', () => {
+      const seedUnavailableProduct = () =>
+        repository.products.set(
+          OTHER_PRODUCT_ID,
+          Product.reconstitute(OTHER_PRODUCT_ID, 'Carottes', 2, 5.5, 10, 1, PRODUCER_ID, CATEGORY_A, IMAGE, 'KG', null, false),
+        );
+
+      it('ne renvoie que les produits disponibles avec ?isAvailable=true', async () => {
+        seedProduct();
+        seedUnavailableProduct();
+
+        const { status, body } = await request('GET', '?isAvailable=true');
+
+        expect(status).toBe(200);
+        expect(body).toEqual([expectedReadProduct]);
+      });
+
+      it('ne renvoie que les produits indisponibles avec ?isAvailable=false', async () => {
+        seedProduct();
+        seedUnavailableProduct();
+
+        const { status, body } = await request('GET', '?isAvailable=false');
+
+        expect(status).toBe(200);
+        expect(body).toHaveLength(1);
+        expect(body[0]).toMatchObject({ id: OTHER_PRODUCT_ID, isAvailable: false });
+      });
+
+      it('combine le filtre avec ?categoryId', async () => {
+        seedProduct();
+        seedUnavailableProduct();
+
+        const { status, body } = await request('GET', `?categoryId=${CATEGORY_A}&isAvailable=true`);
+
+        expect(status).toBe(200);
+        expect(body).toEqual([expectedReadProduct]);
+      });
+
+      it("renvoie 400 si isAvailable n'est pas un booléen", async () => {
+        expect((await request('GET', '?isAvailable=abc')).status).toBe(400);
+      });
     });
 
     it('renvoie un produit par id', async () => {

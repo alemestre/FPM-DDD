@@ -30,7 +30,8 @@ export class Product {
     private _categoryId: string,
     private _image: ImageUrl,
     private _unit: ProductUnit,
-    private _content: ProductContent | null
+    private _content: ProductContent | null,
+    private _isAvailable: boolean
   ) {}
 
   static create(
@@ -43,7 +44,8 @@ export class Product {
     categoryId: string,
     image: string,
     unit: string = DEFAULT_PRODUCT_UNIT,
-    content: ProductContentProps | null = null
+    content: ProductContentProps | null = null,
+    isAvailable = true
   ): Product {
     return Product.reconstitute(
       new Uuid().getValue(),
@@ -56,7 +58,8 @@ export class Product {
       categoryId,
       image,
       unit,
-      content
+      content,
+      isAvailable
     );
   }
 
@@ -71,7 +74,8 @@ export class Product {
     categoryId: string,
     image: string,
     unit: string,
-    content: ProductContentProps | null = null
+    content: ProductContentProps | null = null,
+    isAvailable = true
   ): Product {
     const saleUnit = ProductUnit.create(unit);
     const productContent = saleUnit.resolveContent(ProductContent.fromNullable(content));
@@ -86,7 +90,8 @@ export class Product {
       Product.validateId(categoryId),
       ImageUrl.create(image),
       saleUnit,
-      productContent
+      productContent,
+      isAvailable
     );
   }
 
@@ -131,6 +136,13 @@ export class Product {
   }
 
   /**
+   * Whether the product can currently be ordered in the shop.
+   */
+  get isAvailable(): boolean {
+    return this._isAvailable;
+  }
+
+  /**
    * Price per kilogram or per litre, shown next to the price so products can be compared:
    * the price itself for KG, computed from the content otherwise (3 € for 4 × 125 g → 6 €/kg).
    * `null` when the content has no measure (a bunch, a dozen eggs).
@@ -142,6 +154,14 @@ export class Product {
     if (total === null) return null;
 
     return { amount: Math.round((this.price / total.amount) * 100) / 100, unit: total.unit };
+  }
+
+  markAvailable(): void {
+    this._isAvailable = true;
+  }
+
+  markUnavailable(): void {
+    this._isAvailable = false;
   }
 
   changeName(name: string): void {

@@ -47,6 +47,7 @@ export const ProductResponseSchema = z.object({
     unit: ProductUnitSchema,
     content: ProductContentSchema.nullable(),
     referencePrice: ReferencePriceSchema.nullable(),
+    isAvailable: z.boolean(),
 });
 
 export type ProductResponseDto = z.infer<typeof ProductResponseSchema>;

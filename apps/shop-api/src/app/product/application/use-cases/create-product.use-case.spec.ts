@@ -58,6 +58,14 @@ describe('CreateProductUseCase', () => {
     expect(product.categoryId).toBe(CATEGORY_A);
     expect(product.unit).toBe('BOTTE');
     expect(product.image).toBe('https://example.com/images/pommes.jpg');
+    expect(product.isAvailable).toBe(true);
+  });
+
+  it('crée un produit indisponible quand isAvailable vaut false', async () => {
+    const product = await useCase.execute({ ...input, isAvailable: false });
+
+    expect(product.isAvailable).toBe(false);
+    expect(repository.save).toHaveBeenCalledWith(product);
   });
 
   it("crée le produit en KG quand l'unité n'est pas fournie", async () => {

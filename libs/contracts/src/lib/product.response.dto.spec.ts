@@ -14,6 +14,7 @@ describe('ProductResponseSchema', () => {
         unit: 'KG',
         content: null,
         referencePrice: { amount: 2.5, unit: 'kg' },
+        isAvailable: true,
     };
 
     it('accepts a valid payload', () => {
@@ -118,6 +119,13 @@ describe('ProductResponseSchema', () => {
         expect(result.success).toBe(false);
     });
 
+    it('rejects a product without isAvailable', () => {
+        const { isAvailable, ...withoutAvailability } = validProduct;
+
+        expect(isAvailable).toBe(true);
+        expect(ProductResponseSchema.safeParse(withoutAvailability).success).toBe(false);
+    });
+
     it('rejects a payload with a missing field', () => {
         const result = ProductResponseSchema.safeParse({ ...validProduct, price: undefined });
 
@@ -139,6 +147,7 @@ describe('ProductWithProducerResponseSchema', () => {
         unit: 'KG',
         content: null,
         referencePrice: { amount: 2.5, unit: 'kg' },
+        isAvailable: true,
     };
     const validProduct = { ...productFields, producer: { id: producerId, name: 'Ferme des Lilas' } };
 

@@ -20,7 +20,8 @@ export function toProductResponse(product: Product): ProductResponseDto {
     image: product.image,
     unit: product.unit,
     content: toContentResponse(product.content),
-    referencePrice: product.referencePrice
+    referencePrice: product.referencePrice,
+    isAvailable: product.isAvailable
   };
 }
 
@@ -40,7 +41,8 @@ export function toProductWithProducerResponse({ product, producer }: ProductWith
     image: product.image,
     unit: product.unit,
     content: toContentResponse(product.content),
-    referencePrice: product.referencePrice
+    referencePrice: product.referencePrice,
+    isAvailable: product.isAvailable
   };
 }
 

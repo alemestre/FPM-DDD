@@ -41,6 +41,7 @@ const productRow = (overrides: Record<string, unknown> = {}) => ({
   contentItemCount: null,
   contentAmount: null,
   contentUnit: null,
+  isAvailable: true,
   ...overrides,
 });
 
@@ -86,6 +87,7 @@ describe('PrismaProductRepository', () => {
         categoryId: CATEGORY_B,
         image: IMAGE,
         unit: 'KG',
+        isAvailable: true,
         contentItemCount: null,
         contentAmount: null,
         contentUnit: null,
@@ -188,6 +190,15 @@ describe('PrismaProductRepository', () => {
 
       expect(prisma.product.update).toHaveBeenCalledWith({ where: { id: PRODUCT_ID }, data: { image } });
       expect(updated.image).toBe(image);
+    });
+
+    it('met à jour la disponibilité', async () => {
+      prisma.product.update.mockResolvedValue(productRow({ isAvailable: false }));
+
+      const updated = await repository.update(PRODUCT_ID, { isAvailable: false });
+
+      expect(prisma.product.update).toHaveBeenCalledWith({ where: { id: PRODUCT_ID }, data: { isAvailable: false } });
+      expect(updated.isAvailable).toBe(false);
     });
 
     it('retire le contenu avec null', async () => {
@@ -333,7 +344,7 @@ describe('PrismaProductRepository', () => {
       it('findManyWithProducer filtre sur la catégorie quand elle est fournie', async () => {
         prisma.product.findMany.mockResolvedValue([rowWithProducer()]);
 
-        const results = await repository.findManyWithProducer(CATEGORY_A);
+        const results = await repository.findManyWithProducer({ categoryId: CATEGORY_A });
 
         expect(prisma.product.findMany).toHaveBeenCalledWith({ where: { categoryId: CATEGORY_A }, include: WITH_PRODUCER });
         expect(results[0].product.categoryId).toBe(CATEGORY_A);
@@ -342,7 +353,27 @@ describe('PrismaProductRepository', () => {
       it("findManyWithProducer retourne une liste vide si aucun produit n'est dans la catégorie", async () => {
         prisma.product.findMany.mockResolvedValue([]);
 
-        await expect(repository.findManyWithProducer(CATEGORY_A)).resolves.toEqual([]);
+        await expect(repository.findManyWithProducer({ categoryId: CATEGORY_A })).resolves.toEqual([]);
+      });
+
+      it('findManyWithProducer filtre sur la disponibilité', async () => {
+        prisma.product.findMany.mockResolvedValue([rowWithProducer({ isAvailable: false })]);
+
+        const results = await repository.findManyWithProducer({ isAvailable: false });
+
+        expect(prisma.product.findMany).toHaveBeenCalledWith({ where: { isAvailable: false }, include: WITH_PRODUCER });
+        expect(results[0].product.isAvailable).toBe(false);
+      });
+
+      it('findManyWithProducer combine catégorie et disponibilité', async () => {
+        prisma.product.findMany.mockResolvedValue([]);
+
+        await repository.findManyWithProducer({ categoryId: CATEGORY_A, isAvailable: true });
+
+        expect(prisma.product.findMany).toHaveBeenCalledWith({
+          where: { categoryId: CATEGORY_A, isAvailable: true },
+          include: WITH_PRODUCER,
+        });
       });
 
       it('findByIdWithProducerOrFail charge le produit et son producteur', async () => {

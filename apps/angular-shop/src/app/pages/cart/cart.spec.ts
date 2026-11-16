@@ -18,6 +18,7 @@ const product = (id: string, price: number): ProductWithProducerResponseDto => (
     unit: 'KG',
     content: null,
     referencePrice: { amount: price, unit: 'kg' },
+    isAvailable: true,
 });
 
 describe('CartComponent', () => {

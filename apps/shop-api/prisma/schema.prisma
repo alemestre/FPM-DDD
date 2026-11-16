@@ -132,6 +132,7 @@ model Product {
   contentAmount    Decimal?     @db.Decimal(10, 3)
   contentUnit      MeasureUnit?
   image            String
+  isAvailable      Boolean      @default(true)
   createdAt        DateTime     @default(now())
   updatedAt        DateTime?    @updatedAt
 

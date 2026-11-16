@@ -45,10 +45,10 @@ export class ProductController {
     }
 
     @Get()
-    async findAll(@Query() { categoryId }: ListProductsQueryDto): Promise<ProductWithProducerResponseDto[]> {
+    async findAll(@Query() { categoryId, isAvailable }: ListProductsQueryDto): Promise<ProductWithProducerResponseDto[]> {
         const products = categoryId
-            ? await this.getProductsByCategoryId.execute(categoryId)
-            : await this.listProducts.execute();
+            ? await this.getProductsByCategoryId.execute(categoryId, isAvailable)
+            : await this.listProducts.execute(isAvailable);
         return products.map(toProductWithProducerResponse);
     }
 

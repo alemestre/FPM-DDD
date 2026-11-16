@@ -34,6 +34,13 @@ describe('Product', () => {
             expect(product.image).toBe(IMAGE);
             expect(product.unit).toBe('KG');
             expect(product.content).toBeNull();
+            expect(product.isAvailable).toBe(true);
+        });
+
+        it('crée un produit indisponible quand demandé', () => {
+            const product = Product.create('Pommes Golden', 3.5, 5.5, 20, 5, PRODUCER_ID, CATEGORY_A, IMAGE, 'KG', null, false);
+
+            expect(product.isAvailable).toBe(false);
         });
 
         it.each(['g', 'ml', 'kg', 'l'])("accepte l'unité de mesure %s", (measureUnit) => {
@@ -226,6 +233,18 @@ describe('Product', () => {
 
             expect(() => product.changeMinStock(21)).toThrow(DomainValidationError);
             expect(product.minStock).toBe(5);
+        });
+    });
+
+    describe('disponibilité', () => {
+        it('rend un produit indisponible puis de nouveau disponible', () => {
+            const product = createProduct();
+
+            product.markUnavailable();
+            expect(product.isAvailable).toBe(false);
+
+            product.markAvailable();
+            expect(product.isAvailable).toBe(true);
         });
     });
 
@@ -425,6 +444,13 @@ describe('Product', () => {
     });
 
     describe('reconstitute', () => {
+        it('reconstitue la disponibilité persistée, disponible par défaut', () => {
+            const id = 'e3bb189e-8bf9-4888-9912-ace4e6543002';
+
+            expect(Product.reconstitute(id, 'Poires', 2.2, 5.5, 8, 3, PRODUCER_ID, CATEGORY_B, IMAGE, 'PIECE', null, false).isAvailable).toBe(false);
+            expect(Product.reconstitute(id, 'Poires', 2.2, 5.5, 8, 3, PRODUCER_ID, CATEGORY_B, IMAGE, 'PIECE').isAvailable).toBe(true);
+        });
+
         it("reconstitue un produit à partir de l'état persisté", () => {
             const id = 'e3bb189e-8bf9-4888-9912-ace4e6543002';
             const product = Product.reconstitute(

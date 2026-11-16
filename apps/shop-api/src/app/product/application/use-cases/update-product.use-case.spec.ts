@@ -69,6 +69,17 @@ describe('UpdateProductUseCase', () => {
     expect(updated.producerId).toBe(PRODUCER_ID);
     expect(updated.categoryId).toBe(CATEGORY_A);
     expect(updated.unit).toBe('KG');
+    expect(updated.isAvailable).toBe(true);
+  });
+
+  it('rend le produit indisponible puis de nouveau disponible', async () => {
+    const unavailable = await useCase.execute(PRODUCT_ID, { isAvailable: false });
+    expect(unavailable.isAvailable).toBe(false);
+    expect(repository.save).toHaveBeenCalledWith(unavailable);
+
+    repository.findByIdOrFail.mockResolvedValue(unavailable);
+    const available = await useCase.execute(PRODUCT_ID, { isAvailable: true });
+    expect(available.isAvailable).toBe(true);
   });
 
   it("change l'unité puis sauvegarde", async () => {

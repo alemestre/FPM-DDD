@@ -17,6 +17,7 @@ const product = (
     unit: 'KG',
     content: null,
     referencePrice: { amount: 3.2, unit: 'kg' },
+    isAvailable: true,
     ...overrides,
 });
 

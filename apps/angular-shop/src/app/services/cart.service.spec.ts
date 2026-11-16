@@ -16,6 +16,7 @@ const product = (id: string): ProductWithProducerResponseDto => ({
     unit: 'KG',
     content: null,
     referencePrice: { amount: 2.5, unit: 'kg' },
+    isAvailable: true,
 });
 
 const savedCart = () => JSON.parse(localStorage.getItem(CART_STORAGE_KEY) ?? 'null');

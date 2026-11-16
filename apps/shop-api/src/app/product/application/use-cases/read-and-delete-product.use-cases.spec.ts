@@ -50,7 +50,15 @@ describe('use cases de lecture et suppression', () => {
     repository.findManyWithProducer.mockResolvedValue(products);
 
     await expect(new ListProductsUseCase(repository).execute()).resolves.toBe(products);
-    expect(repository.findManyWithProducer).toHaveBeenCalledWith();
+    expect(repository.findManyWithProducer).toHaveBeenCalledWith({ isAvailable: undefined });
+  });
+
+  it('ListProductsUseCase transmet le filtre de disponibilité', async () => {
+    repository.findManyWithProducer.mockResolvedValue([]);
+
+    await new ListProductsUseCase(repository).execute(false);
+
+    expect(repository.findManyWithProducer).toHaveBeenCalledWith({ isAvailable: false });
   });
 
   it('GetProductsByCategoryIdUseCase retourne les produits de la catégorie avec leur producteur', async () => {
@@ -58,7 +66,15 @@ describe('use cases de lecture et suppression', () => {
     repository.findManyWithProducer.mockResolvedValue(products);
 
     await expect(new GetProductsByCategoryIdUseCase(repository).execute(CATEGORY_A)).resolves.toBe(products);
-    expect(repository.findManyWithProducer).toHaveBeenCalledWith(CATEGORY_A);
+    expect(repository.findManyWithProducer).toHaveBeenCalledWith({ categoryId: CATEGORY_A, isAvailable: undefined });
+  });
+
+  it('GetProductsByCategoryIdUseCase transmet la catégorie et le filtre de disponibilité', async () => {
+    repository.findManyWithProducer.mockResolvedValue([]);
+
+    await new GetProductsByCategoryIdUseCase(repository).execute(CATEGORY_A, true);
+
+    expect(repository.findManyWithProducer).toHaveBeenCalledWith({ categoryId: CATEGORY_A, isAvailable: true });
   });
 
   it('GetProductsByCategoryIdUseCase retourne une liste vide si la catégorie n\'a aucun produit', async () => {

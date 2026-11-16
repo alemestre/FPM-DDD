@@ -15,4 +15,5 @@ export interface UpdateProductInput {
   readonly unit?: string;
   /** `null` removes the content. */
   readonly content?: ProductContentProps | null;
+  readonly isAvailable?: boolean;
 }

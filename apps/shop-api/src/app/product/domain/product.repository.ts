@@ -11,6 +11,14 @@ export type ProductWithProducer = {
 };
 
 /**
+ * Optional criteria of {@link ProductRepository.findManyWithProducer}. An omitted criterion does not filter.
+ */
+export type ProductFilters = {
+  categoryId?: string;
+  isAvailable?: boolean;
+};
+
+/**
  * Persistence port for the Product aggregate.
  *
  * Infrastructure adapters implement this abstract class. Application use cases
@@ -21,9 +29,9 @@ export type ProductWithProducer = {
  */
 export abstract class ProductRepository extends GenericEntityRepository<Product> {
   /**
-   * Lists products with their producer, optionally restricted to one category.
+   * Lists products with their producer, optionally restricted to one category and/or an availability.
    */
-  abstract findManyWithProducer(categoryId?: string): Promise<ProductWithProducer[]>;
+  abstract findManyWithProducer(filters?: ProductFilters): Promise<ProductWithProducer[]>;
 
   /**
    * @throws {NotFoundException} If the product does not exist.

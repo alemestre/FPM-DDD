@@ -1,5 +1,5 @@
 import { ProductReferenceNotFoundError } from "../domain/errors/product-reference-not-found.error";
-import { ProductRepository, type ProductWithProducer } from "../domain/product.repository";
+import { ProductRepository, type ProductFilters, type ProductWithProducer } from "../domain/product.repository";
 import { PrismaService } from "../../../prisma/prisma.service";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import {
@@ -68,7 +68,7 @@ type ProductWithProducerRow = Prisma.ProductGetPayload<{ include: typeof WITH_PR
  * Product fields accepted by {@link PrismaProductRepository.update}.
  */
 type ProductPatch = Partial<
-  Pick<Product, "name" | "price" | "vatRate" | "stock" | "minStock" | "producerId" | "categoryId" | "image" | "unit" | "content">
+  Pick<Product, "name" | "price" | "vatRate" | "stock" | "minStock" | "producerId" | "categoryId" | "image" | "unit" | "content" | "isAvailable">
 >;
 
 @Injectable()
@@ -113,9 +113,12 @@ export class PrismaProductRepository implements ProductRepository {
     }
   }
 
-  async findManyWithProducer(categoryId?: string): Promise<ProductWithProducer[]> {
+  async findManyWithProducer({ categoryId, isAvailable }: ProductFilters = {}): Promise<ProductWithProducer[]> {
     const rows = await this.prisma.product.findMany({
-      where: categoryId ? { categoryId } : {},
+      where: {
+        ...(categoryId !== undefined && { categoryId }),
+        ...(isAvailable !== undefined && { isAvailable })
+      },
       include: WITH_PRODUCER
     });
     return rows.map((row) => this.toDomainWithProducer(row));
@@ -161,6 +164,7 @@ export class PrismaProductRepository implements ProductRepository {
       categoryId: entity.categoryId,
       image: entity.image,
       unit: UNIT_TO_ROW[entity.unit],
+      isAvailable: entity.isAvailable,
       ...this.toContentColumns(entity.content)
     };
   }
@@ -169,7 +173,7 @@ export class PrismaProductRepository implements ProductRepository {
    * Maps only the defined fields of a patch onto Prisma update data.
    */
   private toUpdateData(patch: ProductPatch): Prisma.ProductUncheckedUpdateInput {
-    const { name, price, vatRate, stock, minStock, producerId, categoryId, image, unit, content } = patch;
+    const { name, price, vatRate, stock, minStock, producerId, categoryId, image, unit, content, isAvailable } = patch;
 
     return {
       ...(name !== undefined && { name }),
@@ -181,6 +185,7 @@ export class PrismaProductRepository implements ProductRepository {
       ...(categoryId !== undefined && { categoryId }),
       ...(image !== undefined && { image }),
       ...(unit !== undefined && { unit: UNIT_TO_ROW[unit] }),
+      ...(isAvailable !== undefined && { isAvailable }),
       ...(content !== undefined && this.toContentColumns(content))
     };
   }
@@ -249,7 +254,8 @@ export class PrismaProductRepository implements ProductRepository {
       row.categoryId,
       row.image,
       UNIT_TO_DOMAIN[row.unit],
-      this.toContentProps(row)
+      this.toContentProps(row),
+      row.isAvailable
     );
   }
 }
