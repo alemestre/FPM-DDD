@@ -1,7 +1,7 @@
 import type { ApiResponseDto, CurrentUserResponseDto } from '@fpm/contracts';
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { catchError, map, Observable, of, tap } from 'rxjs';
+import { catchError, finalize, map, Observable, of, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { User } from '../models/entities/user';
 import { CONSTANTS } from '../shared/constant';
@@ -18,6 +18,9 @@ export class AuthService {
     private _currentUser = signal<User | null>(null);
     currentUser = this._currentUser.asReadonly();
     isConnected = computed(() => this.currentUser() !== null);
+    // Passe à true quand loadCurrentUser a répondu (connecté ou non).
+    private _sessionChecked = signal(false);
+    sessionChecked = this._sessionChecked.asReadonly();
     private _apiUrl = environment.apiUrl;
 
     login(email: string, password: string): Observable<User> {
@@ -45,10 +48,10 @@ export class AuthService {
                 map((response) => response.data),
                 tap((user) => this._currentUser.set(user)),
                 catchError(() => {
-                    // Pas de session valide (ou API indisponible) : visiteur non connecté
                     this._currentUser.set(null);
                     return of(null);
                 }),
+                finalize(() => this._sessionChecked.set(true)),
             );
     }
 

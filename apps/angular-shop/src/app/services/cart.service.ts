@@ -24,20 +24,21 @@ export class CartService {
     tax = computed(() =>
         this.cartItems().reduce(
             (total, item) =>
-                total + ((item.product.price * item.product.vatRate) / 100) * item.quantity,
+                total + (item.product.price * (item.product.vatRate / 100)) * item.quantity,
             0,
         ),
     );
     total = computed(() => this.subtotal() + this.tax());
 
-    private readonly restored = signal(false);
+    private readonly _restored = signal(false);
+    readonly restored = this._restored.asReadonly();
 
     constructor() {
         // Restauré seulement dans le navigateur, après l'hydratation : le rendu serveur
         // (panier vide) et le premier rendu client restent identiques.
         afterNextRender(() => {
             const saved = this.loadCartFromStorage();
-            this.restored.set(true);
+            this._restored.set(true);
             if (saved.length > 0) this.cartItems.set(saved);
         });
 

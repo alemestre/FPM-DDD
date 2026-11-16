@@ -50,6 +50,15 @@ describe('CartService persistence', () => {
         expect(service.totalItems()).toBe(3);
     });
 
+    it('is marked as restored only after the first render', () => {
+        const service = createService();
+        expect(service.restored()).toBe(false);
+
+        TestBed.tick();
+
+        expect(service.restored()).toBe(true);
+    });
+
     it('does not overwrite the saved cart before restoring it', () => {
         const stored = JSON.stringify([{ product: product('p-1'), quantity: 2 }]);
         localStorage.setItem(CART_STORAGE_KEY, stored);
