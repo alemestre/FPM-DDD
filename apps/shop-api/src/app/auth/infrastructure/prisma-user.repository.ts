@@ -27,6 +27,14 @@ export class PrismaUserRepository implements UserRepository {
     return row ? { user: this.toDomain(row), passwordHash: row.passwordHash } : null;
   }
 
+  async findCredentialsById(id: string): Promise<UserCredentials | null> {
+    const row = await this.prisma.user.findUnique({
+      where: { id }
+    });
+
+    return row ? { user: this.toDomain(row), passwordHash: row.passwordHash } : null;
+  }
+
   async findById(id: string): Promise<User | null> {
     const row = await this.prisma.user.findUnique({
       where: { id }
@@ -74,6 +82,13 @@ export class PrismaUserRepository implements UserRepository {
     await this.prisma.user.update({
       where: { id: user.id },
       data: { emailVerified: user.emailVerified }
+    });
+  }
+
+  async savePasswordHash(userId: string, passwordHash: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash }
     });
   }
 

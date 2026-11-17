@@ -85,6 +85,35 @@ describe('PrismaUserRepository', () => {
     });
   });
 
+  describe('findCredentialsById', () => {
+    it("retourne l'utilisateur et le hash de son mot de passe", async () => {
+      prisma.user.findUnique.mockResolvedValue(userRow());
+
+      const credentials = await repository.findCredentialsById(USER_ID);
+
+      expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { id: USER_ID } });
+      expect(credentials?.passwordHash).toBe('$argon2id$hash');
+      expect(credentials?.user).toMatchObject(expectedUser);
+    });
+
+    it("retourne null si l'utilisateur n'existe pas", async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+
+      await expect(repository.findCredentialsById(USER_ID)).resolves.toBeNull();
+    });
+  });
+
+  describe('savePasswordHash', () => {
+    it('remplace seulement le hash du mot de passe', async () => {
+      await repository.savePasswordHash(USER_ID, '$argon2id$nouveau');
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: USER_ID },
+        data: { passwordHash: '$argon2id$nouveau' },
+      });
+    });
+  });
+
   describe('register', () => {
     const newUser = () =>
       User.reconstitute(USER_ID, 'marie.durand@example.fr', 'Marie', 'Durand', 'CUSTOMER', true, false);

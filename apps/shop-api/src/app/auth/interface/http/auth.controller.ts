@@ -1,5 +1,6 @@
 import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_COOKIE_OPTIONS, ACCESS_TOKEN_TTL_SECONDS } from "./auth.constants";
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Res, UseGuards } from "@nestjs/common";
+import { ChangePasswordUseCase } from "../../application/use-cases/change-password.use-case";
 import { GetCurrentUserUseCase } from "../../application/use-cases/get-current-user.use-case";
 import { ResendVerificationEmailUseCase } from "../../application/use-cases/resend-verification-email.use-case";
 import { VerifyEmailUseCase } from "../../application/use-cases/verify-email.use-case";
@@ -13,6 +14,7 @@ import { toCurrentUserResponse } from "./current-user.response.mapper";
 import { JwtCookieAuthGuard } from "./guards/jwt-cookie-auth.guard";
 import type { CurrentUserResponseDto } from "@fpm/contracts";
 import { LoginDTO } from "./dto/login.dto";
+import { ChangePasswordDTO } from "./dto/change-password.dto";
 import type { Response } from "express";
 
 @Controller()
@@ -22,7 +24,8 @@ export class AuthController {
     private readonly logIn: LogInUseCase,
     private readonly register: RegisterUseCase,
     private readonly verifyEmail: VerifyEmailUseCase,
-    private readonly resendVerificationEmail: ResendVerificationEmailUseCase
+    private readonly resendVerificationEmail: ResendVerificationEmailUseCase,
+    private readonly changePassword: ChangePasswordUseCase
   ) {}
 
   /**
@@ -60,6 +63,17 @@ export class AuthController {
   @UseGuards(JwtCookieAuthGuard)
   async me(@AuthenticatedUserId() userId: string): Promise<CurrentUserResponseDto> {
     return toCurrentUserResponse(await this.getCurrentUser.execute(userId));
+  }
+
+  /**
+   * Changes the password of the signed-in user. A wrong current password is a 400,
+   * not a 401: the session is valid and must not look expired to the client.
+   */
+  @Patch("me/password")
+  @UseGuards(JwtCookieAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updatePassword(@AuthenticatedUserId() userId: string, @Body() body: ChangePasswordDTO): Promise<void> {
+    await this.changePassword.execute(userId, body);
   }
 
   /** Sets the access token cookie and returns the profile, like GET /me. */

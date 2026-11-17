@@ -22,6 +22,12 @@ export abstract class UserRepository {
     abstract findCredentialsByEmail(email: string): Promise<UserCredentials | null>;
 
     /**
+     * @param id - User identity.
+     * @returns The user and its password hash when the user exists, otherwise `null`.
+     */
+    abstract findCredentialsById(id: string): Promise<UserCredentials | null>;
+
+    /**
      * Creates the user and its customer profile together.
      * @throws EmailAlreadyUsedError when another account has the same email.
      */
@@ -29,4 +35,7 @@ export abstract class UserRepository {
 
     /** Persists the state changes of an existing user (email verification). */
     abstract save(user: User): Promise<void>;
+
+    /** Replaces the password hash of an existing user. */
+    abstract savePasswordHash(userId: string, passwordHash: string): Promise<void>;
 }

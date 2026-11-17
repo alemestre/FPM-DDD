@@ -55,6 +55,17 @@ class InMemoryUserRepository extends UserRepository {
     return this.credentials.get(email) ?? null;
   }
 
+  async findCredentialsById(id: string): Promise<UserCredentials | null> {
+    return [...this.credentials.values()].find(({ user }) => user.id === id) ?? null;
+  }
+
+  async savePasswordHash(userId: string, passwordHash: string): Promise<void> {
+    const credentials = await this.findCredentialsById(userId);
+    if (credentials) {
+      this.credentials.set(credentials.user.email, { ...credentials, passwordHash });
+    }
+  }
+
   readonly registrations: CustomerRegistration[] = [];
 
   async register(registration: CustomerRegistration): Promise<void> {
@@ -256,6 +267,65 @@ describe('AuthController (HTTP)', () => {
       ['sans mot de passe', { email: EMAIL, password: '' }],
     ])('renvoie 400 %s', async (_case, body) => {
       expect((await post('/login', body)).status).toBe(400);
+    });
+  });
+
+  describe('PATCH /me/password', () => {
+    const NEW_PASSWORD = 'Nouveau1!motdepasse';
+
+    const patchPassword = async (body: unknown, token?: string) =>
+      parse(
+        await fetch(`${baseUrl}/me/password`, {
+          method: 'PATCH',
+          headers: {
+            'content-type': 'application/json',
+            ...(token === undefined ? {} : { cookie: `access_token=${token}` }),
+          },
+          body: JSON.stringify(body),
+        }),
+      );
+
+    it('change le mot de passe (204) : le nouveau permet de se connecter, plus l’ancien', async () => {
+      seedUser();
+
+      const result = await patchPassword(
+        { currentPassword: PASSWORD, newPassword: NEW_PASSWORD },
+        await sign({ sub: USER_ID }),
+      );
+
+      expect(result).toEqual({ status: 204, body: undefined });
+      expect((await post('/login', { email: EMAIL, password: NEW_PASSWORD })).status).toBe(200);
+      expect((await post('/login', { email: EMAIL, password: PASSWORD })).status).toBe(401);
+    });
+
+    it('renvoie 400 si le mot de passe actuel est incorrect', async () => {
+      seedUser();
+
+      expect(
+        await patchPassword({ currentPassword: 'mauvais', newPassword: NEW_PASSWORD }, await sign({ sub: USER_ID })),
+      ).toEqual({
+        status: 400,
+        body: { statusCode: 400, error: 'Bad Request', message: 'Le mot de passe actuel est incorrect' },
+      });
+      expect(repository.credentials.get(EMAIL)?.passwordHash).toBe(`hash:${PASSWORD}`);
+    });
+
+    it.each([
+      ['un nouveau mot de passe sans majuscule ni caractère spécial', 'motdepasse2'],
+      ['un nouveau mot de passe trop court', 'Ab1!'],
+    ])('renvoie 400 pour %s', async (_case, newPassword) => {
+      seedUser();
+
+      const { status } = await patchPassword({ currentPassword: PASSWORD, newPassword }, await sign({ sub: USER_ID }));
+
+      expect(status).toBe(400);
+      expect(repository.credentials.get(EMAIL)?.passwordHash).toBe(`hash:${PASSWORD}`);
+    });
+
+    it('renvoie 401 sans cookie de session', async () => {
+      seedUser();
+
+      expect((await patchPassword({ currentPassword: PASSWORD, newPassword: NEW_PASSWORD })).status).toBe(401);
     });
   });
 

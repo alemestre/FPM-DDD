@@ -18,7 +18,14 @@ describe('ResendVerificationEmailUseCase', () => {
   let useCase: ResendVerificationEmailUseCase;
 
   beforeEach(() => {
-    repository = { findById: jest.fn(), findCredentialsByEmail: jest.fn(), register: jest.fn(), save: jest.fn() };
+    repository = {
+      findById: jest.fn(),
+      findCredentialsByEmail: jest.fn(),
+      findCredentialsById: jest.fn(),
+      register: jest.fn(),
+      save: jest.fn(),
+      savePasswordHash: jest.fn(),
+    };
     verificationToken = { issue: jest.fn().mockResolvedValue('verification.jwt'), verify: jest.fn() };
     emailSender = { send: jest.fn() };
     useCase = new ResendVerificationEmailUseCase(repository, verificationToken, emailSender);

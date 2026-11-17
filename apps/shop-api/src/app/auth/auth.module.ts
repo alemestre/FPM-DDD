@@ -18,6 +18,7 @@ import { PrismaUserRepository } from "./infrastructure/prisma-user.repository";
 import { Argon2PasswordHasher } from './infrastructure/argon2-password-hasher';
 import { AccessTokenIssuer } from './application/ports/access-token-issuer';
 import { LogInUseCase } from './application/use-cases/log-in.use-case';
+import { ChangePasswordUseCase } from "./application/use-cases/change-password.use-case";
 import { PasswordHasher } from './application/ports/password-hasher';
 import { AuthController } from "./interface/http/auth.controller";
 import { ACCESS_TOKEN_TTL_SECONDS } from "./interface/http/auth.constants";
@@ -49,6 +50,7 @@ import { JwtModule } from "@nestjs/jwt";
     RegisterUseCase,
     VerifyEmailUseCase,
     ResendVerificationEmailUseCase,
+    ChangePasswordUseCase,
     VerifyEmailMail,
     { provide: UserRepository, useClass: PrismaUserRepository },
     { provide: APP_FILTER, useClass: AuthenticationErrorFilter },

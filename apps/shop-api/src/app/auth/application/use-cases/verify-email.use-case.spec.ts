@@ -15,7 +15,14 @@ describe('VerifyEmailUseCase', () => {
   let useCase: VerifyEmailUseCase;
 
   beforeEach(() => {
-    repository = { findById: jest.fn(), findCredentialsByEmail: jest.fn(), register: jest.fn(), save: jest.fn() };
+    repository = {
+      findById: jest.fn(),
+      findCredentialsByEmail: jest.fn(),
+      findCredentialsById: jest.fn(),
+      register: jest.fn(),
+      save: jest.fn(),
+      savePasswordHash: jest.fn(),
+    };
     verificationToken = { issue: jest.fn(), verify: jest.fn().mockResolvedValue(USER_ID) };
     useCase = new VerifyEmailUseCase(repository, verificationToken);
   });

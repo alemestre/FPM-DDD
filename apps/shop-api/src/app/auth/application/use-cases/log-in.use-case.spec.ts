@@ -22,7 +22,14 @@ describe('LogInUseCase', () => {
   let useCase: LogInUseCase;
 
   beforeEach(() => {
-    repository = { findById: jest.fn(), findCredentialsByEmail: jest.fn(), register: jest.fn(), save: jest.fn() };
+    repository = {
+      findById: jest.fn(),
+      findCredentialsByEmail: jest.fn(),
+      findCredentialsById: jest.fn(),
+      register: jest.fn(),
+      save: jest.fn(),
+      savePasswordHash: jest.fn(),
+    };
     passwordHasher = { hash: jest.fn(), verify: jest.fn() };
     accessTokenIssuer = { issue: jest.fn().mockResolvedValue('signed.jwt.token') };
     useCase = new LogInUseCase(repository, accessTokenIssuer, passwordHasher);
