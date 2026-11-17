@@ -8,7 +8,7 @@ import { ProductsState } from '../../shared/interface';
 import { Component, computed, signal } from '@angular/core';
 
 /** Délai après la dernière frappe avant de filtrer la liste. */
-export const SEARCH_DEBOUNCE_MS = 1000;
+export const SEARCH_DEBOUNCE_MS = 500;
 
 /** Insensible à la casse et aux accents : « legume » trouve « Légumes ». */
 const normalize = (value: string) =>
