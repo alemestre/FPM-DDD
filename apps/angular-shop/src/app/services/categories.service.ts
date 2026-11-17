@@ -1,5 +1,5 @@
 import { environment } from '../../environments/environment';
-import type { CategoryResponseDto, ApiResponseDto } from '@fpm/contracts';
+import type { CategoryResponseDto as Category, ApiResponseDto } from '@fpm/contracts';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CONSTANTS } from '../shared/constant';
@@ -12,16 +12,16 @@ export class CategoriesService {
   protected httpClient = inject(HttpClient);
   private _apiUrl = environment.apiUrl;
 
-  getAllCategories(): Observable<CategoryResponseDto[]> {
-    return this.httpClient.get<ApiResponseDto<CategoryResponseDto[]>>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.CATEGORIES}`)
+  getAllCategories(): Observable<Category[]> {
+    return this.httpClient.get<ApiResponseDto<Category[]>>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.CATEGORIES}`)
       .pipe(
         map((response) => response.data),
       )
   }
 
-  getCategoryBySlug(slug: string): Observable<CategoryResponseDto> {
+  getCategoryBySlug(slug: string): Observable<Category> {
     return this.httpClient
-      .get<ApiResponseDto<CategoryResponseDto>>(
+      .get<ApiResponseDto<Category>>(
         `${this._apiUrl}/${CONSTANTS.API_END_POINTS.CATEGORY_BY_SLUG}/${encodeURIComponent(slug)}`
       )
       .pipe(map((response) => response.data));

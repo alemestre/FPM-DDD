@@ -1,5 +1,5 @@
 import { environment } from '../../environments/environment';
-import type { ApiResponseDto, ProductWithProducerResponseDto } from '@fpm/contracts';
+import type { ApiResponseDto, ProductWithProducerResponseDto as Product } from '@fpm/contracts';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CONSTANTS } from '../shared/constant';
@@ -12,8 +12,8 @@ export class ProductsService {
   protected httpClient = inject(HttpClient);
   private _apiUrl = environment.apiUrl;
 
-  getAvailableProducts(): Observable<ProductWithProducerResponseDto[]> {
-    return this.httpClient.get<ApiResponseDto<ProductWithProducerResponseDto[]>>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.PRODUCTS}`, {
+  getAvailableProducts(): Observable<Product[]> {
+    return this.httpClient.get<ApiResponseDto<Product[]>>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.PRODUCTS}`, {
       params: { isAvailable: true }
     })
       .pipe(
@@ -21,9 +21,9 @@ export class ProductsService {
       )
   }
 
-  getActiveProductsByCategoryId(categoryId: string): Observable<ProductWithProducerResponseDto[]> {
+  getActiveProductsByCategoryId(categoryId: string): Observable<Product[]> {
     return this.httpClient
-      .get<ApiResponseDto<ProductWithProducerResponseDto[]>>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.PRODUCTS}`, {
+      .get<ApiResponseDto<Product[]>>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.PRODUCTS}`, {
         params: { categoryId, isActive: true }
       })
       .pipe(map((response) => response.data));
