@@ -1,12 +1,13 @@
-import { Route } from '@angular/router';
-import { Home } from './pages/home/home';
-import { About } from './pages/about/about';
-import { Category } from './pages/category/category';
-import { Login } from './pages/auth/login/login';
-import { Register } from './pages/auth/register/register';
 import { VerifyEmail } from './pages/auth/verify-email/verify-email';
+import { Register } from './pages/auth/register/register';
 import { MainLayout } from './layout/main/main-layout';
 import { AuthLayout } from './layout/auth/auth-layout';
+import { Category } from './pages/category/category';
+import { Profile } from './pages/profile/profile';
+import { Login } from './pages/auth/login/login';
+import { About } from './pages/about/about';
+import { Home } from './pages/home/home';
+import { Route } from '@angular/router';
 
 export const appRoutes: Route[] = [
   {
@@ -39,7 +40,12 @@ export const appRoutes: Route[] = [
           {
             path: 'panier',
             loadComponent: () => import('./pages/cart/cart').then(m => m.CartComponent)
-          }
+          },
+          {
+            path: 'profil',
+            component: Profile,
+            data: { breadcrumb: 'Profil' }
+          },
         ]
       }
     ]

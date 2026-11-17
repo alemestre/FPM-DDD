@@ -3,11 +3,11 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { AuthService } from '../../../services/auth.service';
 import { CartService } from '../../../services/cart.service';
-import { Profile } from './profile/profile';
+import { ProfileMenu } from './profile-menu/profile-menu';
 
 @Component({
     selector: 'app-top-bar',
-  imports: [RouterLink, RouterLinkActive, NgbDropdownModule, Profile],
+  imports: [RouterLink, RouterLinkActive, NgbDropdownModule, ProfileMenu],
     templateUrl: './top-bar.html',
 })
 export class TopBar {

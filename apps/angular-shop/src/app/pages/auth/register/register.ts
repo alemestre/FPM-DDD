@@ -13,6 +13,7 @@ import {
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { passwordRuleErrors } from '../../../validators/password-rules';
+import { PHONE_PATTERN } from '../../../validators/phone';
 import { ResendEmail } from './resend-email/resend-email';
 
 interface RegisterModel {
@@ -23,9 +24,6 @@ interface RegisterModel {
   password: string;
   confirmationPassword: string;
 }
-
-/** Numéro français : 0X XX XX XX XX ou +33 X XX XX XX XX, séparateurs facultatifs. */
-const PHONE_PATTERN = /^(?:\+33\s?|0)[1-9](?:[\s.-]?\d{2}){4}$/;
 
 @Component({
   selector: 'app-register',

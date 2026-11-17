@@ -1,0 +1,21 @@
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+  <div
+    class="card-body p-4 d-flex flex-column flex-sm-row align-items-center gap-3 text-center text-sm-start"
+  >
+    <div
+      aria-hidden="true"
+      class="d-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary fw-semibold fs-4 flex-shrink-0"
+      style="width: 4rem; height: 4rem"
+    >
+      {{ profileInitials() }}
+    </div>
+    <div class="flex-grow-1">
+      <h1 class="h4 fw-bold text-secondary mb-1">
+        {{ profile().firstName }} {{ profile().lastName }}
+      </h1>
+      <p class="text-secondary small mb-0">
+        <i aria-hidden="true" class="bi bi-envelope me-1"></i>{{ profile().email }}
+      </p>
+    </div>
+  </div>
+</div>

@@ -5,11 +5,11 @@ import { Router, RouterLink } from '@angular/router';
 
 
 @Component({
-  selector: 'app-profile',
+  selector: 'app-profile-menu',
   imports: [RouterLink, NgbDropdownItem, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu],
-  templateUrl: './profile.html'
+  templateUrl: './profile-menu.html'
 })
-export class Profile {
+export class ProfileMenu {
   readonly menuOpen = model(false);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);

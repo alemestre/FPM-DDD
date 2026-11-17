@@ -1,0 +1,51 @@
+<!-- Mode lecture -->
+<dl class="row gy-3 mb-0">
+  <dt class="col-sm-4 text-secondary fw-medium">
+    <i
+      aria-hidden="true"
+      class="bi bi-person text-primary me-2"
+    ></i
+    >Prénom
+  </dt>
+  <dd class="col-sm-8 mb-0">{{ profile().firstName }}</dd>
+
+  <dt class="col-sm-4 text-secondary fw-medium">
+    <i
+      aria-hidden="true"
+      class="bi bi-person text-primary me-2"
+    ></i
+    >Nom
+  </dt>
+  <dd class="col-sm-8 mb-0">{{ profile().lastName }}</dd>
+
+  <dt class="col-sm-4 text-secondary fw-medium">
+    <i
+      aria-hidden="true"
+      class="bi bi-telephone text-primary me-2"
+    ></i
+    >Téléphone
+  </dt>
+  <dd class="col-sm-8 mb-0">{{ profile().phone }}</dd>
+
+  <dt class="col-sm-4 text-secondary fw-medium">
+    <i
+      aria-hidden="true"
+      class="bi bi-geo-alt text-primary me-2"
+    ></i
+    >Adresse
+  </dt>
+  <dd class="col-sm-8 mb-0">
+    @if (profile().address; as address) {
+      <address class="mb-0">
+        {{ address.line1 }}<br/>
+        @if (address.line2) {
+          {{ address.line2 }}<br/>
+        } {{ address.postalCode }} {{ address.city }}
+      </address>
+    } @else {
+      <span class="text-secondary fst-italic"
+      >Aucune adresse renseignée</span
+      >
+    }
+  </dd>
+</dl>

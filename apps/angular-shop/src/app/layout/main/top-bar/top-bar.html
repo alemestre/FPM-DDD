@@ -34,7 +34,7 @@
     </a>
 
     @if (isAuthenticated()) {
-      <app-profile  [(menuOpen)]="menuOpen"/>
+      <app-profile-menu  [(menuOpen)]="menuOpen"/>
     } @else {
       <a
         (click)="closeMenu()"
