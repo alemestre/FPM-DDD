@@ -2,6 +2,7 @@ import { DomainValidationErrorFilter } from './shared/interface/http/domain-vali
 import { ApiResponseInterceptor } from './shared/interface/http/api-response.interceptor';
 import { ProducerModule } from './producer/producer.module';
 import { AuthModule } from './auth/auth.module';
+import { CustomerModule } from './customer/customer.module';
 import { CategoryModule } from './category/category.module';
 import { ProductModule } from './product/product.module';
 import { PrismaModule } from '../prisma/prisma.module';
@@ -15,6 +16,7 @@ import { Module } from '@nestjs/common';
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     AuthModule,
+    CustomerModule,
     ProductModule,
     ProducerModule,
     CategoryModule
