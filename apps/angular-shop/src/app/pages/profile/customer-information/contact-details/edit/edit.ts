@@ -26,7 +26,7 @@ const POSTAL_CODE_PATTERN = /^\d{5}$/;
 })
 export class Edit {
   private readonly notificationService = inject(NotificationService);
-  private readonly customerService = inject(ProfileService);
+  private readonly profileService = inject(ProfileService);
 
   profile = input.required<Profile>();
   editingInfo = model<boolean>();
@@ -83,8 +83,8 @@ export class Edit {
           }
 
           try {
-            await firstValueFrom(this.customerService.updateProfile(userUpdated))
-             this.editingInfo.set(false);
+            await firstValueFrom(this.profileService.updateProfile(userUpdated))
+            this.editingInfo.set(false);
             this.notificationService.showSuccess("Informations mises à jour");
             return undefined;
           } catch (error) {
