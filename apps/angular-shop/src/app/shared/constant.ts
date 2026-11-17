@@ -10,6 +10,7 @@ export const CONSTANTS = {
     LOGOUT: 'logout',
     ME: 'me',
     PROFILE: 'customers/me',
+    PASSWORD: 'me/password',
     VERIFY_EMAIL: 'verify-email',
     RESEND_VERIFICATION: 'resend-verification'
   },

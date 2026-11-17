@@ -4,6 +4,9 @@ import { Component, inject, input, signal } from '@angular/core';
 import { form, FormField, FormRoot, required, validate } from '@angular/forms/signals';
 import { passwordRuleErrors } from '../../../../validators/password-rules';
 import { NotificationService } from '../../../../services/notification.service';
+import { firstValueFrom } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ProfileService } from '../../../../services/profile.service';
 
 interface PasswordModel {
   currentPassword: string;
@@ -26,6 +29,7 @@ const EMPTY_PASSWORD: PasswordModel = {
 })
 export class Password {
   private readonly notificationService = inject(NotificationService);
+  private readonly profileService = inject(ProfileService);
 
   profile = input.required<Profile>();
 
@@ -54,17 +58,30 @@ export class Password {
     },
     {
       submission: {
-        action: async () => {
+        action: async (field) => {
           this.passwordError.set(null);
-          // TODO: envoyer { currentPassword, newPassword } à l'API ; un 401/400 ira dans passwordError.
-          this.passwordModel.set({ ...EMPTY_PASSWORD });
-          this.passwordForm().reset();
-          this.notificationService.showSuccess("Votre mot de passe a été modifié.")
+          const { currentPassword, newPassword } = field().value()
+          try {
+            await firstValueFrom(this.profileService.updatePassword({ currentPassword, newPassword }))
+            this.passwordModel.set({ ...EMPTY_PASSWORD });
+            this.passwordForm().reset();
+            this.notificationService.showSuccess("Votre mot de passe a été modifié.");
+          } catch (error) {
+            this.passwordError.set(this.toErrorMessage(error));
+          }
           return undefined;
         }
       }
     }
   );
+
+  /** Un 400 de l'API porte un message lisible (mot de passe actuel incorrect, règles non respectées…). */
+  private toErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse && error.status === 400 && typeof error.error?.message === 'string') {
+      return error.error.message;
+    }
+    return 'Une erreur est survenue. Veuillez réessayer.';
+  }
 
   protected togglePasswordVisibility() {
     this.showPassword.update((visible) => !visible);

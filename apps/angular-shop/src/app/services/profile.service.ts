@@ -8,6 +8,11 @@ import { map, Observable, tap } from 'rxjs';
 /** Champs modifiables du profil : l'API refuse `id` et `email` (400). `address: null` supprime l'adresse. */
 export type UpdateProfilePayload = Partial<Pick<Profile, 'firstName' | 'lastName' | 'phone' | 'address'>>;
 
+export type UpdatePasswordPayload = {
+  readonly currentPassword: string
+  readonly newPassword: string
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -42,5 +47,12 @@ export class ProfileService {
         map(response => response.data),
         tap(profile => this._profile.set(profile))
       )
+  }
+
+  /** 204 sans contenu ; un mot de passe actuel incorrect répond 400 avec un message à afficher. */
+  updatePassword(updatePasswordPayload: UpdatePasswordPayload): Observable<void> {
+    return this.httpClient.patch<void>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.PASSWORD}`, updatePasswordPayload, {
+      withCredentials: true
+    })
   }
 }
