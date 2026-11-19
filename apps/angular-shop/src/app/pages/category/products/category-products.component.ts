@@ -25,11 +25,11 @@ export class CategoryProducts extends Products {
                         loading: false,
                         error: null,
                     })),
-                    catchError((err) =>
+                    catchError(() =>
                         of<ProductsState>({
                             products: [],
                             loading: false,
-                            error: err.message ?? 'Une erreur est survenue.',
+                            error: 'Une erreur est survenue.',
                         }),
                     ),
                 ),

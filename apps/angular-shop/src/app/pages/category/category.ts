@@ -1,11 +1,11 @@
-import type { CategoryResponseDto as CategoryDTO } from '@fpm/contracts';
 import { NotificationService } from '../../services/notification.service';
+import { CategoryProducts } from './products/category-products.component';
+import type { CategoryResponseDto as CategoryDTO } from '@fpm/contracts';
 import { CategoriesService } from '../../services/categories.service';
 import { Component, computed, effect, inject } from '@angular/core';
 import { catchError, map, of, switchMap } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { CategoryProducts } from './products/category-products.component';
 
 
 interface CategoryState {
@@ -46,11 +46,11 @@ export class Category {
             loading: false,
             error: null
           })),
-          catchError(err =>
+          catchError(() =>
             of({
               category: null,
               loading: false,
-              error: err.message ?? 'Une erreur est survenue.'
+              error: 'Une erreur est survenue.'
             })
           )
         );
@@ -68,6 +68,7 @@ export class Category {
   constructor() {
     effect(() => {
       const error = this.error();
+      console.log("l'erreur: ", error)
       if (error)
         this.notificationService.showError(error);
     });
