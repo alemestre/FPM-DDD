@@ -156,3 +156,21 @@ describe('CartService persistence', () => {
         expect(service.items()).toEqual([{ product: product('p-2'), quantity: 1 }]);
     });
 });
+
+describe('CartService totals', () => {
+    beforeEach(() => localStorage.clear());
+
+    it("applique la règle d'arrondi unique : la somme des lignes est égale au total", () => {
+        const service = TestBed.inject(CartService);
+
+        service.addToCart(product('p-1'), 2);
+        service.addToCart(product('p-2'), 1);
+
+        // Lignes : 5,00 + 0,28 = 5,28 et 2,50 + 0,14 = 2,64
+        expect(service.lineAmounts(service.items()[0])).toEqual({ subtotal: 5, tax: 0.28, total: 5.28 });
+        expect(service.lineAmounts(service.items()[1])).toEqual({ subtotal: 2.5, tax: 0.14, total: 2.64 });
+        expect(service.subtotal()).toBe(7.5);
+        expect(service.tax()).toBe(0.42);
+        expect(service.total()).toBe(7.92);
+    });
+});

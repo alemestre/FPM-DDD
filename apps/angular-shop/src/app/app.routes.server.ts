@@ -18,6 +18,18 @@ export const serverRoutes: ServerRoute[] = [
         renderMode: RenderMode.Client,
     },
     {
+        path: 'checkout', // Session, cart (localStorage) and guest choice (sessionStorage) live in the browser
+        renderMode: RenderMode.Client,
+    },
+    {
+        path: 'checkout/identification',
+        renderMode: RenderMode.Client,
+    },
+    {
+        path: 'checkout/confirmation', // Shows the order kept in memory after it was placed
+        renderMode: RenderMode.Client,
+    },
+    {
         path: 'verifier-email', // Reads the token from the URL and calls the API: browser only, never prerendered
         renderMode: RenderMode.Client,
     },

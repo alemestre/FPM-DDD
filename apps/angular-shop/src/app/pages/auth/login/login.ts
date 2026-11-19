@@ -1,9 +1,9 @@
 import { email, form, FormField, FormRoot, minLength, required } from '@angular/forms/signals';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { ResendEmail } from '../register/resend-email/resend-email';
 import { AuthService } from '../../../services/auth.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 interface LoginModel {
@@ -20,6 +20,12 @@ interface LoginModel {
 export class Login {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  /** Page ouverte après la connexion, sauf si l'URL porte un `?returnUrl=` interne. */
+  readonly redirectTo = input('/home');
+  /** Intégré dans une autre page (identification du checkout) : prend toute la largeur de son conteneur. */
+  readonly embedded = input(false);
 
   protected readonly model = signal<LoginModel>({ email: '', password: '' });
   protected readonly showPassword = signal(false);
@@ -45,7 +51,7 @@ export class Login {
           const { email, password } = field().value();
           try {
             await firstValueFrom(this.authService.login(email, password));
-            await this.router.navigateByUrl('/home');
+            await this.router.navigateByUrl(this.redirectUrl());
           } catch (error) {
             if (error instanceof HttpErrorResponse && error.status === 403) {
               this.unverifiedEmail.set(email);
@@ -57,6 +63,12 @@ export class Login {
       }
     }
   );
+
+  /** Seul un chemin interne est suivi (`/…`, pas `//autre-site`) : pas de redirection ouverte. */
+  private redirectUrl(): string {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    return returnUrl?.startsWith('/') && !returnUrl.startsWith('//') ? returnUrl : this.redirectTo();
+  }
 
   protected togglePasswordVisibility() {
     this.showPassword.update((visible) => !visible);

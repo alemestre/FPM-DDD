@@ -1,0 +1,93 @@
+<form [formRoot]="billingForm" class="d-flex flex-column gap-4" novalidate>
+  <div class="card">
+    <div class="card-header bg-body-tertiary">
+      <h2 class="h5 mb-0">Adresse de facturation</h2>
+    </div>
+
+    <div class="card-body">
+      @if (profileLoading()) {
+        <div class="d-flex align-items-center gap-2 text-secondary">
+                                <span
+                                  class="spinner-border spinner-border-sm"
+                                  aria-hidden="true"
+                                ></span>
+          Chargement de votre adresse…
+        </div>
+      } @else if (profile(); as profile) {
+        <p class="mb-3">
+                                <span class="fw-semibold"
+                                >{{ profile.firstName }} {{ profile.lastName }}</span
+                                ><br/>
+          {{ profile.email }} · {{ profile.phone }}
+        </p>
+
+        @if (editingAddress()) {
+          <p class="small text-secondary">
+            Cette adresse ne sera utilisée que pour cette commande : l'adresse
+            de votre compte ne change pas.
+          </p>
+          <div class="row g-3">
+            @for (config of addressFields; track config.key) {
+              <app-billing-field
+                [field]="billingForm[config.key]"
+                [config]="config"
+              />
+            }
+          </div>
+        } @else {
+          @let address = billingForm().value();
+          <div class="d-flex justify-content-between align-items-start gap-3">
+            <address class="mb-0">
+              {{ address.line1 }}<br/>
+              @if (address.line2) {
+                {{ address.line2 }}<br/>
+              } {{ address.postalCode }} {{ address.city }}
+            </address>
+            <button
+              type="button"
+              class="btn btn-outline-primary btn-sm"
+              (click)="editingAddress.set(true)"
+            >
+              <i class="bi bi-pencil me-1" aria-hidden="true"></i>
+              Modifier
+            </button>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <app-pickup-info [pickupDate]="pickupDate"/>
+
+  @if (serverError(); as message) {
+    <div
+      class="alert alert-danger d-flex align-items-center gap-2 py-2 small mb-0"
+      role="alert"
+    >
+      <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+      {{ message }}
+    </div>
+  }
+
+  <div>
+    <button
+      type="submit"
+      class="btn btn-primary w-100 py-2 fw-medium"
+      [disabled]="billingForm().submitting() || profile() === null"
+    >
+      @if (billingForm().submitting()) {
+        <span
+          class="spinner-border spinner-border-sm me-2"
+          aria-hidden="true"
+        ></span>
+        Enregistrement de la commande…
+      } @else {
+        <i class="bi bi-bag-check me-2" aria-hidden="true"></i>
+        Procéder au paiement
+      }
+    </button>
+    <p class="text-center text-secondary small mt-2 mb-0">
+      Paiement en magasin lors du retrait.
+    </p>
+  </div>
+</form>

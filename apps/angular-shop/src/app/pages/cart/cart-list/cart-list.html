@@ -69,22 +69,27 @@
                   <!-- Quantité -->
                   <div class="col-6 col-md-4">
 
-                    <label
-                      [for]="'quantity-' + item.product.id"
-                      class="form-label">
-                      Quantité
-                    </label>
+                    @if (readonly()) {
+                      <div class="text-muted small">Quantité</div>
+                      <strong>{{ item.quantity }}</strong>
+                    } @else {
+                      <label
+                        [for]="'quantity-' + item.product.id"
+                        class="form-label">
+                        Quantité
+                      </label>
 
-                    <input
-                      [id]="'quantity-' + item.product.id"
-                      type="number"
-                      class="form-control"
-                      min="1"
-                      [value]="item.quantity"
-                      (change)="updateQuantity(
-                        item.product.id,
-                        $any($event.target).value
-                      )">
+                      <input
+                        [id]="'quantity-' + item.product.id"
+                        type="number"
+                        class="form-control"
+                        min="1"
+                        [value]="item.quantity"
+                        (change)="updateQuantity(
+                          item.product.id,
+                          $any($event.target).value
+                        )">
+                    }
 
                   </div>
 
@@ -96,26 +101,28 @@
                     </div>
 
                     <strong class="text-nowrap">
-                      {{ (priceWithTax * item.quantity) | currency: 'EUR' }}
+                      {{ cart.lineAmounts(item).total | currency: 'EUR' }}
                     </strong>
 
                   </div>
 
                   <!-- Suppression -->
-                  <div class="col-2 col-md-3 text-end">
+                  @if (!readonly()) {
+                    <div class="col-2 col-md-3 text-end">
 
-                    <button
-                      type="button"
-                      class="btn btn-outline-primary"
-                      (click)="removeItem(item.product.id)"
-                      aria-label="Remove item"
-                      title="Remove item">
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        (click)="removeItem(item.product.id)"
+                        aria-label="Remove item"
+                        title="Remove item">
 
-                      <i class="bi bi-trash"></i>
+                        <i class="bi bi-trash"></i>
 
-                    </button>
+                      </button>
 
-                  </div>
+                    </div>
+                  }
 
                 </div>
 

@@ -12,7 +12,7 @@ import { catchError, EMPTY } from 'rxjs';
 
 type ProfileTab = 'informations' | 'commandes';
 
-const CURRENT_STATUSES: readonly OrderStatus[] = ['PENDING', 'IN_PROGRESS', 'READY'];
+const CURRENT_STATUSES: readonly OrderStatus[] = ['REGISTERED', 'IN_PROGRESS', 'MODIFIED', 'READY'];
 
 /** Plus récentes en premier. */
 const byNewest = (a: Order, b: Order) => b.createdAt.localeCompare(a.createdAt);
@@ -49,7 +49,7 @@ export class Profile {
     private readonly orders = signal<Order[]>([
         { id: 'c1', number: 1042, status: 'READY', createdAt: '2026-11-14T10:12:00Z' },
         { id: 'c2', number: 1038, status: 'IN_PROGRESS', createdAt: '2026-11-12T16:40:00Z' },
-        { id: 'c3', number: 1035, status: 'PENDING', createdAt: '2026-11-15T08:05:00Z' },
+        { id: 'c3', number: 1035, status: 'REGISTERED', createdAt: '2026-11-15T08:05:00Z' },
         { id: 'c4', number: 1011, status: 'COMPLETED', createdAt: '2026-10-28T11:30:00Z' },
         { id: 'c5', number: 987, status: 'CANCELLED', createdAt: '2026-10-03T09:15:00Z' },
     ]);

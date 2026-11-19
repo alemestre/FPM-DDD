@@ -1,7 +1,7 @@
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 import { Login } from './login';
 
@@ -15,7 +15,7 @@ describe('Login', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Login],
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()]
+      providers: [provideRouter([{ path: '**', children: [] }]), provideHttpClient(), provideHttpClientTesting()]
     }).compileComponents();
 
     http = TestBed.inject(HttpTestingController);
@@ -77,5 +77,36 @@ describe('Login', () => {
     await settle();
 
     expect(text()).toContain('Un nouveau lien vient de vous être envoyé.');
+  });
+  describe('redirection après connexion', () => {
+    const user = { id: 'u-1', email: 'marie.durand@example.fr', firstName: 'Marie', lastName: 'Durand', role: 'CUSTOMER' };
+
+    const logInAndRedirect = async (url = '/login') => {
+      const router = TestBed.inject(Router);
+      await router.navigateByUrl(url);
+      const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+      await logIn('marie.durand@example.fr', 'MotDePasse1!');
+      http.expectOne(LOGIN_URL).flush({ success: true, data: user });
+      await settle();
+      return navigate;
+    };
+
+    it("ouvre l'accueil par défaut", async () => {
+      expect(await logInAndRedirect()).toHaveBeenCalledWith('/home');
+    });
+
+    it('ouvre la page demandée par redirectTo', async () => {
+      fixture.componentRef.setInput('redirectTo', '/checkout');
+
+      expect(await logInAndRedirect()).toHaveBeenCalledWith('/checkout');
+    });
+
+    it('suit un returnUrl interne', async () => {
+      expect(await logInAndRedirect('/login?returnUrl=%2Fcheckout')).toHaveBeenCalledWith('/checkout');
+    });
+
+    it('ignore un returnUrl vers un autre site', async () => {
+      expect(await logInAndRedirect('/login?returnUrl=%2F%2Fevil.example')).toHaveBeenCalledWith('/home');
+    });
   });
 });

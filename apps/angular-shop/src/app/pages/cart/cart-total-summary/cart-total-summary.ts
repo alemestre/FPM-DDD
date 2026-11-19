@@ -1,5 +1,5 @@
 import { NotificationService } from '../../../services/notification.service';
-import { Component, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { CartService } from '../../../services/cart.service';
 import { Router } from '@angular/router';
@@ -15,6 +15,9 @@ export class CartTotalSummaryComponent {
   private readonly cartService = inject(CartService);
   private readonly notificationService = inject(NotificationService);
   private readonly router = inject(Router);
+
+  /** Masque « Passer au paiement » et « Vider le panier » (page checkout). */
+  readonly showActions = input(true);
 
   // Expose cart service for template
   get cart() {

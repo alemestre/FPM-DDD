@@ -2,6 +2,7 @@ import { ProductWithProducerResponseDto as Product } from '@fpm/contracts';
 import { afterNextRender, computed, effect, inject, Injectable, signal } from '@angular/core';
 import { LocalStorageService } from './local-storage.service';
 import { CartItem } from '../pages/cart/cart-item';
+import { lineAmounts, LineAmounts, sumCents } from '../shared/money';
 
 export const CART_STORAGE_KEY = 'fpm_cart';
 
@@ -17,21 +18,19 @@ export class CartService {
     private readonly cartItems = signal<CartItem[]>([]);
     items = this.cartItems.asReadonly();
     totalItems = computed(() => this.cartItems().reduce((total, item) => total + item.quantity, 0));
-    subtotal = computed(() =>
-        this.cartItems().reduce((total, item) => total + item.product.price * item.quantity, 0),
-    );
+    /** Totaux du panier, avec la même règle d'arrondi que l'API (voir `shared/money.ts`). */
+    subtotal = computed(() => sumCents(this.cartItems().map((item) => this.lineAmounts(item).subtotal)));
     isEmpty = computed(() => this.cartItems().length === 0);
-    tax = computed(() =>
-        this.cartItems().reduce(
-            (total, item) =>
-                total + (item.product.price * (item.product.vatRate / 100)) * item.quantity,
-            0,
-        ),
-    );
-    total = computed(() => this.subtotal() + this.tax());
+    tax = computed(() => sumCents(this.cartItems().map((item) => this.lineAmounts(item).tax)));
+    total = computed(() => sumCents([this.subtotal(), this.tax()]));
 
     private readonly _restored = signal(false);
     readonly restored = this._restored.asReadonly();
+
+    /** HT, TVA et TTC d'une ligne : la somme des lignes affichées est égale au total. */
+    lineAmounts(item: CartItem): LineAmounts {
+        return lineAmounts(item.product.price, item.product.vatRate, item.quantity);
+    }
 
     constructor() {
         // Restauré seulement dans le navigateur, après l'hydratation : le rendu serveur

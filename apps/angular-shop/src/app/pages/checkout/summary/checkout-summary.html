@@ -7,11 +7,11 @@
         <div class="row g-4">
             <div class="col-12 col-lg-8 d-flex flex-column gap-4">
                 <app-cart-list [readonly]="true" />
-              @if (isAuthenticated()) {
-                <app-checkout-authenticated/>
-              } @else {
-                <app-checkout-guest />
-              }
+                  @if (isAuthenticated()) {
+                    <app-checkout-authenticated/>
+                  } @else {
+                    <app-checkout-guest/>
+                  }
             </div>
             <div class="col-12 col-lg-4">
                 <div class="position-sticky top-0">

@@ -1,5 +1,5 @@
 /** Mêmes valeurs que l'enum `OrderStatus` de l'API. */
-export type OrderStatus = 'PENDING' | 'IN_PROGRESS' | 'READY' | 'COMPLETED' | 'CANCELLED';
+export type OrderStatus = 'REGISTERED' | 'IN_PROGRESS' | 'MODIFIED' | 'READY' | 'COMPLETED' | 'CANCELLED';
 
 export interface Order {
     id: string;

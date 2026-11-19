@@ -1,0 +1,39 @@
+<section class="container py-5">
+            <h1 class="h4 fw-bold text-secondary mb-4">Comment souhaitez-vous commander ?</h1>
+
+            <div class="row g-4">
+                <div class="col-12 col-lg-6">
+                    <div class="h-100 d-flex flex-column gap-3">
+                        <div>
+                            <h2 class="h5 fw-semibold mb-1">J'ai un compte</h2>
+                            <p class="text-secondary mb-0">
+                                Connectez-vous pour retrouver et suivre vos commandes depuis votre
+                                profil.
+                            </p>
+                        </div>
+                        <app-login [redirectTo]="checkoutUrl" [embedded]="true" />
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <div class="card border-0 rounded-4 h-100">
+                        <div class="card-body flex-grow-0 p-4 d-flex flex-column gap-3">
+                            <h2 class="h5 fw-semibold mb-0">Commander en tant qu'invité</h2>
+                            <p class="text-secondary mb-0">
+                                Passez commande sans créer de compte : vous indiquerez vos
+                                coordonnées et votre adresse de facturation à l'étape suivante. Vous
+                                ne pourrez pas suivre cette commande depuis un profil.
+                            </p>
+                            <button
+                                type="button"
+                                class="btn btn-outline-primary rounded-pill fw-medium mt-3"
+                                (click)="continueAsGuest()"
+                            >
+                                <i class="bi bi-person me-2" aria-hidden="true"></i>
+                                Continuer en tant qu'invité
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>

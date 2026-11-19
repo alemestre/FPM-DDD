@@ -1,0 +1,95 @@
+import { CheckoutSessionService } from '../../../services/checkout-session.service';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { PickupInfo } from '../summary/form/pickup-info/pickup-info';
+import { CurrencyPipe } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
+
+/** Commande que l'API vient d'enregistrer. Sans commande en mémoire (page rechargée), retour à l'accueil. */
+@Component({
+    selector: 'app-checkout-confirmation',
+    imports: [PickupInfo, CurrencyPipe, RouterLink],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
+        @if (order(); as order) {
+            <section class="container py-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-check-circle-fill text-success fs-1" aria-hidden="true"></i>
+                    <h1 class="h4 fw-bold mt-2">Commande n° {{ order.number }} enregistrée</h1>
+                    <p class="text-secondary mb-0">
+                        Merci {{ order.contact.firstName }} ! Un e-mail de confirmation a été envoyé
+                        à <strong>{{ order.contact.email }}</strong
+                        >.
+                    </p>
+                    <p class="fw-semibold mt-2 mb-0">
+                        Le paiement se fera en magasin lors du retrait.
+                    </p>
+                </div>
+
+                <div class="row g-4 justify-content-center">
+                    <div class="col-12 col-lg-7">
+                        <div class="card">
+                            <div class="card-header bg-body-tertiary">
+                                <h2 class="h5 mb-0">Récapitulatif</h2>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                @for (item of order.items; track item.productId) {
+                                    <li
+                                        class="list-group-item d-flex justify-content-between gap-3"
+                                    >
+                                        <span>{{ item.productName }} × {{ item.quantity }}</span>
+                                        <span class="text-nowrap">{{ item.total | currency }}</span>
+                                    </li>
+                                }
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Sous-total HT</span
+                                    ><span>{{ order.subtotal | currency }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>TVA</span><span>{{ order.tax | currency }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between fs-5">
+                                    <strong>Total</strong
+                                    ><strong>{{ order.total | currency }}</strong>
+                                </li>
+                            </ul>
+                            <div class="card-body">
+                                <h3 class="h6 fw-semibold">Adresse de facturation</h3>
+                                <address class="mb-0">
+                                    {{ order.contact.firstName }} {{ order.contact.lastName }}<br />
+                                    {{ order.billingAddress.line1 }}<br />
+                                    @if (order.billingAddress.line2) {
+                                        {{ order.billingAddress.line2 }}<br />
+                                    }
+                                    {{ order.billingAddress.postalCode }}
+                                    {{ order.billingAddress.city }}
+                                </address>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-5">
+                        <app-pickup-info [pickupDate]="pickupDate()!" />
+                        <a routerLink="/home" class="btn btn-primary w-100 mt-4"
+                            >Retour à l'accueil</a
+                        >
+                    </div>
+                </div>
+            </section>
+        }
+    `,
+})
+export class Confirmation {
+    protected readonly order = inject(CheckoutSessionService).lastOrder;
+
+    /** `YYYY-MM-DD` de l'API → jour calendaire à 00:00 UTC, attendu par app-pickup-info. */
+    protected readonly pickupDate = computed(() => {
+        const day = this.order()?.estimatedPickupDate;
+        return day ? new Date(`${day}T00:00:00Z`) : null;
+    });
+
+    constructor() {
+        if (!this.order()) {
+            void inject(Router).navigateByUrl('/home');
+        }
+    }
+}

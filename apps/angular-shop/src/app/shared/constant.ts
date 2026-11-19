@@ -12,7 +12,9 @@ export const CONSTANTS = {
     PROFILE: 'customers/me',
     PASSWORD: 'me/password',
     VERIFY_EMAIL: 'verify-email',
-    RESEND_VERIFICATION: 'resend-verification'
+    RESEND_VERIFICATION: 'resend-verification',
+    ORDERS: 'orders',
+    GUEST_ORDERS: 'orders/guest'
   },
 };
 

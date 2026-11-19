@@ -1,6 +1,6 @@
 import { NotificationService } from '../../../services/notification.service';
 import { CommonModule, CurrencyPipe, NgOptimizedImage } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../../services/cart.service';
 
@@ -17,6 +17,9 @@ import { CartService } from '../../../services/cart.service';
 export class CartListComponent {
   private readonly cartService = inject(CartService);
   private readonly notificationService = inject(NotificationService);
+
+  /** Récapitulatif de la page checkout : quantités affichées sans pouvoir les modifier ni supprimer de produit. */
+  readonly readonly = input(false);
 
   // Expose cart service for template
   get cart() {

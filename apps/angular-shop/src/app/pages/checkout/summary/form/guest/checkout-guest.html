@@ -1,0 +1,68 @@
+<form [formRoot]="billingForm" class="d-flex flex-column gap-4" novalidate>
+  <p class="mb-0 small text-secondary">
+    Vous commandez en tant qu'invité. Vous avez un compte ?
+    <a [routerLink]="identificationUrl" class="fw-medium">Se connecter</a>
+    pour suivre cette commande depuis votre profil.
+  </p>
+
+  <div class="card">
+    <div class="card-header bg-body-tertiary">
+      <h2 class="h5 mb-0">Adresse de facturation</h2>
+    </div>
+
+    <div class="card-body">
+      <p class="small text-secondary">
+        Ces coordonnées nous permettent de vous prévenir quand votre
+        commande vous attend en magasin.
+      </p>
+      <div class="row g-3">
+        @for (field of contactFields; track field.key) {
+          <app-billing-field
+            [field]="billingForm.contact[field.key]"
+            [config]="field"
+          />
+        }
+        @for (config of addressFields; track config.key) {
+          <app-billing-field
+            [field]="billingForm.address[config.key]"
+            [config]="config"
+          />
+        }
+      </div>
+    </div>
+  </div>
+
+  <app-pickup-info [pickupDate]="pickupDate"/>
+
+  @if (serverError(); as message) {
+    <div
+      class="alert alert-danger d-flex align-items-center gap-2 py-2 small mb-0"
+      role="alert"
+    >
+      <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+      {{ message }}
+    </div>
+  }
+
+  <div>
+    <button
+      type="submit"
+      class="btn btn-primary w-100 py-2 fw-medium"
+      [disabled]="billingForm().submitting()"
+    >
+      @if (billingForm().submitting()) {
+        <span
+          class="spinner-border spinner-border-sm me-2"
+          aria-hidden="true"
+        ></span>
+        Enregistrement de la commande…
+      } @else {
+        <i class="bi bi-bag-check me-2" aria-hidden="true"></i>
+        Procéder au paiement
+      }
+    </button>
+    <p class="text-center text-secondary small mt-2 mb-0">
+      Paiement en magasin lors du retrait.
+    </p>
+  </div>
+</form>

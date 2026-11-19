@@ -51,6 +51,7 @@
   </div>
 
   <!-- Actions -->
+  @if (showActions()) {
   <div class="card-footer bg-transparent">
 
     @if (cart.items().length > 0) {
@@ -84,5 +85,7 @@
     }
 
   </div>
+
+}
 
 </div>
