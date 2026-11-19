@@ -14,6 +14,10 @@ const VALID_FIELDS = {
   lastName: 'Durand',
   email: 'marie.durand@example.fr',
   phone: '06 12 34 56 78',
+  addressLine1: ' 12 rue des Lilas ',
+  addressLine2: 'Bât. B',
+  postalCode: '29000',
+  city: 'Quimper ',
   password: 'MotDePasse1!',
   confirmationPassword: 'MotDePasse1!'
 };
@@ -74,6 +78,10 @@ describe('Register', () => {
       lastName: 'Durand',
       email: 'marie.durand@example.fr',
       phone: '06 12 34 56 78',
+      addressLine1: '12 rue des Lilas',
+      addressLine2: 'Bât. B',
+      postalCode: '29000',
+      city: 'Quimper',
       password: 'MotDePasse1!'
     });
     request.flush(
@@ -115,6 +123,24 @@ describe('Register', () => {
     expect(text()).toContain('Au moins un chiffre.');
     expect(text()).toContain('Au moins un caractère spécial');
     expect(text()).not.toContain('Au moins 8 caractères.');
+  });
+
+  it("exige une adresse complète, sans appeler l'API", async () => {
+    fill({ ...VALID_FIELDS, addressLine1: '', postalCode: '', city: '' });
+    await submit();
+
+    http.expectNone(REGISTER_URL);
+    expect(text()).toContain("L'adresse est obligatoire.");
+    expect(text()).toContain('Le code postal est obligatoire.');
+    expect(text()).toContain('La ville est obligatoire.');
+  });
+
+  it("refuse un code postal qui n'a pas 5 chiffres, sans appeler l'API", async () => {
+    fill({ ...VALID_FIELDS, postalCode: '290' });
+    await submit();
+
+    http.expectNone(REGISTER_URL);
+    expect(text()).toContain('Le code postal doit contenir 5 chiffres.');
   });
 
   it('signale un e-mail déjà utilisé (409)', async () => {

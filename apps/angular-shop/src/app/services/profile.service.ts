@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { CONSTANTS } from '../shared/constant';
 import { map, Observable, tap } from 'rxjs';
 
-/** Champs modifiables du profil : l'API refuse `id` et `email` (400). `address: null` supprime l'adresse. */
+/** Champs modifiables du profil : l'API refuse `id` et `email` (400). L'adresse se remplace, elle ne se supprime pas. */
 export type UpdateProfilePayload = Partial<Pick<Profile, 'firstName' | 'lastName' | 'phone' | 'address'>>;
 
 export type UpdatePasswordPayload = {

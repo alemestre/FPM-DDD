@@ -14,6 +14,7 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { passwordRuleErrors } from '../../../validators/password-rules';
 import { PHONE_PATTERN } from '../../../validators/phone';
+import { POSTAL_CODE_PATTERN } from '../../../validators/postal-code';
 import { ResendEmail } from './resend-email/resend-email';
 
 interface RegisterModel {
@@ -21,6 +22,10 @@ interface RegisterModel {
   lastName: string;
   email: string;
   phone: string;
+  addressLine1: string;
+  addressLine2: string;
+  postalCode: string;
+  city: string;
   password: string;
   confirmationPassword: string;
 }
@@ -39,6 +44,10 @@ export class Register {
     lastName: '',
     email: '',
     phone: '',
+    addressLine1: '',
+    addressLine2: '',
+    postalCode: '',
+    city: '',
     password: '',
     confirmationPassword: ''
   });
@@ -58,6 +67,12 @@ export class Register {
       pattern(path.phone, PHONE_PATTERN, {
         message: "Le numéro de téléphone n'est pas valide."
       })
+      required(path.addressLine1, { message: "L'adresse est obligatoire." });
+      required(path.postalCode, { message: 'Le code postal est obligatoire.' });
+      pattern(path.postalCode, POSTAL_CODE_PATTERN, {
+        message: 'Le code postal doit contenir 5 chiffres.'
+      });
+      required(path.city, { message: 'La ville est obligatoire.' });
       required(path.password, { message: 'Le mot de passe est obligatoire.' });
       validate(path.password, ({ value }) => (value() ? passwordRuleErrors(value()) : undefined));
       required(path.confirmationPassword, {
@@ -73,13 +88,18 @@ export class Register {
       submission: {
         action: async (field) => {
           this.serverError.set(null);
-          const { firstName, lastName, email, phone, password } = field().value();
+          const { firstName, lastName, email, phone, password, addressLine1, addressLine2, postalCode, city } =
+            field().value();
           try {
             await firstValueFrom(
               this.authService.register({
                 firstName: firstName.trim(),
                 lastName: lastName.trim(),
                 phone,
+                addressLine1: addressLine1.trim(),
+                addressLine2: addressLine2.trim(),
+                postalCode,
+                city: city.trim(),
                 email,
                 password
               })

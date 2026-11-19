@@ -4,6 +4,7 @@ import { Component, inject, input, linkedSignal, model, signal } from '@angular/
 import { NotificationService } from '../../../../../services/notification.service';
 import { CustomerProfileResponseDto as Profile } from '@fpm/contracts';
 import { PHONE_PATTERN } from '../../../../../validators/phone';
+import { POSTAL_CODE_PATTERN } from '../../../../../validators/postal-code';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { firstValueFrom } from 'rxjs';
 
@@ -16,8 +17,6 @@ interface InfoModel {
   postalCode: string;
   city: string;
 }
-
-const POSTAL_CODE_PATTERN = /^\d{5}$/;
 
 @Component({
   selector: 'app-edit',
@@ -45,17 +44,9 @@ export class Edit {
         message: 'Le numéro de téléphone n\'est pas valide.'
       });
 
-      // L'adresse est facultative, mais une adresse commencée doit être complète.
-      const addressStarted = () => {
-        const { line1, postalCode, city } = this.infoModel();
-        return [line1, postalCode, city].some((value) => value.trim() !== '');
-      };
-      required(path.line1, { message: 'L\'adresse est obligatoire.', when: addressStarted });
-      required(path.postalCode, {
-        message: 'Le code postal est obligatoire.',
-        when: addressStarted
-      });
-      required(path.city, { message: 'La ville est obligatoire.', when: addressStarted });
+      required(path.line1, { message: 'L\'adresse est obligatoire.' });
+      required(path.postalCode, { message: 'Le code postal est obligatoire.' });
+      required(path.city, { message: 'La ville est obligatoire.' });
       pattern(path.postalCode, POSTAL_CODE_PATTERN, {
         message: 'Le code postal doit contenir 5 chiffres.'
       });
@@ -71,15 +62,12 @@ export class Edit {
             firstName: firstName.trim(),
             lastName: lastName.trim(),
             phone,
-            address: line1.trim()
-              ? {
-                line1: line1.trim(),
-                line2: line2.trim(),
-                postalCode,
-                city: city.trim()
-              }
-              // null supprime l'adresse ; undefined disparaîtrait du JSON et l'API la garderait.
-              : null
+            address: {
+              line1: line1.trim(),
+              line2: line2.trim(),
+              postalCode,
+              city: city.trim()
+            }
           }
 
           try {

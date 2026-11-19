@@ -8,6 +8,10 @@ import { CONSTANTS } from '../shared/constant';
 
 export type RegisterPayload = Pick<User, 'firstName' | 'lastName' | 'email' | 'phone'> & {
     password: string;
+    addressLine1: string;
+    addressLine2?: string;
+    postalCode: string;
+    city: string;
 };
 
 @Injectable({

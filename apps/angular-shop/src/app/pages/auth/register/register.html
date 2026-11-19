@@ -141,6 +141,94 @@
                         </div>
 
                         <div class="mb-3">
+                            <label for="register-addressLine1" class="form-label fw-medium text-secondary">
+                                Adresse
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary-subtle text-primary">
+                                    <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                                </span>
+                                <input
+                                    id="register-addressLine1"
+                                    type="text"
+                                    class="form-control"
+                                    autocomplete="address-line1"
+                                    placeholder="12 rue des Lilas"
+                                    [formField]="registerForm.addressLine1"
+                                    [class.is-invalid]="registerForm.addressLine1().touched() && registerForm.addressLine1().invalid()"
+                                    [attr.aria-describedby]="registerForm.addressLine1().touched() && registerForm.addressLine1().invalid() ? 'register-addressLine1-errors' : null"
+                                />
+                            </div>
+                            @if (registerForm.addressLine1().touched() && registerForm.addressLine1().invalid()) {
+                            <div id="register-addressLine1-errors" class="invalid-feedback d-block">
+                                @for (error of registerForm.addressLine1().errors(); track error.kind) {
+                                <div>{{ error.message }}</div>
+                                }
+                            </div>
+                            }
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="register-addressLine2" class="form-label fw-medium text-secondary">
+                                Complément d'adresse
+                            </label>
+                            <input
+                                id="register-addressLine2"
+                                type="text"
+                                class="form-control"
+                                autocomplete="address-line2"
+                                placeholder="Bâtiment, étage…"
+                                [formField]="registerForm.addressLine2"
+                            />
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                        <div class="col-sm-4">
+                            <label for="register-postalCode" class="form-label fw-medium text-secondary">
+                                Code postal
+                            </label>
+                            <input
+                                id="register-postalCode"
+                                type="text"
+                                class="form-control"
+                                autocomplete="postal-code"
+                                inputmode="numeric"
+                                [formField]="registerForm.postalCode"
+                                [class.is-invalid]="registerForm.postalCode().touched() && registerForm.postalCode().invalid()"
+                                [attr.aria-describedby]="registerForm.postalCode().touched() && registerForm.postalCode().invalid() ? 'register-postalCode-errors' : null"
+                            />
+                            @if (registerForm.postalCode().touched() && registerForm.postalCode().invalid()) {
+                            <div id="register-postalCode-errors" class="invalid-feedback d-block">
+                                @for (error of registerForm.postalCode().errors(); track error.kind) {
+                                <div>{{ error.message }}</div>
+                                }
+                            </div>
+                            }
+                        </div>
+                        <div class="col-sm-8">
+                            <label for="register-city" class="form-label fw-medium text-secondary">
+                                Ville
+                            </label>
+                            <input
+                                id="register-city"
+                                type="text"
+                                class="form-control"
+                                autocomplete="address-level2"
+                                [formField]="registerForm.city"
+                                [class.is-invalid]="registerForm.city().touched() && registerForm.city().invalid()"
+                                [attr.aria-describedby]="registerForm.city().touched() && registerForm.city().invalid() ? 'register-city-errors' : null"
+                            />
+                            @if (registerForm.city().touched() && registerForm.city().invalid()) {
+                            <div id="register-city-errors" class="invalid-feedback d-block">
+                                @for (error of registerForm.city().errors(); track error.kind) {
+                                <div>{{ error.message }}</div>
+                                }
+                            </div>
+                            }
+                        </div>
+                        </div>
+
+                        <div class="mb-3">
                             <label for="register-password" class="form-label fw-medium text-secondary">
                                 Mot de passe
                             </label>
