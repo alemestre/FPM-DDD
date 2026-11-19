@@ -68,7 +68,7 @@ describe('Category', () => {
         const fixture = await createComponent('inconnue');
 
         expect(fixture.componentInstance.category()).toBeNull();
-        expect(fixture.componentInstance.error()).toBe('404');
+        expect(fixture.componentInstance.error()).toBe('Une erreur est survenue.');
         expect(productsService.getActiveProductsByCategoryId).not.toHaveBeenCalled();
     });
 

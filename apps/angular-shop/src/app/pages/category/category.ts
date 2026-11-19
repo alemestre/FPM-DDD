@@ -68,7 +68,6 @@ export class Category {
   constructor() {
     effect(() => {
       const error = this.error();
-      console.log("l'erreur: ", error)
       if (error)
         this.notificationService.showError(error);
     });
