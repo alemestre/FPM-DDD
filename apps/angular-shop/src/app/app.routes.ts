@@ -9,6 +9,7 @@ import { Login } from './pages/auth/login/login';
 import { About } from './pages/about/about';
 import { Home } from './pages/home/home';
 import { Route } from '@angular/router';
+import { authGuard } from './guards/auth.guard';
 
 export const appRoutes: Route[] = [
   {
@@ -68,6 +69,7 @@ export const appRoutes: Route[] = [
           {
             path: 'profil',
             component: Profile,
+            canActivate: [authGuard],
             data: { breadcrumb: 'Profil' }
           },
         ]

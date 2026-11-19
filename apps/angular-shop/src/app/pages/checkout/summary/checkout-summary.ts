@@ -15,6 +15,5 @@ import { CheckoutGuest } from './form/guest/checkout-guest';
 })
 export class CheckoutSummary {
     protected readonly authService = inject(AuthService);
-
     isAuthenticated = this.authService.isConnected
 }

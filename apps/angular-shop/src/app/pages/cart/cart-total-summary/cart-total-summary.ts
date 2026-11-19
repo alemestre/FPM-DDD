@@ -31,7 +31,7 @@ export class CartTotalSummaryComponent {
     }
 
     // Navigate to checkout page
-    this.router.navigate(['/checkout']);
+    void this.router.navigate(['/checkout']);
   }
 
   clearCart(): void {
