@@ -13,8 +13,7 @@ export const CustomerProfileResponseSchema = z.object({
     firstName: z.string(),
     lastName: z.string(),
     phone: z.string(),
-    /** `null` when the customer has not given an address. */
-    address: CustomerAddressResponseSchema.nullable(),
+    address: CustomerAddressResponseSchema,
 });
 
 export type CustomerAddressResponseDto = z.infer<typeof CustomerAddressResponseSchema>;

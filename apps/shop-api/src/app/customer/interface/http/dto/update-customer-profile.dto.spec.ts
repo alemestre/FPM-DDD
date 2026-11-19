@@ -8,9 +8,12 @@ describe("UpdateCustomerProfileSchema", () => {
     expect(UpdateCustomerProfileSchema.safeParse({}).success).toBe(true);
   });
 
-  it("accepte une adresse complète ou null", () => {
+  it("accepte une adresse complète", () => {
     expect(UpdateCustomerProfileSchema.safeParse({ address }).success).toBe(true);
-    expect(UpdateCustomerProfileSchema.safeParse({ address: null }).success).toBe(true);
+  });
+
+  it("refuse la suppression de l'adresse (null)", () => {
+    expect(UpdateCustomerProfileSchema.safeParse({ address: null }).success).toBe(false);
   });
 
   it.each(["line1", "postalCode", "city"] as const)("refuse une adresse sans %s", (field) => {

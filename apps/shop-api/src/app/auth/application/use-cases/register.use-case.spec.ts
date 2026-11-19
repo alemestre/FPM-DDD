@@ -13,6 +13,7 @@ const INPUT: RegisterInput = {
   firstName: ' Marie ',
   lastName: 'Durand',
   phone: '06 12 34 56 78',
+  address: { line1: ' 1 rue des Lilas ', postalCode: '75 001', city: 'Paris' },
 };
 
 describe('RegisterUseCase', () => {
@@ -54,7 +55,8 @@ describe('RegisterUseCase', () => {
     expect(registration.user).toBe(user);
     expect(registration.passwordHash).toBe('$argon2id$hash');
     expect(registration.phone.toString()).toBe('+33612345678');
-    expect(registration.address).toBeUndefined();
+    expect(registration.address).toMatchObject({ line1: '1 rue des Lilas', line2: '', city: 'Paris' });
+    expect(registration.address.postalCode.toString()).toBe('75001');
   });
 
   it("envoie l'email de vérification avec un jeton émis pour le nouveau compte", async () => {
@@ -64,20 +66,16 @@ describe('RegisterUseCase', () => {
     expect(emailSender.send).toHaveBeenCalledWith(user, 'verification.jwt');
   });
 
-  it("enregistre l'adresse quand elle est fournie", async () => {
-    await useCase.execute({
-      ...INPUT,
-      address: { line1: ' 1 rue des Lilas ', postalCode: '75 001', city: 'Paris' },
-    });
+  it("enregistre le complément d'adresse quand il est fourni", async () => {
+    await useCase.execute({ ...INPUT, address: { ...INPUT.address, line2: ' Bât. B ' } });
 
-    const { address } = repository.register.mock.calls[0][0];
-    expect(address).toMatchObject({ line1: '1 rue des Lilas', line2: '', city: 'Paris' });
-    expect(address?.postalCode.toString()).toBe('75001');
+    expect(repository.register.mock.calls[0][0].address.line2).toBe('Bât. B');
   });
 
   it.each([
     ['un téléphone invalide', { ...INPUT, phone: '123' }],
     ['un code postal invalide', { ...INPUT, address: { line1: '1 rue des Lilas', postalCode: 'ABC', city: 'Paris' } }],
+    ['une adresse vide', { ...INPUT, address: { line1: '  ', postalCode: '75001', city: 'Paris' } }],
     ['une ville vide', { ...INPUT, address: { line1: '1 rue des Lilas', postalCode: '75001', city: ' ' } }],
     ['un prénom vide', { ...INPUT, firstName: '  ' }],
     ['un email invalide', { ...INPUT, email: 'pas-un-email' }],

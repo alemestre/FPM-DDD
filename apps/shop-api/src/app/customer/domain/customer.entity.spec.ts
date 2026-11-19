@@ -42,14 +42,11 @@ describe("Customer", () => {
     expect(c.phone).toBe("+33612345678");
   });
 
-  it("remplace puis supprime l'adresse", () => {
+  it("remplace l'adresse", () => {
     const c = customer();
     const newAddress = CustomerAddress.create({ line1: "2 quai Est", postalCode: "29200", city: "Brest" });
 
     c.changeAddress(newAddress);
     expect(c.address).toBe(newAddress);
-
-    c.changeAddress(null);
-    expect(c.address).toBeNull();
   });
 });

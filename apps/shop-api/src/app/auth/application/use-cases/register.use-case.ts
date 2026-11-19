@@ -27,7 +27,7 @@ export class RegisterUseCase {
     // Every value object is built before hashing, so invalid input fails fast.
     const user = User.register(input);
     const phone = PhoneNumber.create(input.phone);
-    const address = input.address ? toCustomerAddress(input.address) : undefined;
+    const address = toCustomerAddress(input.address);
     const password = Password.create(input.password);
 
     const passwordHash = await this.passwordHasher.hash(password.value);
@@ -44,7 +44,7 @@ function toCustomerAddress({ line1, line2, postalCode, city }: RegisterAddressIn
   const trimmedLine1 = line1.trim();
   const trimmedCity = city.trim();
   if (!trimmedLine1 || !trimmedCity) {
-    throw new DomainValidationError("L'adresse et la ville sont obligatoires lorsqu'une adresse est fournie");
+    throw new DomainValidationError("L'adresse et la ville sont obligatoires");
   }
   return {
     line1: trimmedLine1,

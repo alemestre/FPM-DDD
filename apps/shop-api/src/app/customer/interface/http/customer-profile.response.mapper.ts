@@ -11,7 +11,7 @@ export function toCustomerProfileResponse(customer: Customer): CustomerProfileRe
     firstName: customer.firstName,
     lastName: customer.lastName,
     phone: customer.phone,
-    address: address && {
+    address: {
       line1: address.line1,
       line2: address.line2,
       postalCode: address.postalCode,

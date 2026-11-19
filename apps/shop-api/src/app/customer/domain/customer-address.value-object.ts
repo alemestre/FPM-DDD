@@ -9,8 +9,7 @@ export interface CustomerAddressProps {
 }
 
 /**
- * Postal address of a customer. Optional on the customer (orders are collected,
- * not delivered), but complete when present: street, postal code and city.
+ * Postal address of a customer, always complete: street, postal code and city.
  */
 export class CustomerAddress {
   private constructor(

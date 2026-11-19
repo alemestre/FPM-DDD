@@ -3,7 +3,7 @@ import { PhoneNumber } from "../../shared/domain/value-objects/phone-number.valu
 import type { CustomerAddress } from "./customer-address.value-object";
 
 /**
- * Profile of a customer account: identity, contact details and optional address.
+ * Profile of a customer account: identity, contact details and postal address.
  * The email is read-only here: changing it would require a new verification.
  */
 export class Customer {
@@ -13,7 +13,7 @@ export class Customer {
     private _firstName: string,
     private _lastName: string,
     private _phone: PhoneNumber,
-    private _address: CustomerAddress | null
+    private _address: CustomerAddress
   ) {}
 
   static reconstitute(
@@ -22,7 +22,7 @@ export class Customer {
     firstName: string,
     lastName: string,
     phone: string,
-    address: CustomerAddress | null
+    address: CustomerAddress
   ): Customer {
     return new Customer(id, email, firstName, lastName, PhoneNumber.create(phone), address);
   }
@@ -47,8 +47,7 @@ export class Customer {
     this._phone = PhoneNumber.create(phone);
   }
 
-  /** `null` removes the address. */
-  changeAddress(address: CustomerAddress | null): void {
+  changeAddress(address: CustomerAddress): void {
     this._address = address;
   }
 
@@ -68,7 +67,7 @@ export class Customer {
     return this._phone.toString();
   }
 
-  get address(): CustomerAddress | null {
+  get address(): CustomerAddress {
     return this._address;
   }
 }

@@ -1,5 +1,6 @@
 import { GetCustomerProfileUseCase } from "./get-customer-profile.use-case";
 import { CustomerRepository } from "../../domain/customer.repository";
+import { CustomerAddress } from "../../domain/customer-address.value-object";
 import { Customer } from "../../domain/customer.entity";
 import { NotFoundException } from "@nestjs/common";
 
@@ -15,7 +16,9 @@ describe("GetCustomerProfileUseCase", () => {
   });
 
   it("renvoie le profil du client", async () => {
-    const customer = Customer.reconstitute(CUSTOMER_ID, "marie@example.fr", "Marie", "Durand", "+33612345678", null);
+    const customer = Customer.reconstitute(CUSTOMER_ID, "marie@example.fr", "Marie", "Durand", "+33612345678",
+      CustomerAddress.create({ line1: "1 rue des Lilas", postalCode: "29000", city: "Quimper" })
+    );
     repository.findById.mockResolvedValue(customer);
 
     await expect(useCase.execute(CUSTOMER_ID)).resolves.toBe(customer);

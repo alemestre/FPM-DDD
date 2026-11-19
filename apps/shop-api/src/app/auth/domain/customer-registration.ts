@@ -2,7 +2,7 @@ import type { PhoneNumber } from '../../shared/domain/value-objects/phone-number
 import type { PostalCode } from '../../shared/domain/value-objects/postal-code.value-object';
 import type { User } from './user.entity';
 
-/** Postal address of a customer. Optional: orders are collected, not delivered. */
+/** Postal address of a customer, required at registration. */
 export interface CustomerAddress {
     readonly line1: string;
     readonly line2: string;
@@ -15,5 +15,5 @@ export interface CustomerRegistration {
     readonly user: User;
     readonly passwordHash: string;
     readonly phone: PhoneNumber;
-    readonly address?: CustomerAddress;
+    readonly address: CustomerAddress;
 }

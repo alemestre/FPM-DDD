@@ -23,7 +23,7 @@ export class UpdateCustomerProfileUseCase {
       customer.rename(firstName ?? customer.firstName, lastName ?? customer.lastName);
     }
     if (phone !== undefined) customer.changePhone(phone);
-    if (address !== undefined) customer.changeAddress(address && CustomerAddress.create(address));
+    if (address !== undefined) customer.changeAddress(CustomerAddress.create(address));
 
     await this.repository.save(customer);
     return customer;

@@ -4,7 +4,7 @@ import { z } from "zod";
 /**
  * Partial update of the signed-in customer's profile. Phone and postal code
  * rules are enforced by the domain. Unknown fields, including `email`, are
- * rejected; `address: null` removes the address.
+ * rejected. The address can be replaced but not removed (`null` is rejected).
  */
 export const UpdateCustomerProfileSchema = z
   .strictObject({
@@ -18,7 +18,6 @@ export const UpdateCustomerProfileSchema = z
         postalCode: z.string().trim().min(1),
         city: z.string().trim().min(1)
       })
-      .nullable()
   })
   .partial();
 

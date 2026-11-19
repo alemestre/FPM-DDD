@@ -50,7 +50,14 @@ describe("CustomerController (HTTP)", () => {
   const seedCustomer = () =>
     repository.customers.set(
       CUSTOMER_ID,
-      Customer.reconstitute(CUSTOMER_ID, "marie@example.fr", "Marie", "Durand", "+33612345678", null)
+      Customer.reconstitute(
+        CUSTOMER_ID,
+        "marie@example.fr",
+        "Marie",
+        "Durand",
+        "+33612345678",
+        CustomerAddress.create({ line1: "1 rue des Lilas", postalCode: "29000", city: "Quimper" })
+      )
     );
 
   beforeAll(async () => {
@@ -101,7 +108,7 @@ describe("CustomerController (HTTP)", () => {
           firstName: "Marie",
           lastName: "Durand",
           phone: "+33612345678",
-          address: null
+          address: { line1: "1 rue des Lilas", line2: "", postalCode: "29000", city: "Quimper" }
         }
       });
     });
@@ -116,30 +123,26 @@ describe("CustomerController (HTTP)", () => {
   });
 
   describe("PATCH /customers/me", () => {
-    it("modifie le téléphone et ajoute une adresse", async () => {
+    it("modifie le téléphone et remplace l'adresse", async () => {
       const { status, body } = await request("PATCH", customerCookie, {
         phone: "06 98 76 54 32",
-        address: { line1: "1 rue des Lilas", postalCode: "29000", city: "Quimper" }
+        address: { line1: "2 quai Est", line2: "Bât. B", postalCode: "29200", city: "Brest" }
       });
 
       expect(status).toBe(200);
       expect(body.data).toMatchObject({
         firstName: "Marie",
         phone: "+33698765432",
-        address: { line1: "1 rue des Lilas", line2: "", postalCode: "29000", city: "Quimper" }
+        address: { line1: "2 quai Est", line2: "Bât. B", postalCode: "29200", city: "Brest" }
       });
       expect(repository.customers.get(CUSTOMER_ID)?.phone).toBe("+33698765432");
     });
 
-    it("supprime l'adresse avec address: null", async () => {
-      repository.customers.get(CUSTOMER_ID)?.changeAddress(
-        CustomerAddress.create({ line1: "1 rue des Lilas", postalCode: "29000", city: "Quimper" })
-      );
+    it("renvoie 400 si l'adresse est supprimée (address: null)", async () => {
+      const { status } = await request("PATCH", customerCookie, { address: null });
 
-      const { status, body } = await request("PATCH", customerCookie, { address: null });
-
-      expect(status).toBe(200);
-      expect(body.data.address).toBeNull();
+      expect(status).toBe(400);
+      expect(repository.customers.get(CUSTOMER_ID)?.address.line1).toBe("1 rue des Lilas");
     });
 
     it("renvoie 400 si l'e-mail est envoyé", async () => {
@@ -152,7 +155,7 @@ describe("CustomerController (HTTP)", () => {
       });
 
       expect(status).toBe(400);
-      expect(repository.customers.get(CUSTOMER_ID)?.address).toBeNull();
+      expect(repository.customers.get(CUSTOMER_ID)?.address.postalCode).toBe("29000");
     });
 
     it("renvoie 401 sans session", async () => {

@@ -30,13 +30,13 @@ enum Role {
 }
 
 model User {
-  uid          Int       @unique @default(autoincrement())
-  id           String    @id @db.Uuid
-  email        String    @unique
-  passwordHash String
-  firstName    String
-  lastName     String
-  role         Role
+  uid           Int       @unique @default(autoincrement())
+  id            String    @id @db.Uuid
+  email         String    @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  role          Role
   isActive      Boolean   @default(true)
   /// Set once the user follows the link sent at registration. Login is refused until then.
   emailVerified Boolean   @default(false)
@@ -56,11 +56,10 @@ model Customer {
   id           String @id @db.Uuid
   user         User   @relation(fields: [id], references: [id], onDelete: Cascade)
   phone        String
-  /// The address is optional: orders are collected, not delivered.
-  addressLine1 String?
-  addressLine2 String  @default("")
-  postalCode   String?
-  city         String?
+  addressLine1 String
+  addressLine2 String @default("")
+  postalCode   String
+  city         String
 
   orders Order[]
 }
@@ -81,25 +80,6 @@ model Producer {
   updatedAt    DateTime? @updatedAt
 
   products Product[]
-}
-
-enum OrderStatus {
-  PENDING
-  IN_PROGRESS
-  READY
-  COMPLETED
-  CANCELLED
-}
-
-model Order {
-  uid       Int         @unique @default(autoincrement())
-  id        String      @id @db.Uuid
-  status    OrderStatus
-  createdAt DateTime    @default(now())
-  updatedAt DateTime?   @updatedAt
-
-  customer   Customer @relation(fields: [customerId], references: [id])
-  customerId String   @db.Uuid
 }
 
 enum ProductUnit {
@@ -139,9 +119,47 @@ model Product {
   producer   Producer @relation(fields: [producerId], references: [id], onDelete: Restrict)
   producerId String   @db.Uuid
 
-  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  categoryId String   @db.Uuid
+  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  categoryId String      @db.Uuid
+  orderItems OrderItem[]
 
   @@index([producerId])
   @@index([categoryId])
+}
+
+enum OrderStatus {
+  PENDING
+  IN_PROGRESS
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+model OrderItem {
+  uid       Int    @unique @default(autoincrement())
+  productId String @db.Uuid
+  orderId   String @db.Uuid
+
+  price     Decimal   @db.Decimal(10, 2)
+  quantity  Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+  order   Order   @relation(fields: [orderId], references: [id])
+
+  @@id([productId, orderId])
+}
+
+model Order {
+  uid       Int         @unique @default(autoincrement())
+  id        String      @id @db.Uuid
+  status    OrderStatus
+  createdAt DateTime    @default(now())
+  updatedAt DateTime?   @updatedAt
+
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId String   @db.Uuid
+
+  orderItems OrderItem[]
 }

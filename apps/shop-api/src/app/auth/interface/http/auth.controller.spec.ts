@@ -351,6 +351,9 @@ describe('AuthController (HTTP)', () => {
       firstName: 'Paul',
       lastName: 'Martin',
       phone: '06 12 34 56 78',
+      addressLine1: '1 rue des Lilas',
+      postalCode: '75001',
+      city: 'Paris',
     };
     const NEW_EMAIL = 'paul.martin@example.fr';
 
@@ -367,7 +370,7 @@ describe('AuthController (HTTP)', () => {
       });
       expect(accessTokenCookieOf(response)).toBeUndefined();
       expect(emailSender.sent).toEqual([{ email: NEW_EMAIL, token: expect.any(String) }]);
-      expect(repository.registrations[0].address).toBeUndefined();
+      expect(repository.registrations[0].address.postalCode.toString()).toBe('75001');
     });
 
     it('refuse la connexion (403) tant que l\'email n\'est pas vérifié, puis l\'accepte', async () => {
@@ -391,16 +394,11 @@ describe('AuthController (HTTP)', () => {
       expect((await login()).status).toBe(200);
     });
 
-    it('enregistre une adresse complète', async () => {
-      const response = await post('/register', {
-        ...registration,
-        addressLine1: '1 rue des Lilas',
-        postalCode: '75001',
-        city: 'Paris',
-      });
+    it("enregistre l'adresse", async () => {
+      const response = await post('/register', { ...registration, addressLine2: 'Bât. B' });
 
       expect(response.status).toBe(201);
-      expect(repository.registrations[0].address).toMatchObject({ line1: '1 rue des Lilas', line2: '', city: 'Paris' });
+      expect(repository.registrations[0].address).toMatchObject({ line1: '1 rue des Lilas', line2: 'Bât. B', city: 'Paris' });
     });
 
     it('renvoie 409 si un compte existe déjà avec cet email', async () => {
@@ -420,8 +418,12 @@ describe('AuthController (HTTP)', () => {
       ['avec un mot de passe trop faible', { ...registration, password: 'motdepasse-faible' }],
       ['sans téléphone', { ...registration, phone: undefined }],
       ['avec un téléphone invalide', { ...registration, phone: '123' }],
-      ['avec une adresse incomplète', { ...registration, addressLine1: '1 rue des Lilas' }],
-      ['avec un code postal invalide', { ...registration, addressLine1: '1 rue', postalCode: 'ABC', city: 'Paris' }],
+      ['sans adresse', { ...registration, addressLine1: undefined, postalCode: undefined, city: undefined }],
+      ['sans ligne d\'adresse', { ...registration, addressLine1: undefined }],
+      ['sans code postal', { ...registration, postalCode: undefined }],
+      ['sans ville', { ...registration, city: undefined }],
+      ['avec une ville vide', { ...registration, city: '  ' }],
+      ['avec un code postal invalide', { ...registration, postalCode: 'ABC' }],
     ])('renvoie 400 %s, sans créer de compte', async (_case, body) => {
       expect((await post('/register', body)).status).toBe(400);
       expect(repository.registrations).toHaveLength(0);

@@ -14,8 +14,8 @@ describe('CustomerProfileResponseSchema', () => {
         expect(CustomerProfileResponseSchema.safeParse(validProfile).success).toBe(true);
     });
 
-    it('accepts a profile without address', () => {
-        expect(CustomerProfileResponseSchema.safeParse({ ...validProfile, address: null }).success).toBe(true);
+    it('rejects a profile without address', () => {
+        expect(CustomerProfileResponseSchema.safeParse({ ...validProfile, address: null }).success).toBe(false);
     });
 
     it('rejects an incomplete address', () => {

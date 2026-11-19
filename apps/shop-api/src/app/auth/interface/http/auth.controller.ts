@@ -36,10 +36,7 @@ export class AuthController {
   async registerCustomer(@Body() body: RegisterDTO): Promise<CurrentUserResponseDto> {
     const { addressLine1, addressLine2, postalCode, city, email, firstName, lastName, phone, password } = body;
     const account = { email, firstName, lastName, phone, password }
-    const address =
-      addressLine1 !== undefined && postalCode !== undefined && city !== undefined
-        ? { line1: addressLine1, line2: addressLine2, postalCode, city }
-        : undefined;
+    const address = { line1: addressLine1, line2: addressLine2, postalCode, city };
 
     return toCurrentUserResponse(await this.register.execute({ ...account, address }));
   }

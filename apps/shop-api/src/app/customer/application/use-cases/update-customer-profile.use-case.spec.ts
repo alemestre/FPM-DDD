@@ -54,15 +54,6 @@ describe("UpdateCustomerProfileUseCase", () => {
     expect(updated.address?.city).toBe("Quimper");
   });
 
-  it("supprime l'adresse avec address: null", async () => {
-    repository.findById.mockResolvedValue(existingCustomer());
-
-    const updated = await useCase.execute(CUSTOMER_ID, { address: null });
-
-    expect(updated.address).toBeNull();
-    expect(repository.save).toHaveBeenCalledWith(updated);
-  });
-
   it("ne sauvegarde rien si une valeur est invalide", async () => {
     repository.findById.mockResolvedValue(existingCustomer());
 

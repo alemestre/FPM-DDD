@@ -11,5 +11,5 @@ export interface RegisterInput {
   readonly firstName: string;
   readonly lastName: string;
   readonly phone: string;
-  readonly address?: RegisterAddressInput;
+  readonly address: RegisterAddressInput;
 }

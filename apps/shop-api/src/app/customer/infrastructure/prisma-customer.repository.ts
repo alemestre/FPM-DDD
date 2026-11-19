@@ -38,25 +38,18 @@ export class PrismaCustomerRepository implements CustomerRepository {
         where: { id: customer.id },
         data: {
           phone: customer.phone,
-          addressLine1: address?.line1 ?? null,
-          addressLine2: address?.line2 ?? "",
-          postalCode: address?.postalCode ?? null,
-          city: address?.city ?? null
+          addressLine1: address.line1,
+          addressLine2: address.line2,
+          postalCode: address.postalCode,
+          city: address.city
         }
       })
     ]);
   }
 
-  /**
-   * An address is stored only when complete (see registration): a row missing
-   * line 1, postal code or city has no address.
-   */
   private toDomain(row: CustomerRow): Customer {
     const { addressLine1, addressLine2, postalCode, city } = row;
-    const address =
-      addressLine1 && postalCode && city
-        ? CustomerAddress.create({ line1: addressLine1, line2: addressLine2, postalCode, city })
-        : null;
+    const address = CustomerAddress.create({ line1: addressLine1, line2: addressLine2, postalCode, city });
 
     return Customer.reconstitute(row.id, row.user.email, row.user.firstName, row.user.lastName, row.phone, address);
   }

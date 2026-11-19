@@ -118,11 +118,19 @@ describe('PrismaUserRepository', () => {
     const newUser = () =>
       User.reconstitute(USER_ID, 'marie.durand@example.fr', 'Marie', 'Durand', 'CUSTOMER', true, false);
 
-    it('crée le compte et son profil client sans adresse', async () => {
+    const address = () => ({
+      line1: '1 rue des Lilas',
+      line2: 'Bât. B',
+      postalCode: PostalCode.create('75001'),
+      city: 'Paris',
+    });
+
+    it('crée le compte et son profil client avec son adresse', async () => {
       await repository.register({
         user: newUser(),
         passwordHash: '$argon2id$hash',
         phone: PhoneNumber.create('0612345678'),
+        address: address(),
       });
 
       expect(prisma.user.create).toHaveBeenCalledWith({
@@ -136,26 +144,15 @@ describe('PrismaUserRepository', () => {
           isActive: true,
           emailVerified: false,
           customerProfile: {
-            create: { phone: '+33612345678', addressLine1: null, addressLine2: '', postalCode: null, city: null },
+            create: {
+              phone: '+33612345678',
+              addressLine1: '1 rue des Lilas',
+              addressLine2: 'Bât. B',
+              postalCode: '75001',
+              city: 'Paris',
+            },
           },
         },
-      });
-    });
-
-    it("enregistre l'adresse quand elle est fournie", async () => {
-      await repository.register({
-        user: newUser(),
-        passwordHash: '$argon2id$hash',
-        phone: PhoneNumber.create('0612345678'),
-        address: { line1: '1 rue des Lilas', line2: 'Bât. B', postalCode: PostalCode.create('75001'), city: 'Paris' },
-      });
-
-      expect(prisma.user.create.mock.calls[0][0].data.customerProfile.create).toEqual({
-        phone: '+33612345678',
-        addressLine1: '1 rue des Lilas',
-        addressLine2: 'Bât. B',
-        postalCode: '75001',
-        city: 'Paris',
       });
     });
 
@@ -163,7 +160,7 @@ describe('PrismaUserRepository', () => {
       const cause = new Prisma.PrismaClientKnownRequestError('Unique violation', { code: 'P2002', clientVersion: 'test' });
       prisma.user.create.mockRejectedValue(cause);
 
-      const registration = { user: newUser(), passwordHash: 'h', phone: PhoneNumber.create('0612345678') };
+      const registration = { user: newUser(), passwordHash: 'h', phone: PhoneNumber.create('0612345678'), address: address() };
       await expect(repository.register(registration)).rejects.toThrow(EmailAlreadyUsedError);
     });
 
@@ -171,7 +168,7 @@ describe('PrismaUserRepository', () => {
       const failure = new Error('connexion perdue');
       prisma.user.create.mockRejectedValue(failure);
 
-      const registration = { user: newUser(), passwordHash: 'h', phone: PhoneNumber.create('0612345678') };
+      const registration = { user: newUser(), passwordHash: 'h', phone: PhoneNumber.create('0612345678'), address: address() };
       await expect(repository.register(registration)).rejects.toBe(failure);
     });
   });

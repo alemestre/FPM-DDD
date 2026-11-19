@@ -54,16 +54,6 @@ describe("PrismaCustomerRepository", () => {
       expect(customer?.address?.city).toBe("Quimper");
     });
 
-    it("n'a pas d'adresse quand les colonnes sont vides", async () => {
-      prisma.customer.findUnique.mockResolvedValue(
-        customerRow({ addressLine1: null, addressLine2: "", postalCode: null, city: null })
-      );
-
-      const customer = await repository.findById(CUSTOMER_ID);
-
-      expect(customer?.address).toBeNull();
-    });
-
     it("renvoie null sans profil client", async () => {
       prisma.customer.findUnique.mockResolvedValue(null);
 
@@ -102,17 +92,6 @@ describe("PrismaCustomerRepository", () => {
         prisma.user.update.mock.results[0].value,
         prisma.customer.update.mock.results[0].value
       ]);
-    });
-
-    it("vide les colonnes d'adresse quand l'adresse est supprimée", async () => {
-      const customer = Customer.reconstitute(CUSTOMER_ID, "marie@example.fr", "Marie", "Durand", "+33612345678", null);
-
-      await repository.save(customer);
-
-      expect(prisma.customer.update).toHaveBeenCalledWith({
-        where: { id: CUSTOMER_ID },
-        data: { phone: "+33612345678", addressLine1: null, addressLine2: "", postalCode: null, city: null }
-      });
     });
   });
 });
