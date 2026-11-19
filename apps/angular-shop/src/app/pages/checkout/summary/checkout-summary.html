@@ -1,0 +1,23 @@
+<section class="container-fluid py-4 px-4">
+    <div class="container-fluid">
+        <h1 class="h4 fw-bold text-secondary mb-2">Finaliser ma commande</h1>
+    </div>
+
+    <div class="container-fluid py-4">
+        <div class="row g-4">
+            <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+                <app-cart-list [readonly]="true" />
+              @if (isAuthenticated()) {
+                <app-checkout-authenticated/>
+              } @else {
+                <app-checkout-guest />
+              }
+            </div>
+            <div class="col-12 col-lg-4">
+                <div class="position-sticky top-0">
+                    <app-cart-total-summary [showActions]="false" />
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

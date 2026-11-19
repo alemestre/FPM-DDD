@@ -3,6 +3,7 @@ import { ApiResponseInterceptor } from './shared/interface/http/api-response.int
 import { ProducerModule } from './producer/producer.module';
 import { AuthModule } from './auth/auth.module';
 import { CustomerModule } from './customer/customer.module';
+import { OrderModule } from './order/order.module';
 import { CategoryModule } from './category/category.module';
 import { ProductModule } from './product/product.module';
 import { PrismaModule } from '../prisma/prisma.module';
@@ -17,6 +18,7 @@ import { Module } from '@nestjs/common';
     PrismaModule,
     AuthModule,
     CustomerModule,
+    OrderModule,
     ProductModule,
     ProducerModule,
     CategoryModule

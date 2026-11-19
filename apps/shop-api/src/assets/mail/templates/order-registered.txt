@@ -1,0 +1,18 @@
+Bonjour {{ firstName }},
+
+Nous avons bien enregistré votre commande n° {{ orderNumber }}. Merci !
+
+{{#each lines}}- {{ productName }} x {{ quantity }} : {{ total }}
+{{/each}}
+Sous-total HT : {{ subtotal }}
+TVA : {{ tax }}
+Total TTC : {{ total }}
+
+Adresse de facturation :
+{{#each billingAddress}}{{ this }}
+{{/each}}
+Retrait en magasin uniquement : la livraison n'est pas disponible. Votre commande est à retirer au magasin le jeudi, le vendredi ou le samedi, aux horaires d'ouverture, dès réception de l'email vous informant qu'elle vous attend.
+
+Date de disponibilité indicative : {{ estimatedPickupDate }}.
+
+Paiement en magasin lors du retrait.

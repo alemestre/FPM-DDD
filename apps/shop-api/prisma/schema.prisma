@@ -128,9 +128,14 @@ model Product {
 }
 
 enum OrderStatus {
-  PENDING
+  /// Placed by the customer, not yet handled by the shop.
+  REGISTERED
   IN_PROGRESS
+  /// A quantity was changed or a product removed while preparing the order.
+  MODIFIED
+  /// Waiting for the customer at the shop.
   READY
+  /// Picked up by the customer.
   COMPLETED
   CANCELLED
 }
@@ -140,9 +145,12 @@ model OrderItem {
   productId String @db.Uuid
   orderId   String @db.Uuid
 
-  price     Decimal   @db.Decimal(10, 2)
-  quantity  Int
-  createdAt DateTime  @default(now())
+  /// Snapshot of the product when ordered: unit price excluding VAT, name and VAT rate.
+  price       Decimal   @db.Decimal(10, 2)
+  productName String
+  vatRate     Decimal   @db.Decimal(5, 2)
+  quantity    Int
+  createdAt   DateTime  @default(now())
   updatedAt DateTime? @updatedAt
 
   product Product @relation(fields: [productId], references: [id])
@@ -152,14 +160,38 @@ model OrderItem {
 }
 
 model Order {
-  uid       Int         @unique @default(autoincrement())
-  id        String      @id @db.Uuid
-  status    OrderStatus
-  createdAt DateTime    @default(now())
-  updatedAt DateTime?   @updatedAt
+  uid                 Int         @unique @default(autoincrement())
+  id                  String      @id @db.Uuid
+  /// YYYY-MM-N: N restarts at 1 every month (Europe/Paris), see OrderNumberSequence.
+  number              String      @unique
+  status              OrderStatus @default(REGISTERED)
+  /// Indicative date from which the order can be picked up at the shop.
+  estimatedPickupDate DateTime    @db.Date
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime?   @updatedAt
 
-  customer   Customer @relation(fields: [customerId], references: [id])
-  customerId String   @db.Uuid
+  /// Snapshot of the contact and billing address when ordered.
+  firstName           String
+  lastName            String
+  email               String
+  phone               String
+  billingAddressLine1 String
+  billingAddressLine2 String      @default("")
+  billingPostalCode   String
+  billingCity         String
+
+  /// Null for a guest order.
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  customerId String?   @db.Uuid
 
   orderItems OrderItem[]
+
+  @@index([customerId])
+}
+
+/// Last order number given for a month: the next order of `period` gets `lastValue + 1`.
+model OrderNumberSequence {
+  /// YYYY-MM
+  period    String @id
+  lastValue Int
 }

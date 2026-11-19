@@ -1,0 +1,58 @@
+{{! Variables : firstName, orderNumber, lines[productName, quantity, total], subtotal, tax, total,
+billingAddress[], estimatedPickupDate }}
+<p>Bonjour {{ firstName }},</p>
+<p>Nous avons bien enregistré votre commande <strong>n° {{ orderNumber }}</strong>. Merci !</p>
+
+<table style="width: 100%; border-collapse: collapse; margin: 16px 0">
+    <thead>
+        <tr>
+            <th style="text-align: left; padding: 6px 0; border-bottom: 1px solid #dee2e6">
+                Produit
+            </th>
+            <th style="text-align: center; padding: 6px 0; border-bottom: 1px solid #dee2e6">
+                Qté
+            </th>
+            <th style="text-align: right; padding: 6px 0; border-bottom: 1px solid #dee2e6">
+                Total TTC
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each lines}}
+        <tr>
+            <td style="padding: 6px 0">{{ productName }}</td>
+            <td style="text-align: center; padding: 6px 0">{{ quantity }}</td>
+            <td style="text-align: right; padding: 6px 0">{{ total }}</td>
+        </tr>
+        {{/each}}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="2" style="padding: 6px 0; border-top: 1px solid #dee2e6">Sous-total HT</td>
+            <td style="text-align: right; padding: 6px 0; border-top: 1px solid #dee2e6">
+                {{ subtotal }}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" style="padding: 6px 0">TVA</td>
+            <td style="text-align: right; padding: 6px 0">{{ tax }}</td>
+        </tr>
+        <tr>
+            <td colspan="2" style="padding: 6px 0"><strong>Total TTC</strong></td>
+            <td style="text-align: right; padding: 6px 0"><strong>{{ total }}</strong></td>
+        </tr>
+    </tfoot>
+</table>
+
+<p>
+    <strong>Adresse de facturation</strong><br />
+    {{#each billingAddress}}{{ this }}<br />{{/each}}
+</p>
+
+<p>
+    <strong>Retrait en magasin uniquement</strong> : la livraison n'est pas disponible. Votre
+    commande est à retirer au magasin le jeudi, le vendredi ou le samedi, aux horaires d'ouverture,
+    dès réception de l'email vous informant qu'elle vous attend.
+</p>
+<p>Date de disponibilité indicative : <strong>{{ estimatedPickupDate }}</strong>.</p>
+<p><strong>Paiement en magasin</strong> lors du retrait.</p>
