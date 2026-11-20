@@ -159,5 +159,23 @@ describe('Product schemas', () => {
     it("refuse un categoryId qui n'est pas un UUID", () => {
       expect(ListProductsQuerySchema.safeParse({ categoryId: 'abc' }).success).toBe(false);
     });
+
+    it('met un productIds seul dans un tableau : une seule valeur arrive en chaîne', () => {
+      expect(ListProductsQuerySchema.parse({ productIds: CATEGORY_ID })).toEqual({ productIds: [CATEGORY_ID] });
+    });
+
+    it('garde plusieurs productIds tels quels', () => {
+      const ids = [CATEGORY_ID, 'c3bb189e-8bf9-4888-9912-ace4e6543002'];
+
+      expect(ListProductsQuerySchema.parse({ productIds: ids })).toEqual({ productIds: ids });
+    });
+
+    it.each([
+      ['un id invalide', 'abc'],
+      ['un id invalide dans la liste', [CATEGORY_ID, 'abc']],
+      ['une liste vide', []],
+    ])('refuse %s dans productIds', (_case, productIds) => {
+      expect(ListProductsQuerySchema.safeParse({ productIds }).success).toBe(false);
+    });
   });
 });

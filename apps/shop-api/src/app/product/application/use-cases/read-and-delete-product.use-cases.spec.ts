@@ -2,7 +2,6 @@ import type { ProductRepository, ProductWithProducer } from '../../domain/produc
 import { DeleteProductUseCase } from './delete-product.use-case';
 import { ListProductsUseCase } from './list-products.use-case';
 import { GetProductUseCase } from './get-product.use-case';
-import { GetProductsByCategoryIdUseCase } from './get-products-by-category-id.use-case';
 import { Product } from '../../domain/product.entity';
 
 const IMAGE = 'https://example.com/images/produit.jpg';
@@ -50,37 +49,45 @@ describe('use cases de lecture et suppression', () => {
     repository.findManyWithProducer.mockResolvedValue(products);
 
     await expect(new ListProductsUseCase(repository).execute()).resolves.toBe(products);
-    expect(repository.findManyWithProducer).toHaveBeenCalledWith({ isAvailable: undefined });
+    expect(repository.findManyWithProducer).toHaveBeenCalledWith({});
   });
 
   it('ListProductsUseCase transmet le filtre de disponibilité', async () => {
     repository.findManyWithProducer.mockResolvedValue([]);
 
-    await new ListProductsUseCase(repository).execute(false);
+    await new ListProductsUseCase(repository).execute({ isAvailable: false });
 
     expect(repository.findManyWithProducer).toHaveBeenCalledWith({ isAvailable: false });
   });
 
-  it('GetProductsByCategoryIdUseCase retourne les produits de la catégorie avec leur producteur', async () => {
+  it('ListProductsUseCase retourne les produits de la catégorie avec leur producteur', async () => {
     const products = [withProducer(existingProduct())];
     repository.findManyWithProducer.mockResolvedValue(products);
 
-    await expect(new GetProductsByCategoryIdUseCase(repository).execute(CATEGORY_A)).resolves.toBe(products);
-    expect(repository.findManyWithProducer).toHaveBeenCalledWith({ categoryId: CATEGORY_A, isAvailable: undefined });
+    await expect(new ListProductsUseCase(repository).execute({ categoryId: CATEGORY_A })).resolves.toBe(products);
+    expect(repository.findManyWithProducer).toHaveBeenCalledWith({ categoryId: CATEGORY_A });
   });
 
-  it('GetProductsByCategoryIdUseCase transmet la catégorie et le filtre de disponibilité', async () => {
+  it('ListProductsUseCase transmet la catégorie et le filtre de disponibilité', async () => {
     repository.findManyWithProducer.mockResolvedValue([]);
 
-    await new GetProductsByCategoryIdUseCase(repository).execute(CATEGORY_A, true);
+    await new ListProductsUseCase(repository).execute({ categoryId: CATEGORY_A, isAvailable: true });
 
     expect(repository.findManyWithProducer).toHaveBeenCalledWith({ categoryId: CATEGORY_A, isAvailable: true });
   });
 
-  it('GetProductsByCategoryIdUseCase retourne une liste vide si la catégorie n\'a aucun produit', async () => {
+  it('ListProductsUseCase retourne une liste vide si la catégorie n\'a aucun produit', async () => {
     repository.findManyWithProducer.mockResolvedValue([]);
 
-    await expect(new GetProductsByCategoryIdUseCase(repository).execute(CATEGORY_A)).resolves.toEqual([]);
+    await expect(new ListProductsUseCase(repository).execute({ categoryId: CATEGORY_A })).resolves.toEqual([]);
+  });
+
+  it('ListProductsUseCase transmet les ids de produits demandés', async () => {
+    repository.findManyWithProducer.mockResolvedValue([]);
+
+    await new ListProductsUseCase(repository).execute({ productIds: [PRODUCT_ID] });
+
+    expect(repository.findManyWithProducer).toHaveBeenCalledWith({ productIds: [PRODUCT_ID] });
   });
 
   it('GetProductUseCase charge le produit et son producteur par id', async () => {

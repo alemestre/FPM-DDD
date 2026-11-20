@@ -55,8 +55,9 @@ class InMemoryProductRepository extends ProductRepository {
     return [...this.products.values()];
   }
 
-  async findManyWithProducer({ categoryId, isAvailable }: ProductFilters = {}): Promise<ProductWithProducer[]> {
+  async findManyWithProducer({ categoryId, isAvailable, productIds }: ProductFilters = {}): Promise<ProductWithProducer[]> {
     return [...this.products.values()]
+      .filter((product) => productIds === undefined || productIds.includes(product.id))
       .filter((product) => categoryId === undefined || product.categoryId === categoryId)
       .filter((product) => isAvailable === undefined || product.isAvailable === isAvailable)
       .map((product) => this.withProducer(product));
@@ -341,6 +342,38 @@ describe('ProductController (HTTP)', () => {
 
       it("renvoie 400 si isAvailable n'est pas un booléen", async () => {
         expect((await request('GET', '?isAvailable=abc')).status).toBe(400);
+      });
+    });
+
+    describe('?productIds', () => {
+      const seedOtherProduct = () =>
+        repository.products.set(
+          OTHER_PRODUCT_ID,
+          Product.reconstitute(OTHER_PRODUCT_ID, 'Carottes', 2, 5.5, 10, 1, PRODUCER_ID, CATEGORY_A, IMAGE, 'KG', null, false),
+        );
+
+      it('ne renvoie que le produit demandé avec un seul id', async () => {
+        seedProduct();
+        seedOtherProduct();
+
+        const { status, body } = await request('GET', `?productIds=${PRODUCT_ID}`);
+
+        expect(status).toBe(200);
+        expect(body).toEqual([expectedReadProduct]);
+      });
+
+      it('renvoie les produits demandés avec plusieurs ids, disponibles ou non', async () => {
+        seedProduct();
+        seedOtherProduct();
+
+        const { status, body } = await request('GET', `?productIds=${PRODUCT_ID}&productIds=${OTHER_PRODUCT_ID}`);
+
+        expect(status).toBe(200);
+        expect(body.map((product: { id: string }) => product.id).sort()).toEqual([PRODUCT_ID, OTHER_PRODUCT_ID].sort());
+      });
+
+      it("renvoie 400 si un id n'est pas un UUID", async () => {
+        expect((await request('GET', '?productIds=abc')).status).toBe(400);
       });
     });
 
