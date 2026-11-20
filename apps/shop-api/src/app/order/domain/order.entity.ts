@@ -122,6 +122,11 @@ export class Order {
         return this.customerId === null;
     }
 
+    /** Only the customer who placed an order may see it; a guest order belongs to no customer. */
+    isPlacedBy(customerId: string): boolean {
+        return this.customerId !== null && this.customerId === customerId;
+    }
+
     get lines(): readonly OrderLine[] {
         return this._lines;
     }

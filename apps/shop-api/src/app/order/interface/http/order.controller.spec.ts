@@ -3,6 +3,7 @@ import { ApiResponseInterceptor } from '../../../shared/interface/http/api-respo
 import { JwtCookieAuthGuard } from '../../../auth/interface/http/guards/jwt-cookie-auth.guard';
 import { OrderConfirmationSender } from '../../application/ports/order-confirmation-sender';
 import { ListOrdersUseCase } from '../../application/use-cases/list-orders.use-case';
+import { GetOrderUseCase } from '../../application/use-cases/get-order.use-case';
 import { PlaceOrderUseCase } from '../../application/use-cases/place-order.use-case';
 import { ACCESS_TOKEN_COOKIE } from '../../../auth/interface/http/auth.constants';
 import type { OrderableProduct, OrderCustomerContact } from '../../domain/order.repository';
@@ -65,6 +66,10 @@ class InMemoryOrderRepository extends OrderRepository {
             .filter((order) => order.customerId === customerId)
             .filter((order) => !statuses || statuses.includes(order.status))
             .reverse();
+    }
+
+    async findById(id: string): Promise<Order | null> {
+        return this.orders.find((order) => order.id === id) ?? null;
     }
 
     /** The shop moves orders forward; no use case does it yet, so the test does it here. */
@@ -136,6 +141,7 @@ describe('OrderController (HTTP)', () => {
                 JwtCookieAuthGuard,
                 PlaceOrderUseCase,
                 ListOrdersUseCase,
+                GetOrderUseCase,
                 { provide: OrderRepository, useClass: InMemoryOrderRepository },
                 { provide: OrderConfirmationSender, useValue: sender },
                 { provide: APP_PIPE, useClass: ZodValidationPipe },
@@ -367,6 +373,51 @@ describe('OrderController (HTTP)', () => {
 
         it.each([['FOO'], ['ready'], ['']])('renvoie 400 pour le statut "%s"', async (value) => {
             expect((await get(`/orders?status=${value}`, customerCookie)).status).toBe(400);
+        });
+    });
+
+    describe('GET /orders/:id', () => {
+        const ORDER_ID = '12345678-1234-4123-8123-123456789abc';
+
+        it('renvoie la commande du client connecté avec ses lignes', async () => {
+            await post('/orders', customerCookie, { items, billingAddress });
+
+            const { status, body } = await get(`/orders/${ORDER_ID}`, customerCookie);
+
+            expect(status).toBe(200);
+            expect(body.success).toBe(true);
+            expect(body.data).toMatchObject({
+                id: ORDER_ID,
+                status: 'REGISTERED',
+                contact: { email: 'marie@example.fr' },
+                billingAddress: { city: 'Brest' },
+                items: [{ productId: FLOUR_ID, productName: 'Farine de blé', quantity: 2 }],
+                total: 5.28,
+            });
+        });
+
+        it('renvoie 404 pour la commande d’un autre compte', async () => {
+            await post('/orders', customerCookie, { items, billingAddress });
+
+            expect((await get(`/orders/${ORDER_ID}`, adminCookie)).status).toBe(404);
+        });
+
+        it("renvoie 404 pour une commande d'invité", async () => {
+            await post('/orders/guest', null, { items, contact, billingAddress });
+
+            expect((await get(`/orders/${ORDER_ID}`, customerCookie)).status).toBe(404);
+        });
+
+        it("renvoie 404 pour une commande qui n'existe pas", async () => {
+            expect((await get(`/orders/${ORDER_ID}`, customerCookie)).status).toBe(404);
+        });
+
+        it('renvoie 400 pour un id qui n’est pas un UUID', async () => {
+            expect((await get('/orders/2026-11-1', customerCookie)).status).toBe(400);
+        });
+
+        it('renvoie 401 sans session', async () => {
+            expect((await get(`/orders/${ORDER_ID}`, null)).status).toBe(401);
         });
     });
 });

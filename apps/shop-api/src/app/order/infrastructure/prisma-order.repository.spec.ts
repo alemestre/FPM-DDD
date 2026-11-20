@@ -25,7 +25,7 @@ const createPrismaMock = () => {
         tx,
         $transaction: jest.fn(async (run: (client: typeof tx) => Promise<unknown>) => run(tx)),
         product: { findMany: jest.fn() },
-        order: { findMany: jest.fn() },
+        order: { findMany: jest.fn(), findUnique: jest.fn() },
         customer: { findUnique: jest.fn() },
     };
 };
@@ -265,6 +265,52 @@ describe('PrismaOrderRepository', () => {
             prisma.order.findMany.mockResolvedValue([]);
 
             await expect(repository.findByCustomerId(CUSTOMER_ID)).resolves.toEqual([]);
+        });
+    });
+
+    describe('findById', () => {
+        it('lit la commande avec ses lignes par son id', async () => {
+            prisma.order.findUnique.mockResolvedValue({
+                id: '12345678-1234-4123-8123-123456789abc',
+                number: '2026-11-7',
+                status: 'REGISTERED',
+                estimatedPickupDate: new Date('2026-11-21T00:00:00Z'),
+                createdAt: new Date('2026-11-19T10:00:00Z'),
+                customerId: CUSTOMER_ID,
+                firstName: 'Marie',
+                lastName: 'Durand',
+                email: 'marie@example.fr',
+                phone: '+33612345678',
+                billingAddressLine1: '1 rue des Lilas',
+                billingAddressLine2: '',
+                billingPostalCode: '29000',
+                billingCity: 'Quimper',
+                orderItems: [
+                    {
+                        productId: FLOUR_ID,
+                        productName: 'Farine',
+                        price: decimal(2.5),
+                        vatRate: decimal(5.5),
+                        quantity: 3,
+                    },
+                ],
+            });
+
+            const order = await repository.findById('12345678-1234-4123-8123-123456789abc');
+
+            const [query] = prisma.order.findUnique.mock.calls[0];
+            expect(query.where).toEqual({ id: '12345678-1234-4123-8123-123456789abc' });
+            expect(query.select).toHaveProperty('orderItems');
+            expect(order).toBeInstanceOf(Order);
+            expect(order?.number?.toString()).toBe('2026-11-7');
+            expect(order?.customerId).toBe(CUSTOMER_ID);
+            expect(order?.total).toBe(7.91);
+        });
+
+        it("renvoie null si la commande n'existe pas", async () => {
+            prisma.order.findUnique.mockResolvedValue(null);
+
+            await expect(repository.findById(FLOUR_ID)).resolves.toBeNull();
         });
     });
 });

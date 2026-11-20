@@ -23,8 +23,8 @@ export interface OrderCustomerContact {
 /**
  * Persistence port for the Order aggregate.
  *
- * It does not extend GenericEntityRepository: orders are only placed and listed
- * per customer for now, never updated or deleted. It also reads, without changing them, the
+ * It does not extend GenericEntityRepository: orders are only placed, read and
+ * listed per customer for now, never updated or deleted. It also reads, without changing them, the
  * products and the customer an order is placed with, as order-specific types
  * (not the Product or Customer entities of their own contexts).
  */
@@ -43,6 +43,9 @@ export abstract class OrderRepository {
         customerId: string,
         statuses?: readonly OrderStatus[],
     ): Promise<Order[]>;
+
+    /** @returns The order with its lines, or `null` if it does not exist. */
+    abstract findById(id: string): Promise<Order | null>;
 
     /** @returns The products that exist among `ids`; unknown ids are left out. */
     abstract findOrderableProducts(ids: readonly string[]): Promise<OrderableProduct[]>;

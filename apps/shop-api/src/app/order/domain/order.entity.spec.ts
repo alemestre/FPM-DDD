@@ -107,4 +107,21 @@ describe('Order', () => {
             );
         });
     });
+
+    describe('isPlacedBy', () => {
+        const CUSTOMER_ID = '3f0c9a52-8a6e-4c1b-9d57-2b1e7f4a6c10';
+        const OTHER_ID = '9b2d7c1e-4f3a-4e8b-a6d5-1c0f2e3d4b5a';
+
+        it('reconnaît le client qui a passé la commande', () => {
+            expect(place({ customerId: CUSTOMER_ID }).isPlacedBy(CUSTOMER_ID)).toBe(true);
+        });
+
+        it('refuse un autre client', () => {
+            expect(place({ customerId: CUSTOMER_ID }).isPlacedBy(OTHER_ID)).toBe(false);
+        });
+
+        it("n'attribue une commande d'invité à aucun client", () => {
+            expect(place({ customerId: null }).isPlacedBy(CUSTOMER_ID)).toBe(false);
+        });
+    });
 });

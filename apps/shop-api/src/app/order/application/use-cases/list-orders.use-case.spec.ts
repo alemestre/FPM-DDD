@@ -12,6 +12,7 @@ describe('ListOrdersUseCase', () => {
         repository = {
             save: jest.fn(),
             findByCustomerId: jest.fn(),
+            findById: jest.fn(),
             findOrderableProducts: jest.fn(),
             findCustomerContact: jest.fn(),
         };

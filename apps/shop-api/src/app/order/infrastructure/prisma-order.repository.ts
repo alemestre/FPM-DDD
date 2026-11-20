@@ -134,6 +134,12 @@ export class PrismaOrderRepository extends OrderRepository {
         return rows.map((row) => this.toDomain(row));
     }
 
+    async findById(id: string): Promise<Order | null> {
+        const row = await this.prisma.order.findUnique({ where: { id }, select: ORDER_SELECT });
+
+        return row ? this.toDomain(row) : null;
+    }
+
     /** Rebuilds the Order aggregate from its row: contact and address are the snapshot taken when ordering. */
     private toDomain(row: OrderRow): Order {
         return Order.reconstitute({

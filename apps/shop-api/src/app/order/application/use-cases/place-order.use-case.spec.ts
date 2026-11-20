@@ -51,6 +51,7 @@ describe('PlaceOrderUseCase', () => {
                 return order;
             }),
             findByCustomerId: jest.fn(),
+            findById: jest.fn(),
             findOrderableProducts: jest.fn().mockResolvedValue([flour, pasta]),
             findCustomerContact: jest.fn().mockResolvedValue({
                 firstName: 'Marie',
