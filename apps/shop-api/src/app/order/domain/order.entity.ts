@@ -25,7 +25,6 @@ export interface OrderProps extends PlaceOrderProps {
     readonly estimatedPickupDate: Date;
 }
 
-
 /**
  * Order aggregate: what a customer or a guest ordered, for pickup at the shop.
  * Payment happens at the shop for now.

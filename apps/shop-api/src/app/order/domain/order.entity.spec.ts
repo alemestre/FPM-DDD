@@ -5,7 +5,10 @@ import { OrderNumber } from './order-number.value-object';
 import { OrderLine } from './order-line.value-object';
 import { Order } from './order.entity';
 
-jest.mock('uuid', () => ({ v4: jest.fn(() => '12345678-1234-4123-8123-123456789abc'), validate: jest.fn(() => true) }));
+jest.mock('uuid', () => ({
+    v4: jest.fn(() => '12345678-1234-4123-8123-123456789abc'),
+    validate: jest.fn(() => true),
+}));
 
 const FLOUR_ID = 'a3bb189e-8bf9-4888-9912-ace4e6543002';
 const PASTA_ID = 'b3bb189e-8bf9-4888-9912-ace4e6543002';
@@ -54,7 +57,7 @@ describe('Order', () => {
         it('enregistre la commande sans numéro, avec sa date de retrait indicative', () => {
             const order = place();
 
-            expect(order.id).toBe("12345678-1234-4123-8123-123456789abc");
+            expect(order.id).toBe('12345678-1234-4123-8123-123456789abc');
             expect(order.status).toBe('REGISTERED');
             expect(order.number).toBeNull();
             expect(order.estimatedPickupDate.toISOString().slice(0, 10)).toBe('2026-11-19');
