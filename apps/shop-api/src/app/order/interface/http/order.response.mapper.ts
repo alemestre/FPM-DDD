@@ -9,6 +9,7 @@ export function toOrderResponse(order: Order): OrderResponseDto {
         id: order.id,
         number: order.number?.toString() ?? '',
         status: order.status,
+        isModified: order.isModified,
         createdAt: order.orderedAt.toISOString(),
         estimatedPickupDate: order.estimatedPickupDate.toISOString().slice(0, 10),
         contact: {
@@ -29,6 +30,7 @@ export function toOrderResponse(order: Order): OrderResponseDto {
             unitPrice: line.unitPrice,
             vatRate: line.vatRate,
             quantity: line.quantity,
+            confirmedQuantity: line.confirmedQuantity,
             total: line.total,
         })),
         subtotal: order.subtotal,

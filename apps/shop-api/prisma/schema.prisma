@@ -146,12 +146,15 @@ model OrderItem {
   orderId   String @db.Uuid
 
   /// Snapshot of the product when ordered: unit price excluding VAT, name and VAT rate.
-  price       Decimal   @db.Decimal(10, 2)
-  productName String
-  vatRate     Decimal   @db.Decimal(5, 2)
-  quantity    Int
-  createdAt   DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  price             Decimal   @db.Decimal(10, 2)
+  productName       String
+  vatRate           Decimal   @db.Decimal(5, 2)
+  /// Quantity ordered by the customer.
+  quantity          Int
+  /// Quantity kept by the shop, from 0 (product removed) to `quantity`.
+  confirmedQuantity Int
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime? @updatedAt
 
   product Product @relation(fields: [productId], references: [id])
   order   Order   @relation(fields: [orderId], references: [id])

@@ -5,6 +5,7 @@ import type { OrderContact } from './order-contact.value-object';
 import type { OrderNumber } from './order-number.value-object';
 import type { OrderLine } from './order-line.value-object';
 import type { OrderStatus } from './order-status';
+import { OrderStatusTransitionError } from './order-status-transition.error';
 import { estimatePickupDate } from './pickup-date';
 import { roundToCents, sumCents } from './money';
 
@@ -25,19 +26,28 @@ export interface OrderProps extends PlaceOrderProps {
     readonly estimatedPickupDate: Date;
 }
 
+/** Statuses in which the shop may still change the quantities, before the order is ready. */
+const ADJUSTABLE_STATUSES: readonly OrderStatus[] = ['PENDING', 'PREPARING'];
+
+/** Statuses an order no longer leaves. */
+const FINAL_STATUSES: readonly OrderStatus[] = ['COMPLETED', 'CANCELLED'];
+
 /**
  * Order aggregate: what a customer or a guest ordered, for pickup at the shop.
  * Payment happens at the shop for now.
+ *
+ * Life cycle: PENDING → PREPARING → READY → COMPLETED, and CANCELLED from any
+ * status that is not final. The shop may change the quantities while PENDING or PREPARING.
  */
 export class Order {
     private constructor(
         readonly id: string,
         private _number: OrderNumber | null,
-        private readonly _status: OrderStatus,
+        private _status: OrderStatus,
         readonly customerId: string | null,
         readonly contact: OrderContact,
         readonly billingAddress: BillingAddress,
-        private readonly _lines: readonly OrderLine[],
+        private _lines: readonly OrderLine[],
         readonly orderedAt: Date,
         readonly estimatedPickupDate: Date,
     ) {}
@@ -110,6 +120,76 @@ export class Order {
         this._number = number;
     }
 
+    /**
+     * Sets the quantity the shop keeps for one product; 0 removes it, the line stays.
+     *
+     * @throws {OrderStatusTransitionError} Once the order is ready, picked up or cancelled.
+     * @throws {DomainValidationError} For a product not in the order, a quantity above the
+     * ordered one, or when it would remove the last product: cancel the order instead.
+     */
+    adjustLineQuantity(productId: string, confirmedQuantity: number): void {
+        this.assertStatusIn(ADJUSTABLE_STATUSES, 'modifier les quantités');
+
+        const line = this._lines.find((candidate) => candidate.productId === productId);
+        if (!line) {
+            throw new DomainValidationError(
+                `Le produit ${productId} ne fait pas partie de la commande`,
+            );
+        }
+
+        const lines = this._lines.map((candidate) =>
+            candidate === line ? line.withConfirmedQuantity(confirmedQuantity) : candidate,
+        );
+        if (lines.every((candidate) => candidate.isRemoved)) {
+            throw new DomainValidationError(
+                'Impossible de retirer tous les produits : annulez plutôt la commande',
+            );
+        }
+        this._lines = lines;
+    }
+
+    /**
+     * The shop validates the order, as ordered or with adjusted quantities, and starts preparing it.
+     *
+     * @throws {OrderStatusTransitionError} Unless the order is PENDING.
+     */
+    confirm(): void {
+        this.transition(['PENDING'], 'PREPARING', 'valider la commande');
+    }
+
+    /** @throws {OrderStatusTransitionError} Unless the order is PREPARING. */
+    markReady(): void {
+        this.transition(['PREPARING'], 'READY', 'marquer la commande prête');
+    }
+
+    /** @throws {OrderStatusTransitionError} Unless the order is READY. */
+    markPickedUp(): void {
+        this.transition(['READY'], 'COMPLETED', 'marquer la commande retirée');
+    }
+
+    /**
+     * Cancels the order at any time before it is picked up, including when the customer never comes.
+     *
+     * @throws {OrderStatusTransitionError} If the order is already picked up or cancelled.
+     */
+    cancel(): void {
+        if (FINAL_STATUSES.includes(this._status)) {
+            throw new OrderStatusTransitionError(this.id, this._status, 'annuler la commande');
+        }
+        this._status = 'CANCELLED';
+    }
+
+    private transition(from: readonly OrderStatus[], to: OrderStatus, action: string): void {
+        this.assertStatusIn(from, action);
+        this._status = to;
+    }
+
+    private assertStatusIn(allowed: readonly OrderStatus[], action: string): void {
+        if (!allowed.includes(this._status)) {
+            throw new OrderStatusTransitionError(this.id, this._status, action);
+        }
+    }
+
     get number(): OrderNumber | null {
         return this._number;
     }
@@ -125,6 +205,11 @@ export class Order {
     /** Only the customer who placed an order may see it; a guest order belongs to no customer. */
     isPlacedBy(customerId: string): boolean {
         return this.customerId !== null && this.customerId === customerId;
+    }
+
+    /** The shop changed at least one quantity or removed a product. */
+    get isModified(): boolean {
+        return this._lines.some((line) => line.isModified);
     }
 
     get lines(): readonly OrderLine[] {

@@ -86,4 +86,68 @@ describe('OrderLine', () => {
     ])('refuse %s', (_case, props) => {
         expect(() => OrderLine.create(props)).toThrow(DomainValidationError);
     });
+
+    describe('quantité confirmée', () => {
+        it('reprend la quantité commandée par défaut : la ligne est telle que commandée', () => {
+            const line = OrderLine.create(valid);
+
+            expect(line.confirmedQuantity).toBe(3);
+            expect(line.isModified).toBe(false);
+            expect(line.isRemoved).toBe(false);
+        });
+
+        it('calcule les totaux sur la quantité confirmée', () => {
+            const line = OrderLine.create({ ...valid, confirmedQuantity: 1 });
+
+            expect(line.quantity).toBe(3);
+            expect(line.subtotal).toBe(2.5);
+            expect(line.tax).toBe(0.14);
+            expect(line.total).toBe(2.64);
+            expect(line.isModified).toBe(true);
+        });
+
+        it('garde la ligne d’un produit retiré, avec des totaux à 0', () => {
+            const line = OrderLine.create(valid).withConfirmedQuantity(0);
+
+            expect(line.quantity).toBe(3);
+            expect(line.isRemoved).toBe(true);
+            expect(line.isModified).toBe(true);
+            expect(line.total).toBe(0);
+        });
+
+        it('renvoie une nouvelle ligne sans changer l’originale', () => {
+            const line = OrderLine.create(valid);
+
+            const adjusted = line.withConfirmedQuantity(2);
+
+            expect(adjusted.confirmedQuantity).toBe(2);
+            expect(adjusted).toMatchObject({
+                productId: valid.productId,
+                productName: valid.productName,
+                unitPrice: 2.5,
+                vatRate: 5.5,
+                quantity: 3,
+            });
+            expect(line.confirmedQuantity).toBe(3);
+        });
+
+        it('redevient non modifiée quand on revient à la quantité commandée', () => {
+            const line = OrderLine.create(valid).withConfirmedQuantity(1).withConfirmedQuantity(3);
+
+            expect(line.isModified).toBe(false);
+        });
+
+        it.each([
+            ['supérieure à la quantité commandée', 4],
+            ['négative', -1],
+            ['décimale', 1.5],
+        ])('refuse une quantité confirmée %s', (_case, confirmedQuantity) => {
+            expect(() => OrderLine.create({ ...valid, confirmedQuantity })).toThrow(
+                DomainValidationError,
+            );
+            expect(() => OrderLine.create(valid).withConfirmedQuantity(confirmedQuantity)).toThrow(
+                DomainValidationError,
+            );
+        });
+    });
 });

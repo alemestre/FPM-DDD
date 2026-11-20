@@ -311,8 +311,9 @@ describe('OrderController (HTTP)', () => {
             ]);
             expect(body.data[0]).toMatchObject({
                 status: 'PENDING',
+                isModified: false,
                 contact: { email: 'marie@example.fr' },
-                items: [{ productId: FLOUR_ID, quantity: 2, total: 5.28 }],
+                items: [{ productId: FLOUR_ID, quantity: 2, confirmedQuantity: 2, total: 5.28 }],
                 total: 5.28,
             });
         });

@@ -29,7 +29,10 @@ export const OrderItemResponseSchema = z.object({
     unitPrice: z.number(),
     /** VAT rate in percent. */
     vatRate: z.number(),
+    /** Quantity ordered by the customer. */
     quantity: z.number().int(),
+    /** Quantity kept by the shop: 0 when the product was removed. The totals use it. */
+    confirmedQuantity: z.number().int(),
     /** Line total including VAT: line subtotal + line VAT rounded to the cent. */
     total: z.number(),
 });
@@ -39,6 +42,8 @@ export const OrderResponseSchema = z.object({
     /** YYYY-MM-N, e.g. 2026-11-7. */
     number: z.string(),
     status: OrderStatusSchema,
+    /** The shop changed at least one quantity or removed a product. */
+    isModified: z.boolean(),
     /** ISO date-time. */
     createdAt: z.string(),
     /** Indicative pickup day at the shop, YYYY-MM-DD. */

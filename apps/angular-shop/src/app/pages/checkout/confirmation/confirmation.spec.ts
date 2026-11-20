@@ -13,6 +13,7 @@ const order: OrderResponseDto = {
     id: '12345678-1234-4123-8123-123456789abc',
     number: '2026-11-7',
     status: 'PENDING',
+    isModified: false,
     createdAt: '2026-11-16T11:00:00.000Z',
     estimatedPickupDate: '2026-11-19',
     contact: {
@@ -29,6 +30,7 @@ const order: OrderResponseDto = {
             unitPrice: 2.5,
             vatRate: 5.5,
             quantity: 2,
+            confirmedQuantity: 2,
             total: 5.28,
         },
     ],
@@ -41,7 +43,10 @@ describe('Confirmation', () => {
     const createComponent = async (lastOrder: OrderResponseDto | null) => {
         TestBed.configureTestingModule({
             imports: [Confirmation],
-            providers: [provideRouter([{ path: '**', children: [] }]), { provide: LOCALE_ID, useValue: 'fr-FR' }],
+            providers: [
+                provideRouter([{ path: '**', children: [] }]),
+                { provide: LOCALE_ID, useValue: 'fr-FR' },
+            ],
         });
         if (lastOrder) TestBed.inject(CheckoutSessionService).completeOrder(lastOrder);
         const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);

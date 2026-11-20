@@ -27,7 +27,14 @@ const ORDER_SELECT = {
     billingPostalCode: true,
     billingCity: true,
     orderItems: {
-        select: { productId: true, productName: true, price: true, vatRate: true, quantity: true },
+        select: {
+            productId: true,
+            productName: true,
+            price: true,
+            vatRate: true,
+            quantity: true,
+            confirmedQuantity: true,
+        },
     },
 } satisfies Prisma.OrderSelect;
 
@@ -83,6 +90,7 @@ export class PrismaOrderRepository extends OrderRepository {
                             price: line.unitPrice,
                             vatRate: line.vatRate,
                             quantity: line.quantity,
+                            confirmedQuantity: line.confirmedQuantity,
                         })),
                     },
                 },
@@ -166,6 +174,7 @@ export class PrismaOrderRepository extends OrderRepository {
                     unitPrice: item.price.toNumber(),
                     vatRate: item.vatRate.toNumber(),
                     quantity: item.quantity,
+                    confirmedQuantity: item.confirmedQuantity,
                 }),
             ),
             orderedAt: row.createdAt,

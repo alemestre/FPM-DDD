@@ -4,6 +4,8 @@ import { OrderContact } from './order-contact.value-object';
 import { OrderNumber } from './order-number.value-object';
 import { OrderLine } from './order-line.value-object';
 import { Order } from './order.entity';
+import type { OrderStatus } from './order-status';
+import { OrderStatusTransitionError } from './order-status-transition.error';
 
 jest.mock('uuid', () => ({
     v4: jest.fn(() => '12345678-1234-4123-8123-123456789abc'),
@@ -122,6 +124,192 @@ describe('Order', () => {
 
         it("n'attribue une commande d'invité à aucun client", () => {
             expect(place({ customerId: null }).isPlacedBy(CUSTOMER_ID)).toBe(false);
+        });
+    });
+
+    describe('cycle de vie', () => {
+        /** An order brought to `status` through the regular transitions. */
+        const inStatus = (status: OrderStatus): Order => {
+            const order = place();
+            const steps: Record<OrderStatus, (o: Order) => void> = {
+                PENDING: () => undefined,
+                PREPARING: (o) => o.confirm(),
+                READY: (o) => {
+                    o.confirm();
+                    o.markReady();
+                },
+                COMPLETED: (o) => {
+                    o.confirm();
+                    o.markReady();
+                    o.markPickedUp();
+                },
+                CANCELLED: (o) => o.cancel(),
+            };
+            steps[status](order);
+            return order;
+        };
+
+        it('suit PENDING → PREPARING → READY → COMPLETED', () => {
+            const order = place();
+            expect(order.status).toBe('PENDING');
+
+            order.confirm();
+            expect(order.status).toBe('PREPARING');
+
+            order.markReady();
+            expect(order.status).toBe('READY');
+
+            order.markPickedUp();
+            expect(order.status).toBe('COMPLETED');
+        });
+
+        it.each<[string, (order: Order) => void, OrderStatus[]]>([
+            [
+                'valider',
+                (order) => order.confirm(),
+                ['PREPARING', 'READY', 'COMPLETED', 'CANCELLED'],
+            ],
+            [
+                'marquer prête',
+                (order) => order.markReady(),
+                ['PENDING', 'READY', 'COMPLETED', 'CANCELLED'],
+            ],
+            [
+                'marquer retirée',
+                (order) => order.markPickedUp(),
+                ['PENDING', 'PREPARING', 'COMPLETED', 'CANCELLED'],
+            ],
+        ])('refuse de %s une commande hors de son statut de départ', (_action, act, statuses) => {
+            for (const status of statuses) {
+                const order = inStatus(status);
+
+                expect(() => act(order)).toThrow(OrderStatusTransitionError);
+                expect(order.status).toBe(status);
+            }
+        });
+
+        it.each<OrderStatus>(['PENDING', 'PREPARING', 'READY'])(
+            'annule une commande %s, y compris quand le client ne vient pas la chercher',
+            (status) => {
+                const order = inStatus(status);
+
+                order.cancel();
+
+                expect(order.status).toBe('CANCELLED');
+            },
+        );
+
+        it.each<OrderStatus>(['COMPLETED', 'CANCELLED'])(
+            'refuse d’annuler une commande %s',
+            (status) => {
+                const order = inStatus(status);
+
+                expect(() => order.cancel()).toThrow(OrderStatusTransitionError);
+                expect(order.status).toBe(status);
+            },
+        );
+
+        it('donne le statut de la commande dans l’erreur', () => {
+            const order = inStatus('READY');
+
+            expect(() => order.confirm()).toThrow(
+                expect.objectContaining({ orderId: order.id, status: 'READY' }),
+            );
+        });
+    });
+
+    describe('adjustLineQuantity', () => {
+        it('valide une commande telle quelle : rien n’est modifié', () => {
+            const order = place();
+
+            order.confirm();
+
+            expect(order.isModified).toBe(false);
+            expect(order.total).toBe(12.7);
+        });
+
+        it('change la quantité d’une ligne avant de valider et recalcule les totaux', () => {
+            const order = place();
+
+            order.adjustLineQuantity(FLOUR_ID, 1);
+            order.confirm();
+
+            expect(order.lines[0]).toMatchObject({ quantity: 3, confirmedQuantity: 1 });
+            expect(order.isModified).toBe(true);
+            expect(order.subtotal).toBe(6.49);
+            expect(order.tax).toBe(0.94);
+            expect(order.total).toBe(7.43);
+        });
+
+        it('retire un produit en gardant sa ligne', () => {
+            const order = place();
+
+            order.adjustLineQuantity(PASTA_ID, 0);
+
+            expect(order.lines).toHaveLength(2);
+            expect(order.lines[1].isRemoved).toBe(true);
+            expect(order.total).toBe(7.91);
+        });
+
+        it('ajuste encore pendant la préparation', () => {
+            const order = place();
+            order.confirm();
+
+            order.adjustLineQuantity(FLOUR_ID, 2);
+
+            expect(order.lines[0].confirmedQuantity).toBe(2);
+            expect(order.status).toBe('PREPARING');
+        });
+
+        it.each<OrderStatus>(['READY', 'COMPLETED', 'CANCELLED'])(
+            'refuse d’ajuster une commande %s',
+            (status) => {
+                const order = place();
+                if (status === 'CANCELLED') {
+                    order.cancel();
+                } else {
+                    order.confirm();
+                    order.markReady();
+                    if (status === 'COMPLETED') order.markPickedUp();
+                }
+
+                expect(() => order.adjustLineQuantity(FLOUR_ID, 1)).toThrow(
+                    OrderStatusTransitionError,
+                );
+                expect(order.lines[0].confirmedQuantity).toBe(3);
+            },
+        );
+
+        it('refuse un produit qui n’est pas dans la commande', () => {
+            const order = place();
+
+            expect(() =>
+                order.adjustLineQuantity('c3bb189e-8bf9-4888-9912-ace4e6543002', 1),
+            ).toThrow(DomainValidationError);
+        });
+
+        it('refuse une quantité supérieure à la quantité commandée', () => {
+            const order = place();
+
+            expect(() => order.adjustLineQuantity(FLOUR_ID, 4)).toThrow(DomainValidationError);
+            expect(order.lines[0].confirmedQuantity).toBe(3);
+        });
+
+        it('refuse de retirer le dernier produit : il faut annuler la commande', () => {
+            const order = place();
+            order.adjustLineQuantity(PASTA_ID, 0);
+
+            expect(() => order.adjustLineQuantity(FLOUR_ID, 0)).toThrow(DomainValidationError);
+            expect(order.lines[0].confirmedQuantity).toBe(3);
+        });
+
+        it('remet un produit retiré', () => {
+            const order = place();
+            order.adjustLineQuantity(PASTA_ID, 0);
+
+            order.adjustLineQuantity(PASTA_ID, 1);
+
+            expect(order.isModified).toBe(false);
         });
     });
 });

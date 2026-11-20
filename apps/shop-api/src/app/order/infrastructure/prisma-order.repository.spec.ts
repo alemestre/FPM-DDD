@@ -100,6 +100,7 @@ describe('PrismaOrderRepository', () => {
                                 price: 2.5,
                                 vatRate: 5.5,
                                 quantity: 3,
+                                confirmedQuantity: 3,
                             },
                         ],
                     },
@@ -189,6 +190,7 @@ describe('PrismaOrderRepository', () => {
                     price: decimal(2.5),
                     vatRate: decimal(5.5),
                     quantity: 3,
+                    confirmedQuantity: 3,
                 },
             ],
         };
@@ -211,6 +213,7 @@ describe('PrismaOrderRepository', () => {
                         price: true,
                         vatRate: true,
                         quantity: true,
+                        confirmedQuantity: true,
                     },
                 },
             });
@@ -261,6 +264,18 @@ describe('PrismaOrderRepository', () => {
             expect(order.total).toBe(7.91);
         });
 
+        it('reconstitue une ligne dont la boutique a changé la quantité', async () => {
+            prisma.order.findMany.mockResolvedValue([
+                { ...row, orderItems: [{ ...row.orderItems[0], confirmedQuantity: 1 }] },
+            ]);
+
+            const [order] = await repository.findByCustomerId(CUSTOMER_ID);
+
+            expect(order.lines[0]).toMatchObject({ quantity: 3, confirmedQuantity: 1 });
+            expect(order.isModified).toBe(true);
+            expect(order.subtotal).toBe(2.5);
+        });
+
         it('renvoie une liste vide si le client n’a pas de commande', async () => {
             prisma.order.findMany.mockResolvedValue([]);
 
@@ -292,6 +307,7 @@ describe('PrismaOrderRepository', () => {
                         price: decimal(2.5),
                         vatRate: decimal(5.5),
                         quantity: 3,
+                        confirmedQuantity: 3,
                     },
                 ],
             });
