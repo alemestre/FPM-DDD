@@ -35,6 +35,6 @@ describe('Checkout', () => {
         expect(page.element().querySelector('button[aria-label="Remove item"]')).toBeNull();
         expect(page.text()).not.toContain('Passer au paiement');
         expect(page.text()).not.toContain('Vider le panier');
-        expect(page.text()).toContain('Procéder au paiement');
+        expect(page.text()).toContain('Valider la commande');
     });
 });

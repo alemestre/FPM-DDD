@@ -111,6 +111,6 @@ describe('CheckoutAuthenticated', () => {
         await page.settle();
 
         expect(page.text()).toContain("Impossible de charger l'adresse de votre compte");
-        expect(page.button('Procéder au paiement')?.disabled).toBe(true);
+        expect(page.button('Valider la commande')?.disabled).toBe(true);
     });
 });
