@@ -83,7 +83,6 @@ export class OrdersService {
   myOrderResource(orderId: Signal<string | null>) {
     return httpResource<ApiResponseDto<OrderResponseDto>>(() => {
       const id = orderId();
-
       return id
         ? {
           url: `${this.apiUrl}/${CONSTANTS.API_END_POINTS.ORDERS}/${encodeURIComponent(id)}`,

@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { OrdersService } from '../../../../services/orders.service';
 import { OrderResponseDto, type OrderStatusDto } from '@fpm/contracts';
-import { ActivatedRoute } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { OrdersService } from '../../../../services/orders.service';
 import { CurrencyPipe, DatePipe } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { STATUS_BADGES, StatusBadge } from '../orders';
+import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 
 @Component({
@@ -29,7 +29,7 @@ export class OrderDetail {
     this.orderResource.hasValue() ? this.orderResource.value().data : undefined
   );
 
-  protected readonly isLoading = computed(() => this.orderResource.isLoading)
+  protected readonly isLoading = this.orderResource.isLoading
   protected readonly hasError = computed(() => this.orderResource.error() !== undefined);
 
   protected reload() {
