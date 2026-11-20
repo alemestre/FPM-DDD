@@ -1,7 +1,7 @@
 /** Time zone of the shop: order numbers and pickup dates follow its calendar. */
 export const SHOP_TIME_ZONE = 'Europe/Paris';
 
-const PARIS_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', {
+export const PARIS_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', {
     timeZone: SHOP_TIME_ZONE,
     year: 'numeric',
     month: '2-digit',

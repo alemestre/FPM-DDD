@@ -1,4 +1,4 @@
-import { toParisCalendarDay } from './paris-calendar';
+import { toParisCalendarDay } from '@fpm/tools';
 
 /** Days needed to prepare an order before it can be picked up. */
 export const PREPARATION_DAYS = 2;

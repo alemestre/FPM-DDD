@@ -44,6 +44,8 @@ Follow the guidelines defined in `.claude/rules/`:
 - libs/contracts : HTTP response contracts (`@fpm/contracts`) shared by both apps. Holds the Zod
   schemas and `*ResponseDto` types only. Mappers stay in shop-api because they import domain entities.
   In angular-shop, use `import type` so Zod stays out of the browser bundle.
+- libs/tools : framework-free helpers (`@fpm/tools`) shared by both apps, e.g. `PARIS_DATE_FORMAT` and
+  `toParisCalendarDay` (calendar day in the shop time zone, at 00:00 UTC).
 
 ## Shop Api
 

@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "strict": true,
     "paths": {
-      "@fpm/contracts": ["./libs/contracts/src/index.ts"]
+      "@fpm/contracts": ["./libs/contracts/src/index.ts"],
+      "@fpm/tools": ["./libs/tools/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

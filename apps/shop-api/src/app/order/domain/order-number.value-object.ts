@@ -1,5 +1,5 @@
 import { DomainValidationError } from '../../shared/domain/errors/domain-validation.error';
-import { toParisCalendarDay } from './paris-calendar';
+import { toParisCalendarDay } from '@fpm/tools';
 
 const PERIOD_FORMAT = /^\d{4}-(0[1-9]|1[0-2])$/;
 const NUMBER_FORMAT = /^(\d{4}-(?:0[1-9]|1[0-2]))-([1-9]\d*)$/;
