@@ -4,7 +4,9 @@ import { signal } from '@angular/core';
 import { of } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
-import { CategoriesService } from '../../services/categories.service';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { environment } from '../../../environments/environment';
+import { provideHttpClient } from '@angular/common/http';
 import { By } from '@angular/platform-browser';
 import { MainLayout } from './main-layout';
 import { CategoryNav } from './category-nav/category-nav';
@@ -23,18 +25,17 @@ describe('MainLayout', () => {
                     useValue: { isConnected: signal(false), logout: () => of(null) },
                 },
                 { provide: CartService, useValue: { totalItems: signal(0) } },
-                {
-                    provide: CategoriesService,
-                    useValue: {
-                        getAllCategories: () =>
-                            of([{ id: 'cat-1', name: 'viandes', slug: 'viandes' }]),
-                    },
-                },
+                provideHttpClient(),
+                provideHttpClientTesting(),
             ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(MainLayout);
         element = fixture.nativeElement as HTMLElement;
+        fixture.detectChanges();
+        TestBed.inject(HttpTestingController)
+            .expectOne(`${environment.apiUrl}/categories`)
+            .flush({ success: true, data: [{ id: 'cat-1', name: 'viandes', slug: 'viandes' }] });
         await fixture.whenStable();
     });
 

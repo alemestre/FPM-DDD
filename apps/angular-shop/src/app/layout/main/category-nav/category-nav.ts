@@ -1,12 +1,9 @@
 import type { CategoryResponseDto } from '@fpm/contracts';
-import { Component, inject, model, OnInit, signal } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
+import { Component, computed, inject, model } from '@angular/core';
 import { TitleCasePipe } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap';
 import { CategoriesService } from '../../../services/categories.service';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError } from 'rxjs';
 
 @Component({
     selector: 'app-category-nav',
@@ -20,7 +17,12 @@ export class CategoryNav {
     /** Ouverture du menu sur mobile, partagée avec le layout. */
     readonly menuOpen = model(false);
 
-    protected readonly categories = toSignal(this.categoriesService.getAllCategories())
+    private readonly categoriesResource = this.categoriesService.allCategoriesResource();
+
+    /** Vide pendant le chargement ou en cas d'erreur : le lien « À propos » reste affiché. */
+    protected readonly categories = computed<CategoryResponseDto[]>(() =>
+        this.categoriesResource.hasValue() ? this.categoriesResource.value().data : [],
+    );
 
     protected closeMenu(): void {
         this.menuOpen.set(false);

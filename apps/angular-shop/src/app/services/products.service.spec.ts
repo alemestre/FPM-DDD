@@ -1,9 +1,9 @@
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { ApplicationRef, signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { ProductsService } from './products.service';
 import { TestBed } from '@angular/core/testing';
-import { firstValueFrom } from 'rxjs';
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -17,16 +17,46 @@ describe('ProductsService', () => {
 
   afterEach(() => http.verify());
 
-  it('getProductsByCategoryId filtre /products par categoryId et renvoie la liste déballée', async () => {
-    const products = [{ id: 'p-1', categoryId: 'cat-1' }];
+  const settle = () => TestBed.inject(ApplicationRef).whenStable();
 
-    const result = firstValueFrom(service.getActiveProductsByCategoryId('cat-1'));
+  it('availableProductsResource filtre /products sur isAvailable', async () => {
+    const products = [{ id: 'p-1' }];
+
+    const resource = TestBed.runInInjectionContext(() => service.availableProductsResource());
+    TestBed.tick();
     const request = http.expectOne(
-      (req) => req.url === `${environment.apiUrl}/products` && req.params.get('categoryId') === 'cat-1',
+      (req) => req.url === `${environment.apiUrl}/products` && req.params.get('isAvailable') === 'true',
     );
     expect(request.request.method).toBe('GET');
     request.flush({ success: true, data: products });
+    await settle();
 
-    await expect(result).resolves.toEqual(products);
+    expect(resource.value()?.data).toEqual(products);
+  });
+
+  it('activeProductsByCategoryResource ne demande que les produits disponibles', () => {
+    TestBed.runInInjectionContext(() => service.activeProductsByCategoryResource(signal('cat-1')));
+    TestBed.tick();
+
+    const request = http.expectOne((req) => req.url === `${environment.apiUrl}/products`);
+    expect(request.request.params.get('isAvailable')).toBe('true');
+    expect(request.request.params.has('isActive')).toBe(false);
+  });
+
+  it('activeProductsByCategoryResource filtre /products par categoryId et recharge quand il change', async () => {
+    const categoryId = signal('cat-1');
+    const products = [{ id: 'p-1', categoryId: 'cat-1' }];
+    const byCategory = (id: string) => (req: { url: string; params: { get(name: string): string | null } }) =>
+      req.url === `${environment.apiUrl}/products` && req.params.get('categoryId') === id;
+
+    const resource = TestBed.runInInjectionContext(() => service.activeProductsByCategoryResource(categoryId));
+    TestBed.tick();
+    http.expectOne(byCategory('cat-1')).flush({ success: true, data: products });
+    await settle();
+    expect(resource.value()?.data).toEqual(products);
+
+    categoryId.set('cat-2');
+    TestBed.tick();
+    http.expectOne(byCategory('cat-2'));
   });
 });

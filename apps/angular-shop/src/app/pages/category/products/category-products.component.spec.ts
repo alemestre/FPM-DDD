@@ -1,8 +1,10 @@
 import type { CategoryResponseDto, ProductWithProducerResponseDto } from '@fpm/contracts';
-import { ProductsService } from '../../../services/products.service';
-import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { NotificationService } from '../../../services/notification.service';
+import { environment } from '../../../../environments/environment';
 import { CategoryProducts } from './category-products.component';
+import { provideHttpClient } from '@angular/common/http';
+import { TestBed } from '@angular/core/testing';
 
 const FRUITS: CategoryResponseDto = {
     id: 'cat-1',
@@ -33,51 +35,83 @@ describe('Products', () => {
         'cat-1': [product('p-1', 'cat-1'), product('p-2', 'cat-1')],
         'cat-2': [product('p-3', 'cat-2')],
     };
-    const productsService = {
-        getActiveProductsByCategoryId: vi.fn((categoryId: string) =>
-            of(productsByCategory[categoryId] ?? []),
-        ),
-    };
+    const notificationService = { showError: vi.fn() };
+    let http: HttpTestingController;
 
-    const createComponent = async (category: CategoryResponseDto) => {
+    /** Répond à la requête des produits de `categoryId` avec les produits de cette catégorie. */
+    const flushProducts = (categoryId: string) =>
+        http
+            .expectOne(
+                (req) =>
+                    req.url === `${environment.apiUrl}/products` &&
+                    req.params.get('categoryId') === categoryId,
+            )
+            .flush({ success: true, data: productsByCategory[categoryId] ?? [] });
+
+    const createComponent = (category: CategoryResponseDto) => {
         TestBed.configureTestingModule({
             imports: [CategoryProducts],
-            providers: [{ provide: ProductsService, useValue: productsService }],
+            providers: [
+                provideHttpClient(),
+                provideHttpClientTesting(),
+                { provide: NotificationService, useValue: notificationService },
+            ],
         });
+        http = TestBed.inject(HttpTestingController);
         const fixture = TestBed.createComponent(CategoryProducts);
         fixture.componentRef.setInput('category', category);
-        await fixture.whenStable();
+        fixture.detectChanges();
         return fixture;
     };
 
-    beforeEach(() => {
-        productsService.getActiveProductsByCategoryId.mockClear();
-    });
+    beforeEach(() => notificationService.showError.mockClear());
+
+    afterEach(() => http.verify());
 
     it('charge les produits de la catégorie reçue en input', async () => {
-        const fixture = await createComponent(FRUITS);
+        const fixture = createComponent(FRUITS);
         const component = fixture.componentInstance;
+        expect(component.isLoading()).toBe(true);
 
-        expect(productsService.getActiveProductsByCategoryId).toHaveBeenCalledWith('cat-1');
+        flushProducts('cat-1');
+        await fixture.whenStable();
+
         expect(component.products().map((p) => p.id)).toEqual(['p-1', 'p-2']);
         expect(component.hasProducts()).toBe(true);
         expect(component.isLoading()).toBe(false);
     });
 
     it('recharge les produits quand la catégorie change', async () => {
-        const fixture = await createComponent(FRUITS);
-
-        fixture.componentRef.setInput('category', VIANDES);
+        const fixture = createComponent(FRUITS);
+        flushProducts('cat-1');
         await fixture.whenStable();
 
-        expect(productsService.getActiveProductsByCategoryId).toHaveBeenLastCalledWith('cat-2');
+        fixture.componentRef.setInput('category', VIANDES);
+        fixture.detectChanges();
+        flushProducts('cat-2');
+        await fixture.whenStable();
+
         expect(fixture.componentInstance.products().map((p) => p.id)).toEqual(['p-3']);
     });
 
     it("n'a aucun produit si la catégorie est vide", async () => {
-        const fixture = await createComponent(VIDE);
+        const fixture = createComponent(VIDE);
+        flushProducts('cat-3');
+        await fixture.whenStable();
 
         expect(fixture.componentInstance.products()).toEqual([]);
         expect(fixture.componentInstance.hasProducts()).toBe(false);
+    });
+
+    it("affiche une erreur si l'API échoue", async () => {
+        const fixture = createComponent(FRUITS);
+        http
+            .expectOne((req) => req.url === `${environment.apiUrl}/products`)
+            .flush('boom', { status: 500, statusText: 'Server Error' });
+        await fixture.whenStable();
+
+        expect(fixture.componentInstance.products()).toEqual([]);
+        expect(fixture.componentInstance.error()).toBe('Une erreur est survenue.');
+        expect(notificationService.showError).toHaveBeenCalledWith('Une erreur est survenue.');
     });
 });

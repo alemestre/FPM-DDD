@@ -1,35 +1,40 @@
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { environment } from '../../../../environments/environment';
+import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
-import { CategoriesService } from '../../../services/categories.service';
 import { CategoryNav } from './category-nav';
 
 describe('CategoryNav', () => {
     let fixture: ComponentFixture<CategoryNav>;
     let element: HTMLElement;
+    let http: HttpTestingController;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [CategoryNav],
             providers: [
                 provideRouter([{ path: '**', children: [] }]),
-                {
-                    provide: CategoriesService,
-                    useValue: {
-                        getAllCategories: () =>
-                            of([
-                                { id: 'cat-1', name: 'viandes', slug: 'viandes' },
-                                { id: 'cat-2', name: 'fruits & légumes', slug: 'fruits-legumes' },
-                            ]),
-                    },
-                },
+                provideHttpClient(),
+                provideHttpClientTesting(),
             ],
         }).compileComponents();
 
+        http = TestBed.inject(HttpTestingController);
         fixture = TestBed.createComponent(CategoryNav);
         element = fixture.nativeElement as HTMLElement;
+        fixture.detectChanges();
+        http.expectOne(`${environment.apiUrl}/categories`).flush({
+            success: true,
+            data: [
+                { id: 'cat-1', name: 'viandes', slug: 'viandes' },
+                { id: 'cat-2', name: 'fruits & légumes', slug: 'fruits-legumes' },
+            ],
+        });
         await fixture.whenStable();
     });
+
+    afterEach(() => http.verify());
 
     it('should list each category, with the about link last', () => {
         const links = Array.from(
@@ -64,5 +69,20 @@ describe('CategoryNav', () => {
         const toggles = Array.from(element.querySelectorAll('button.dropdown-toggle'));
 
         expect(toggles.some((toggle) => toggle.textContent?.includes('Produits'))).toBe(false);
+    });
+
+    it("garde le lien « À propos » si les catégories n'ont pas pu être chargées", async () => {
+        const errorFixture = TestBed.createComponent(CategoryNav);
+        errorFixture.detectChanges();
+        http.expectOne(`${environment.apiUrl}/categories`).flush('boom', {
+            status: 500,
+            statusText: 'Server Error',
+        });
+        await errorFixture.whenStable();
+
+        const links = Array.from(
+            (errorFixture.nativeElement as HTMLElement).querySelectorAll('.app-categories > .nav-item > a'),
+        );
+        expect(links.map((link) => link.textContent?.trim())).toEqual(['À propos']);
     });
 });

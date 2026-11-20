@@ -1,31 +1,31 @@
 import { environment } from '../../environments/environment';
 import type { ApiResponseDto, ProductWithProducerResponseDto as Product } from '@fpm/contracts';
-import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, type Signal } from '@angular/core';
+import { httpResource } from '@angular/common/http';
 import { CONSTANTS } from '../shared/constant';
-import { map, Observable } from 'rxjs';
 
+/**
+ * Les méthodes `*Resource` renvoient une ressource (chargement, erreur, valeur en signaux) :
+ * elles s'appellent dans un contexte d'injection, par exemple à l'initialisation d'un champ de composant.
+ */
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root',
 })
 export class ProductsService {
-  protected httpClient = inject(HttpClient);
-  private _apiUrl = environment.apiUrl;
+    private _apiUrl = environment.apiUrl;
 
-  getAvailableProducts(): Observable<Product[]> {
-    return this.httpClient.get<ApiResponseDto<Product[]>>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.PRODUCTS}`, {
-      params: { isAvailable: true }
-    })
-      .pipe(
-        map((response) => response.data),
-      )
-  }
+    availableProductsResource() {
+        return httpResource<ApiResponseDto<Product[]>>(() => ({
+            url: `${this._apiUrl}/${CONSTANTS.API_END_POINTS.PRODUCTS}`,
+            params: { isAvailable: true },
+        }));
+    }
 
-  getActiveProductsByCategoryId(categoryId: string): Observable<Product[]> {
-    return this.httpClient
-      .get<ApiResponseDto<Product[]>>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.PRODUCTS}`, {
-        params: { categoryId, isActive: true }
-      })
-      .pipe(map((response) => response.data));
-  }
+    /** Recharge quand `categoryId` change. */
+    activeProductsByCategoryResource(categoryId: Signal<string>) {
+        return httpResource<ApiResponseDto<Product[]>>(() => ({
+            url: `${this._apiUrl}/${CONSTANTS.API_END_POINTS.PRODUCTS}`,
+            params: { categoryId: categoryId(), isAvailable: true },
+        }));
+    }
 }

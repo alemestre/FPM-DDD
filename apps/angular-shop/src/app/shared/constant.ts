@@ -1,5 +1,3 @@
-import { ProductsState } from './interface';
-
 export const CONSTANTS = {
   API_END_POINTS: {
     CATEGORIES: 'categories',
@@ -16,10 +14,4 @@ export const CONSTANTS = {
     ORDERS: 'orders',
     GUEST_ORDERS: 'orders/guest'
   },
-};
-
-export const PRODUCTS_INITIAL_STATE: ProductsState = {
-    products: [],
-    loading: true,
-    error: null,
 };

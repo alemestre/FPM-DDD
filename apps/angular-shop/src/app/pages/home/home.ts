@@ -1,10 +1,8 @@
 import { ProductCard } from '../../components/product-card/product-card';
 import { SearchBar } from '../../components/search-bar/search-bar';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, debounceTime, distinctUntilChanged, map, of } from 'rxjs';
-import { PRODUCTS_INITIAL_STATE } from '../../shared/constant';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { Products } from '../../components/abstract-products';
-import { ProductsState } from '../../shared/interface';
 import { Component, computed, signal } from '@angular/core';
 
 /** Délai après la dernière frappe avant de filtrer la liste. */
@@ -24,23 +22,7 @@ const normalize = (value: string) =>
     templateUrl: './home.html',
 })
 export class Home extends Products {
-    protected readonly state = toSignal(
-        this.productsService.getAvailableProducts().pipe(
-            map((products) => ({
-                products,
-                loading: false,
-                error: null,
-            })),
-            catchError(() =>
-                of<ProductsState>({
-                    products: [],
-                    loading: false,
-                    error: 'Une erreur est survenue.',
-                }),
-            ),
-        ),
-        { initialValue: PRODUCTS_INITIAL_STATE },
-    );
+    protected readonly productsResource = this.productsService.availableProductsResource();
 
     /** Valeur du champ de recherche, mise à jour à chaque frappe. */
     readonly searchTerm = signal('');
