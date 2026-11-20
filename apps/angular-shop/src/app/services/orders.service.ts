@@ -1,9 +1,20 @@
-import type { ApiResponseDto, OrderResponseDto } from '@fpm/contracts';
+import type { ApiResponseDto, OrderResponseDto, OrderStatusDto } from '@fpm/contracts';
 import { environment } from '../../environments/environment';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, httpResource } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { CONSTANTS } from '../shared/constant';
 import { map, Observable } from 'rxjs';
+
+/** Commandes pas encore retirées ni annulées. */
+export const CURRENT_ORDER_STATUSES: readonly OrderStatusDto[] = [
+    'REGISTERED',
+    'IN_PROGRESS',
+    'MODIFIED',
+    'READY',
+];
+
+export const isCurrentOrder = (order: Pick<OrderResponseDto, 'status'>): boolean =>
+    CURRENT_ORDER_STATUSES.includes(order.status);
 
 export interface OrderItemPayload {
     readonly productId: string;
@@ -38,7 +49,7 @@ export interface PlaceGuestOrderPayload extends PlaceOrderPayload {
 @Injectable({
     providedIn: 'root',
 })
-export class OrderService {
+export class OrdersService {
     private readonly httpClient = inject(HttpClient);
     private readonly apiUrl = environment.apiUrl;
 
@@ -56,5 +67,16 @@ export class OrderService {
                 withCredentials: true,
             })
             .pipe(map((response) => response.data));
+    }
+
+    /**
+     * Commandes du client connecté, les plus récentes en premier : l'API le reconnaît à sa session.
+     * Renvoie une ressource (chargement, erreur, valeur en signaux) : à appeler dans un contexte d'injection.
+     */
+    myOrdersResource() {
+        return httpResource<ApiResponseDto<OrderResponseDto[]>>(() => ({
+            url: `${this.apiUrl}/${CONSTANTS.API_END_POINTS.ORDERS}`,
+            withCredentials: true,
+        }));
     }
 }

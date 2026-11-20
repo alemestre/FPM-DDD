@@ -1,8 +1,8 @@
 import { CheckoutSessionService } from '../services/checkout-session.service';
-import type { BillingAddressPayload, OrderItemPayload } from '../services/order.service';
+import type { BillingAddressPayload, OrderItemPayload } from '../services/orders.service';
 import { ADDRESS_FIELDS, AddressModel } from '../pages/checkout/summary/form/billing-fields';
 import { estimatePickupDate } from '../shared/pickup-date';
-import { OrderService } from '../services/order.service';
+import { OrdersService } from '../services/orders.service';
 import { CartService } from '../services/cart.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import type { OrderResponseDto } from '@fpm/contracts';
@@ -19,7 +19,7 @@ export const CHECKOUT_CONFIRMATION_URL = '/checkout/confirmation';
  */
 export abstract class Checkout {
     protected readonly checkoutSession = inject(CheckoutSessionService);
-    protected readonly orderService = inject(OrderService);
+    protected readonly orderService = inject(OrdersService);
     protected readonly cart = inject(CartService);
     private readonly router = inject(Router);
 
