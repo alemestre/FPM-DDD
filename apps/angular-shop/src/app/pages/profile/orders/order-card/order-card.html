@@ -1,21 +1,31 @@
   <div class="card border-0 shadow-sm rounded-4">
         <div class="card-body p-3 p-md-4">
             <div class="row g-3 align-items-center">
-                <div class="col-12 col-md-5">
+                <div class="col-12 col-md-4">
                     <p class="small text-secondary mb-0">Commande</p>
                     <p class="fw-semibold mb-0">n° {{ order().number }}</p>
                 </div>
 
-                <div class="col-6 col-md-4">
+                <div class="col-6 col-md-3">
                     <p class="small text-secondary mb-0">Passée le</p>
                     <p class="mb-0">{{ order().createdAt | date: 'longDate' }}</p>
                 </div>
 
-                <div class="col-6 col-md-3 text-end">
+                <div class="col-6 col-md-2 text-end text-md-start">
                     @let badge = badgeOf(order().status);
                     <span class="badge rounded-pill {{ badge.classes }}">
                         <i aria-hidden="true" class="bi {{ badge.icon }} me-1"></i>{{ badge.label }}
                     </span>
+                </div>
+
+                <div class="col-12 col-md-3 text-md-end">
+                    <a
+                        class="btn btn-outline-primary btn-sm rounded-pill px-3"
+                        [routerLink]="['/profil/commandes', order().id]"
+                        [attr.aria-label]="'Consulter la commande n° ' + order().number"
+                    >
+                        <i aria-hidden="true" class="bi bi-eye me-1"></i>Consulter
+                    </a>
                 </div>
             </div>
         </div>

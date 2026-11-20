@@ -72,6 +72,13 @@ export const appRoutes: Route[] = [
             canActivate: [authGuard],
             data: { breadcrumb: 'Profil' }
           },
+          {
+            path: 'profil/commandes/:id',
+            canActivate: [authGuard],
+            loadComponent: () =>
+              import('./pages/profile/orders/order-detail/order-detail').then(m => m.OrderDetail),
+            data: { breadcrumb: 'Détail de la commande' }
+          },
         ]
       }
     ]

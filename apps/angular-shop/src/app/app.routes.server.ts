@@ -18,6 +18,10 @@ export const serverRoutes: ServerRoute[] = [
         renderMode: RenderMode.Client,
     },
     {
+        path: 'profil/commandes/:id', // Same as 'profil': the order belongs to the logged-in customer
+        renderMode: RenderMode.Client,
+    },
+    {
         path: 'checkout', // Session, cart (localStorage) and guest choice (sessionStorage) live in the browser
         renderMode: RenderMode.Client,
     },
