@@ -12,26 +12,24 @@ import {
     Query,
 } from '@nestjs/common';
 import { WithdrawProductStockUseCase } from '../../application/use-cases/withdraw-product-stock.use-case';
+import { toProductResponse, toProductWithProducerResponse } from './dto/product.response.mapper';
 import { RestockProductUseCase } from '../../application/use-cases/restock-product.use-case';
 import { CreateProductUseCase } from '../../application/use-cases/create-product.use-case';
 import { DeleteProductUseCase } from '../../application/use-cases/delete-product.use-case';
 import { UpdateProductUseCase } from '../../application/use-cases/update-product.use-case';
 import { ListProductsUseCase } from '../../application/use-cases/list-products.use-case';
-import type { ProductWithProducerResponseDto } from '@fpm/contracts';
-import { toProductResponse, toProductWithProducerResponse } from './dto/product.response.mapper';
 import { GetProductUseCase } from '../../application/use-cases/get-product.use-case';
+import type { ProductWithProducerResponseDto } from '@fpm/contracts';
+import { ListProductsQueryDto } from './dto/list-products-query.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { StockMovementDto } from './dto/stock-movement.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { GetProductsByCategoryIdUseCase } from '../../application/use-cases/get-products-by-category-id.use-case';
-import { ListProductsQueryDto } from './dto/list-products-query.dto';
 
 @Controller('products')
 export class ProductController {
     constructor(
         private readonly createProduct: CreateProductUseCase,
         private readonly listProducts: ListProductsUseCase,
-        private readonly getProductsByCategoryId: GetProductsByCategoryIdUseCase,
         private readonly getProduct: GetProductUseCase,
         private readonly updateProduct: UpdateProductUseCase,
         private readonly restockProduct: RestockProductUseCase,
@@ -45,10 +43,8 @@ export class ProductController {
     }
 
     @Get()
-    async findAll(@Query() { categoryId, isAvailable }: ListProductsQueryDto): Promise<ProductWithProducerResponseDto[]> {
-        const products = categoryId
-            ? await this.getProductsByCategoryId.execute(categoryId, isAvailable)
-            : await this.listProducts.execute(isAvailable);
+    async findAll(@Query()filters: ListProductsQueryDto): Promise<ProductWithProducerResponseDto[]> {
+        const products = await this.listProducts.execute(filters);
         return products.map(toProductWithProducerResponse);
     }
 

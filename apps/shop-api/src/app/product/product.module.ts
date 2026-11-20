@@ -9,7 +9,6 @@ import { WithdrawProductStockUseCase } from "./application/use-cases/withdraw-pr
 import { ProductRepository } from "./domain/product.repository";
 import { PrismaProductRepository } from "./infrastructure/prisma-product.repository";
 import { ProductController } from "./interface/http/product.controller";
-import { GetProductsByCategoryIdUseCase } from "./application/use-cases/get-products-by-category-id.use-case";
 
 @Module({
   controllers: [ProductController],
@@ -18,7 +17,6 @@ import { GetProductsByCategoryIdUseCase } from "./application/use-cases/get-prod
     CreateProductUseCase,
     ListProductsUseCase,
     GetProductUseCase,
-    GetProductsByCategoryIdUseCase,
     UpdateProductUseCase,
     RestockProductUseCase,
     WithdrawProductStockUseCase,

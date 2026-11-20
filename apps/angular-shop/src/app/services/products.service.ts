@@ -1,5 +1,5 @@
 import { environment } from '../../environments/environment';
-import type { ApiResponseDto, ProductWithProducerResponseDto as Product } from '@fpm/contracts';
+import type { ApiResponseDto, CategoryResponseDto as Category, ProductWithProducerResponseDto as Product } from '@fpm/contracts';
 import { Injectable, type Signal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { CONSTANTS } from '../shared/constant';
@@ -28,4 +28,14 @@ export class ProductsService {
             params: { categoryId: categoryId(), isAvailable: true },
         }));
     }
+
+    productsByIdRessource(ids: Signal<string[] | null>) {
+        return httpResource<ApiResponseDto<Product[]>>(() => {
+          const productIds = ids()
+          return productIds
+            ? { url: `${this._apiUrl}/${CONSTANTS.API_END_POINTS.PRODUCTS}`, params: { productIds } }
+            : undefined
+        })
+    }
+
 }

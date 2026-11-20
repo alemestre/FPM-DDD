@@ -36,11 +36,10 @@ export class CartTotalSummaryComponent {
 
   clearCart(): void {
     if (this.cartService.isEmpty()) {
-      this.notificationService.showInfo('Your cart is already empty.');
+      this.notificationService.showInfo('Votre panier est deja vide.');
       return;
     }
 
     this.cartService.clearCart();
-    this.notificationService.showSuccess('Cart cleared successfully!');
   }
 }

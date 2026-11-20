@@ -16,6 +16,7 @@ export type ProductWithProducer = {
 export type ProductFilters = {
   categoryId?: string;
   isAvailable?: boolean;
+  productIds?: string[]
 };
 
 /**

@@ -173,13 +173,4 @@ export class CartService {
     clearCart(): void {
         this.cartItems.set([]);
     }
-
-    getItemQuantity(productId: string): number {
-        const item = this.cartItems().find((item) => item.product.id === productId);
-        return item?.quantity ?? 0;
-    }
-
-    isInCart(productId: string): boolean {
-        return this.cartItems().some((item) => item.product.id === productId);
-    }
 }

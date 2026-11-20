@@ -113,11 +113,12 @@ export class PrismaProductRepository implements ProductRepository {
     }
   }
 
-  async findManyWithProducer({ categoryId, isAvailable }: ProductFilters = {}): Promise<ProductWithProducer[]> {
+  async findManyWithProducer({ categoryId, isAvailable, productIds }: ProductFilters = {}): Promise<ProductWithProducer[]> {
     const rows = await this.prisma.product.findMany({
       where: {
         ...(categoryId !== undefined && { categoryId }),
-        ...(isAvailable !== undefined && { isAvailable })
+        ...(isAvailable !== undefined && { isAvailable }),
+        ...(productIds !== undefined && productIds.length > 0 && { id: {  in: productIds } }),
       },
       include: WITH_PRODUCER
     });

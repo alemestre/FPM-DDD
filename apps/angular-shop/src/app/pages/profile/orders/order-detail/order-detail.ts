@@ -1,16 +1,17 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { OrderResponseDto, type OrderStatusDto } from '@fpm/contracts';
 import { OrdersService } from '../../../../services/orders.service';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { STATUS_BADGES, StatusBadge } from '../orders';
-import { ActivatedRoute } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 
 @Component({
     selector: 'app-order-detail',
   imports: [
     DatePipe,
+    RouterLink,
     CurrencyPipe
   ],
     templateUrl: './order-detail.html',
