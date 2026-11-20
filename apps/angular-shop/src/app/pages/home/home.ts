@@ -1,4 +1,4 @@
-import { ProductCard } from '../../components/product-card/product-card';
+import { ProductCard } from '../category/products/product-card/product-card';
 import { SearchBar } from '../../components/search-bar/search-bar';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs';

@@ -1,13 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import type { OrderResponseDto, OrderStatusDto } from '@fpm/contracts';
 import { isCurrentOrder } from '../../../services/orders.service';
-import { DatePipe, NgTemplateOutlet } from '@angular/common';
-import { STATUS_BADGES, StatusBadge } from './orders';
+import type { OrderResponseDto } from '@fpm/contracts';
+import { OrderCard } from './order-card/order-card';
 import { RouterLink } from '@angular/router';
 
 @Component({
     selector: 'app-customer-orders',
-    imports: [RouterLink, DatePipe, NgTemplateOutlet],
+    imports: [RouterLink, OrderCard],
     templateUrl: './customer-orders.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -23,8 +22,4 @@ export class CustomerOrders {
     protected readonly pastOrders = computed(() =>
         this.orders().filter((order) => !isCurrentOrder(order)),
     );
-
-    protected badgeOf(status: OrderStatusDto): StatusBadge {
-        return STATUS_BADGES[status];
-    }
 }

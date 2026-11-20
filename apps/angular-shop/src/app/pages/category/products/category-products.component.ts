@@ -1,4 +1,4 @@
-import { ProductCard } from '../../../components/product-card/product-card';
+import { ProductCard } from './product-card/product-card';
 import type { CategoryResponseDto as Category } from '@fpm/contracts';
 import { Products } from '../../../components/abstract-products';
 import { TitleCasePipe } from '@angular/common';

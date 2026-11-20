@@ -1,7 +1,7 @@
 import type { ApiResponseDto, OrderResponseDto, OrderStatusDto } from '@fpm/contracts';
 import { environment } from '../../environments/environment';
 import { HttpClient, httpResource } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, Signal } from '@angular/core';
 import { CONSTANTS } from '../shared/constant';
 import { map, Observable } from 'rxjs';
 
@@ -79,4 +79,17 @@ export class OrdersService {
             withCredentials: true,
         }));
     }
+
+  myOrderResource(orderId: Signal<string | null>) {
+    return httpResource<ApiResponseDto<OrderResponseDto>>(() => {
+      const id = orderId();
+
+      return id
+        ? {
+          url: `${this.apiUrl}/${CONSTANTS.API_END_POINTS.ORDERS}/${encodeURIComponent(id)}`,
+          withCredentials: true
+        }
+        : undefined;
+    });
+  }
 }

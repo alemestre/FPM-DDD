@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { CustomerInformation } from './customer-information/customer-information';
+import { CustomerInformation } from './information/customer-information';
 import { isCurrentOrder, OrdersService } from '../../services/orders.service';
 import { NotificationService } from '../../services/notification.service';
-import { CustomerOrders } from './customer-orders/customer-orders';
+import { CustomerOrders } from './orders/customer-orders';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProfileService } from '../../services/profile.service';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
