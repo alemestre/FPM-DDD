@@ -15,10 +15,10 @@ import { ProductsService } from './products.service';
     providedIn: 'root',
 })
 export class OrderAgainService {
-    private readonly productsService = inject(ProductsService);
-    private readonly cartService = inject(CartService);
-    private readonly notificationService = inject(NotificationService);
-    private readonly router = inject(Router);
+  private readonly notificationService = inject(NotificationService);
+  private readonly productsService = inject(ProductsService);
+  private readonly cartService = inject(CartService);
+  private readonly router = inject(Router);
 
     async orderAgain(order: OrderResponseDto): Promise<void> {
         const items = order.items.filter((item) => item.confirmedQuantity > 0);

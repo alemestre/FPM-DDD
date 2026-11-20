@@ -22,7 +22,7 @@
                 class="col-12 col-md-3 d-flex flex-column align-items-start align-items-md-end gap-2"
             >
                 <a
-                    class="btn btn-outline-primary btn-sm rounded-pill px-3"
+                    class="btn btn-outline-primary btn-sm rounded-pill px-3 w-100"
                     [routerLink]="['/profil/commandes', order().id]"
                     [attr.aria-label]="'Consulter la commande n° ' + order().number"
                 >
@@ -30,7 +30,7 @@
                 </a>
                 @if (!isCurrent()) {
                 <button
-                    class="btn btn-primary btn-sm rounded-pill px-3"
+                    class="btn btn-primary btn-sm rounded-pill px-3 w-100"
                     type="button"
                     [disabled]="pending()"
                     [attr.aria-label]="'Commander à nouveau la commande n° ' + order().number"
