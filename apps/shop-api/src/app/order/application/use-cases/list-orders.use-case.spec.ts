@@ -30,10 +30,10 @@ describe('ListOrdersUseCase', () => {
     it('transmet les statuts demandés au dépôt', async () => {
         repository.findByCustomerId.mockResolvedValue([]);
 
-        await useCase.execute(CUSTOMER_ID, ['IN_PROGRESS', 'READY']);
+        await useCase.execute(CUSTOMER_ID, ['PREPARING', 'READY']);
 
         expect(repository.findByCustomerId).toHaveBeenCalledWith(CUSTOMER_ID, [
-            'IN_PROGRESS',
+            'PREPARING',
             'READY',
         ]);
     });

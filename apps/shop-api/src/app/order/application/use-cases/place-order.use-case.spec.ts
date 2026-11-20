@@ -81,7 +81,7 @@ describe('PlaceOrderUseCase', () => {
             expect(order.customerId).toBe(CUSTOMER_ID);
             expect(order.contact.email).toBe('marie@example.fr');
             expect(order.billingAddress.city).toBe('Brest');
-            expect(order.status).toBe('REGISTERED');
+            expect(order.status).toBe('PENDING');
             expect(order.number?.toString()).toBe('2026-11-1');
             expect(repository.save).toHaveBeenCalledWith(order);
         });

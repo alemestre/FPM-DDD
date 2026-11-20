@@ -1,14 +1,17 @@
-/** Life cycle of an order, from its registration to its pickup at the shop. */
+/**
+ * Life cycle of an order, from its registration to its pickup at the shop.
+ * A change to the lines (quantity, removed product) is not a status: the order keeps going through the cycle.
+ */
 export const ORDER_STATUSES = [
-    /** Placed by the customer, not yet handled by the shop. */
-    'REGISTERED',
-    'IN_PROGRESS',
-    /** A quantity was changed or a product removed while preparing the order. */
-    'MODIFIED',
+    /** Placed by the customer, waiting for the admin to validate it. */
+    'PENDING',
+    /** Validated by the admin, possibly with adjusted lines, and being prepared. */
+    'PREPARING',
     /** Waiting for the customer at the shop. */
     'READY',
     /** Picked up by the customer. */
     'COMPLETED',
+    /** Cancelled by the admin, including when the customer never picked it up. */
     'CANCELLED',
 ] as const;
 

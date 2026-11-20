@@ -182,7 +182,7 @@ describe('OrderController (HTTP)', () => {
             expect(body.data).toMatchObject({
                 id: '12345678-1234-4123-8123-123456789abc',
                 number: expect.stringMatching(/^\d{4}-\d{2}-1$/),
-                status: 'REGISTERED',
+                status: 'PENDING',
                 estimatedPickupDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
                 contact: {
                     firstName: 'Marie',
@@ -310,7 +310,7 @@ describe('OrderController (HTTP)', () => {
                 expect.stringMatching(/-1$/),
             ]);
             expect(body.data[0]).toMatchObject({
-                status: 'REGISTERED',
+                status: 'PENDING',
                 contact: { email: 'marie@example.fr' },
                 items: [{ productId: FLOUR_ID, quantity: 2, total: 5.28 }],
                 total: 5.28,
@@ -360,7 +360,7 @@ describe('OrderController (HTTP)', () => {
         });
 
         it('accepte plusieurs statuts, pour les commandes en cours', async () => {
-            const { body } = await get('/orders?status=REGISTERED&status=READY', customerCookie);
+            const { body } = await get('/orders?status=PENDING&status=READY', customerCookie);
 
             expect(numbersOf(body.data)).toEqual(['2', '1']);
         });
@@ -388,7 +388,7 @@ describe('OrderController (HTTP)', () => {
             expect(body.success).toBe(true);
             expect(body.data).toMatchObject({
                 id: ORDER_ID,
-                status: 'REGISTERED',
+                status: 'PENDING',
                 contact: { email: 'marie@example.fr' },
                 billingAddress: { city: 'Brest' },
                 items: [{ productId: FLOUR_ID, productName: 'Farine de blé', quantity: 2 }],

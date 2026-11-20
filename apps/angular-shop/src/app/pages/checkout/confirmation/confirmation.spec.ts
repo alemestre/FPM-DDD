@@ -12,7 +12,7 @@ registerLocaleData(localeFr, 'fr-FR');
 const order: OrderResponseDto = {
     id: '12345678-1234-4123-8123-123456789abc',
     number: '2026-11-7',
-    status: 'REGISTERED',
+    status: 'PENDING',
     createdAt: '2026-11-16T11:00:00.000Z',
     estimatedPickupDate: '2026-11-19',
     contact: {

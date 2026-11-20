@@ -80,7 +80,7 @@ describe('PrismaOrderRepository', () => {
                 data: {
                     id: order.id,
                     number: '2026-11-7',
-                    status: 'REGISTERED',
+                    status: 'PENDING',
                     estimatedPickupDate: new Date('2026-11-21T00:00:00Z'),
                     createdAt: order.orderedAt,
                     customerId: CUSTOMER_ID,
@@ -220,11 +220,11 @@ describe('PrismaOrderRepository', () => {
         it('garde seulement les statuts demandés', async () => {
             prisma.order.findMany.mockResolvedValue([]);
 
-            await repository.findByCustomerId(CUSTOMER_ID, ['REGISTERED', 'READY']);
+            await repository.findByCustomerId(CUSTOMER_ID, ['PENDING', 'READY']);
 
             expect(prisma.order.findMany.mock.calls[0][0].where).toEqual({
                 customerId: CUSTOMER_ID,
-                status: { in: ['REGISTERED', 'READY'] },
+                status: { in: ['PENDING', 'READY'] },
             });
         });
 
@@ -273,7 +273,7 @@ describe('PrismaOrderRepository', () => {
             prisma.order.findUnique.mockResolvedValue({
                 id: '12345678-1234-4123-8123-123456789abc',
                 number: '2026-11-7',
-                status: 'REGISTERED',
+                status: 'PENDING',
                 estimatedPickupDate: new Date('2026-11-21T00:00:00Z'),
                 createdAt: new Date('2026-11-19T10:00:00Z'),
                 customerId: CUSTOMER_ID,

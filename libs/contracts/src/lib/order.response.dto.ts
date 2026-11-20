@@ -1,9 +1,8 @@
 import { z } from 'zod';
 
 export const OrderStatusSchema = z.enum([
-    'REGISTERED',
-    'IN_PROGRESS',
-    'MODIFIED',
+    'PENDING',
+    'PREPARING',
     'READY',
     'COMPLETED',
     'CANCELLED',

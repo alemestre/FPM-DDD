@@ -58,7 +58,7 @@ describe('Order', () => {
             const order = place();
 
             expect(order.id).toBe('12345678-1234-4123-8123-123456789abc');
-            expect(order.status).toBe('REGISTERED');
+            expect(order.status).toBe('PENDING');
             expect(order.number).toBeNull();
             expect(order.estimatedPickupDate.toISOString().slice(0, 10)).toBe('2026-11-19');
             expect(order.lines).toEqual([flour, pasta]);

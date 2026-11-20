@@ -59,7 +59,7 @@ export class Order {
         return new Order(
             new Uuid().getValue(),
             null,
-            'REGISTERED',
+            'PENDING',
             customerId,
             contact,
             billingAddress,

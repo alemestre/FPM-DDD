@@ -49,7 +49,7 @@ export class OrderController {
 
     /**
      * Orders of the signed-in customer, newest first, optionally filtered by status
-     * (`?status=READY&status=IN_PROGRESS`): 401 without a session, 400 for an unknown status.
+     * (`?status=READY&status=PREPARING`): 401 without a session, 400 for an unknown status.
      */
     @Get()
     @UseGuards(JwtCookieAuthGuard)

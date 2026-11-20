@@ -7,9 +7,8 @@ import { map, Observable } from 'rxjs';
 
 /** Commandes pas encore retirées ni annulées. */
 export const CURRENT_ORDER_STATUSES: readonly OrderStatusDto[] = [
-    'REGISTERED',
-    'IN_PROGRESS',
-    'MODIFIED',
+    'PENDING',
+    'PREPARING',
     'READY',
 ];
 
