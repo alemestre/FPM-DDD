@@ -1,3 +1,4 @@
+import type { OrderStatus } from './order-status';
 import type { Order } from './order.entity';
 
 /** What an order needs to know about a catalog product when it is placed. */
@@ -22,8 +23,8 @@ export interface OrderCustomerContact {
 /**
  * Persistence port for the Order aggregate.
  *
- * It does not extend GenericEntityRepository: orders are only placed for now,
- * never listed, updated or deleted. It also reads, without changing them, the
+ * It does not extend GenericEntityRepository: orders are only placed and listed
+ * per customer for now, never updated or deleted. It also reads, without changing them, the
  * products and the customer an order is placed with, as order-specific types
  * (not the Product or Customer entities of their own contexts).
  */
@@ -33,6 +34,15 @@ export abstract class OrderRepository {
      * in the same transaction, so a failed save does not use up a number.
      */
     abstract save(order: Order): Promise<Order>;
+
+    /**
+     * @param statuses Keeps only the orders in one of these statuses; all statuses when omitted.
+     * @returns The orders of a customer, newest first; empty if they have none.
+     */
+    abstract findByCustomerId(
+        customerId: string,
+        statuses?: readonly OrderStatus[],
+    ): Promise<Order[]>;
 
     /** @returns The products that exist among `ids`; unknown ids are left out. */
     abstract findOrderableProducts(ids: readonly string[]): Promise<OrderableProduct[]>;

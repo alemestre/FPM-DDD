@@ -50,6 +50,7 @@ describe('PlaceOrderUseCase', () => {
                 order.assignNumber(OrderNumber.of('2026-11', 1));
                 return order;
             }),
+            findByCustomerId: jest.fn(),
             findOrderableProducts: jest.fn().mockResolvedValue([flour, pasta]),
             findCustomerContact: jest.fn().mockResolvedValue({
                 firstName: 'Marie',

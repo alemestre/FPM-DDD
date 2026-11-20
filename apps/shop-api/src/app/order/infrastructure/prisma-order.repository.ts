@@ -1,9 +1,37 @@
 import type { OrderableProduct, OrderCustomerContact } from '../domain/order.repository';
+import { BillingAddress } from '../domain/billing-address.value-object';
+import { OrderContact } from '../domain/order-contact.value-object';
 import { OrderNumber } from '../domain/order-number.value-object';
-import { OrderRepository } from '../domain/order.repository';
+import { OrderLine } from '../domain/order-line.value-object';
+import type { OrderStatus } from '../domain/order-status';
+import type { Prisma } from '../../../generated/prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
-import type { Order } from '../domain/order.entity';
+import { OrderRepository } from '../domain/order.repository';
+import { Order } from '../domain/order.entity';
 import { Injectable } from '@nestjs/common';
+
+/** Columns needed to rebuild the Order aggregate, with its lines. */
+const ORDER_SELECT = {
+    id: true,
+    number: true,
+    status: true,
+    estimatedPickupDate: true,
+    createdAt: true,
+    customerId: true,
+    firstName: true,
+    lastName: true,
+    email: true,
+    phone: true,
+    billingAddressLine1: true,
+    billingAddressLine2: true,
+    billingPostalCode: true,
+    billingCity: true,
+    orderItems: {
+        select: { productId: true, productName: true, price: true, vatRate: true, quantity: true },
+    },
+} satisfies Prisma.OrderSelect;
+
+type OrderRow = Prisma.OrderGetPayload<{ select: typeof ORDER_SELECT }>;
 
 /**
  * Prisma adapter of the Order aggregate. It only reads the product and customer
@@ -91,5 +119,51 @@ export class PrismaOrderRepository extends OrderRepository {
         });
 
         return row ? { ...row.user, phone: row.phone } : null;
+    }
+
+    async findByCustomerId(
+        customerId: string,
+        statuses?: readonly OrderStatus[],
+    ): Promise<Order[]> {
+        const rows = await this.prisma.order.findMany({
+            where: { customerId, ...(statuses && { status: { in: [...statuses] } }) },
+            orderBy: { createdAt: 'desc' },
+            select: ORDER_SELECT,
+        });
+
+        return rows.map((row) => this.toDomain(row));
+    }
+
+    /** Rebuilds the Order aggregate from its row: contact and address are the snapshot taken when ordering. */
+    private toDomain(row: OrderRow): Order {
+        return Order.reconstitute({
+            id: row.id,
+            number: OrderNumber.parse(row.number),
+            status: row.status,
+            customerId: row.customerId,
+            contact: OrderContact.create({
+                firstName: row.firstName,
+                lastName: row.lastName,
+                email: row.email,
+                phone: row.phone,
+            }),
+            billingAddress: BillingAddress.create({
+                line1: row.billingAddressLine1,
+                line2: row.billingAddressLine2,
+                postalCode: row.billingPostalCode,
+                city: row.billingCity,
+            }),
+            lines: row.orderItems.map((item) =>
+                OrderLine.create({
+                    productId: item.productId,
+                    productName: item.productName,
+                    unitPrice: item.price.toNumber(),
+                    vatRate: item.vatRate.toNumber(),
+                    quantity: item.quantity,
+                }),
+            ),
+            orderedAt: row.createdAt,
+            estimatedPickupDate: row.estimatedPickupDate,
+        });
     }
 }

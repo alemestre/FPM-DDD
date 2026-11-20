@@ -2,13 +2,15 @@ import { DomainValidationErrorFilter } from '../../../shared/interface/http/doma
 import { ApiResponseInterceptor } from '../../../shared/interface/http/api-response.interceptor';
 import { JwtCookieAuthGuard } from '../../../auth/interface/http/guards/jwt-cookie-auth.guard';
 import { OrderConfirmationSender } from '../../application/ports/order-confirmation-sender';
+import { ListOrdersUseCase } from '../../application/use-cases/list-orders.use-case';
 import { PlaceOrderUseCase } from '../../application/use-cases/place-order.use-case';
 import { ACCESS_TOKEN_COOKIE } from '../../../auth/interface/http/auth.constants';
 import type { OrderableProduct, OrderCustomerContact } from '../../domain/order.repository';
 import { OrderNumber } from '../../domain/order-number.value-object';
 import { OrderRepository } from '../../domain/order.repository';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
-import type { Order } from '../../domain/order.entity';
+import type { OrderStatus } from '../../domain/order-status';
+import { Order } from '../../domain/order.entity';
 import { OrderController } from './order.controller';
 import type { INestApplication } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
@@ -24,13 +26,17 @@ jest.mock('uuid', () => ({
 const CUSTOMER_ID = '3f0c9a52-8a6e-4c1b-9d57-2b1e7f4a6c10';
 const ADMIN_ID = '9b2d7c1e-4f3a-4e8b-a6d5-1c0f2e3d4b5a';
 const FLOUR_ID = 'a3bb189e-8bf9-4888-9912-ace4e6543002';
-const flour: OrderableProduct = { id: FLOUR_ID, name: 'Farine de blé', price: 2.5, vatRate: 5.5, isAvailable: true };
+const flour: OrderableProduct = {
+    id: FLOUR_ID,
+    name: 'Farine de blé',
+    price: 2.5,
+    vatRate: 5.5,
+    isAvailable: true,
+};
 
 class InMemoryOrderRepository extends OrderRepository {
     readonly orders: Order[] = [];
-    readonly products = new Map<string, OrderableProduct>([
-        [FLOUR_ID, flour],
-    ]);
+    readonly products = new Map<string, OrderableProduct>([[FLOUR_ID, flour]]);
     readonly contacts = new Map<string, OrderCustomerContact>([
         [
             CUSTOMER_ID,
@@ -49,6 +55,32 @@ class InMemoryOrderRepository extends OrderRepository {
         );
         this.orders.push(order);
         return order;
+    }
+
+    async findByCustomerId(
+        customerId: string,
+        statuses?: readonly OrderStatus[],
+    ): Promise<Order[]> {
+        return this.orders
+            .filter((order) => order.customerId === customerId)
+            .filter((order) => !statuses || statuses.includes(order.status))
+            .reverse();
+    }
+
+    /** The shop moves orders forward; no use case does it yet, so the test does it here. */
+    setStatus(index: number, status: OrderStatus): void {
+        const order = this.orders[index];
+        this.orders[index] = Order.reconstitute({
+            id: order.id,
+            number: order.number,
+            status,
+            customerId: order.customerId,
+            contact: order.contact,
+            billingAddress: order.billingAddress,
+            lines: order.lines,
+            orderedAt: order.orderedAt,
+            estimatedPickupDate: order.estimatedPickupDate,
+        });
     }
 
     async findOrderableProducts(ids: readonly string[]): Promise<OrderableProduct[]> {
@@ -78,6 +110,14 @@ describe('OrderController (HTTP)', () => {
         return { status: response.status, body: text ? JSON.parse(text) : undefined };
     };
 
+    const get = async (path: string, cookie: string | null) => {
+        const response = await fetch(`${baseUrl}${path}`, {
+            headers: { ...(cookie && { cookie }) },
+        });
+        const text = await response.text();
+        return { status: response.status, body: text ? JSON.parse(text) : undefined };
+    };
+
     const items = [{ productId: FLOUR_ID, quantity: 2 }];
     const billingAddress = { line1: '2 quai Est', postalCode: '29200', city: 'Brest' };
     const contact = {
@@ -95,6 +135,7 @@ describe('OrderController (HTTP)', () => {
             providers: [
                 JwtCookieAuthGuard,
                 PlaceOrderUseCase,
+                ListOrdersUseCase,
                 { provide: OrderRepository, useClass: InMemoryOrderRepository },
                 { provide: OrderConfirmationSender, useValue: sender },
                 { provide: APP_PIPE, useClass: ZodValidationPipe },
@@ -155,7 +196,8 @@ describe('OrderController (HTTP)', () => {
                         productName: 'Farine de blé',
                         unitPrice: 2.5,
                         vatRate: 5.5,
-                        quantity: 2, total: 5.28,
+                        quantity: 2,
+                        total: 5.28,
                     },
                 ],
                 subtotal: 5,
@@ -243,6 +285,88 @@ describe('OrderController (HTTP)', () => {
             ],
         ])('renvoie 400 %s', async (_case, body) => {
             expect((await post('/orders/guest', null, body)).status).toBe(400);
+        });
+    });
+
+    describe('GET /orders', () => {
+        it('renvoie seulement les commandes du client connecté, les plus récentes en premier', async () => {
+            await post('/orders', customerCookie, { items, billingAddress });
+            await post('/orders/guest', null, { items, contact, billingAddress });
+            await post('/orders', customerCookie, { items, billingAddress });
+
+            const { status, body } = await get('/orders', customerCookie);
+
+            expect(status).toBe(200);
+            expect(body.success).toBe(true);
+            expect(body.data).toHaveLength(2);
+            expect(body.data.map((order: { number: string }) => order.number)).toEqual([
+                expect.stringMatching(/-3$/),
+                expect.stringMatching(/-1$/),
+            ]);
+            expect(body.data[0]).toMatchObject({
+                status: 'REGISTERED',
+                contact: { email: 'marie@example.fr' },
+                items: [{ productId: FLOUR_ID, quantity: 2, total: 5.28 }],
+                total: 5.28,
+            });
+        });
+
+        it('renvoie une liste vide pour un compte sans commande', async () => {
+            await post('/orders', customerCookie, { items, billingAddress });
+
+            const { status, body } = await get('/orders', adminCookie);
+
+            expect(status).toBe(200);
+            expect(body.data).toEqual([]);
+        });
+
+        it('renvoie 401 sans session', async () => {
+            expect((await get('/orders', null)).status).toBe(401);
+        });
+
+        it("ignore un customerId passé dans l'URL", async () => {
+            await post('/orders/guest', null, { items, contact, billingAddress });
+
+            const { body } = await get(`/orders?customerId=${ADMIN_ID}`, customerCookie);
+
+            expect(body.data).toEqual([]);
+        });
+    });
+
+    describe('GET /orders?status=', () => {
+        const numbersOf = (orders: { number: string }[]) =>
+            orders.map((order) => order.number.split('-').at(-1));
+
+        beforeEach(async () => {
+            for (let i = 0; i < 3; i++) {
+                await post('/orders', customerCookie, { items, billingAddress });
+            }
+            repository.setStatus(1, 'READY');
+            repository.setStatus(2, 'COMPLETED');
+        });
+
+        it('garde les commandes du statut demandé', async () => {
+            const { status, body } = await get('/orders?status=READY', customerCookie);
+
+            expect(status).toBe(200);
+            expect(numbersOf(body.data)).toEqual(['2']);
+            expect(body.data[0].status).toBe('READY');
+        });
+
+        it('accepte plusieurs statuts, pour les commandes en cours', async () => {
+            const { body } = await get('/orders?status=REGISTERED&status=READY', customerCookie);
+
+            expect(numbersOf(body.data)).toEqual(['2', '1']);
+        });
+
+        it('renvoie toutes les commandes sans filtre', async () => {
+            const { body } = await get('/orders', customerCookie);
+
+            expect(numbersOf(body.data)).toEqual(['3', '2', '1']);
+        });
+
+        it.each([['FOO'], ['ready'], ['']])('renvoie 400 pour le statut "%s"', async (value) => {
+            expect((await get(`/orders?status=${value}`, customerCookie)).status).toBe(400);
         });
     });
 });

@@ -25,6 +25,7 @@ const createPrismaMock = () => {
         tx,
         $transaction: jest.fn(async (run: (client: typeof tx) => Promise<unknown>) => run(tx)),
         product: { findMany: jest.fn() },
+        order: { findMany: jest.fn() },
         customer: { findUnique: jest.fn() },
     };
 };
@@ -162,6 +163,108 @@ describe('PrismaOrderRepository', () => {
             prisma.customer.findUnique.mockResolvedValue(null);
 
             await expect(repository.findCustomerContact(CUSTOMER_ID)).resolves.toBeNull();
+        });
+    });
+
+    describe('findByCustomerId', () => {
+        const row = {
+            id: '12345678-1234-4123-8123-123456789abc',
+            number: '2026-11-7',
+            status: 'READY',
+            estimatedPickupDate: new Date('2026-11-21T00:00:00Z'),
+            createdAt: new Date('2026-11-19T10:00:00Z'),
+            customerId: CUSTOMER_ID,
+            firstName: 'Marie',
+            lastName: 'Durand',
+            email: 'marie@example.fr',
+            phone: '+33612345678',
+            billingAddressLine1: '1 rue des Lilas',
+            billingAddressLine2: 'Bât. B',
+            billingPostalCode: '29000',
+            billingCity: 'Quimper',
+            orderItems: [
+                {
+                    productId: FLOUR_ID,
+                    productName: 'Farine',
+                    price: decimal(2.5),
+                    vatRate: decimal(5.5),
+                    quantity: 3,
+                },
+            ],
+        };
+
+        it('lit les commandes du client, les plus récentes en premier, avec leurs lignes', async () => {
+            prisma.order.findMany.mockResolvedValue([]);
+
+            await repository.findByCustomerId(CUSTOMER_ID);
+
+            const [query] = prisma.order.findMany.mock.calls[0];
+            expect(query.where).toEqual({ customerId: CUSTOMER_ID });
+            expect(query.orderBy).toEqual({ createdAt: 'desc' });
+            expect(query.select).toMatchObject({
+                number: true,
+                billingCity: true,
+                orderItems: {
+                    select: {
+                        productId: true,
+                        productName: true,
+                        price: true,
+                        vatRate: true,
+                        quantity: true,
+                    },
+                },
+            });
+            expect(query.select).not.toHaveProperty('customer');
+        });
+
+        it('garde seulement les statuts demandés', async () => {
+            prisma.order.findMany.mockResolvedValue([]);
+
+            await repository.findByCustomerId(CUSTOMER_ID, ['REGISTERED', 'READY']);
+
+            expect(prisma.order.findMany.mock.calls[0][0].where).toEqual({
+                customerId: CUSTOMER_ID,
+                status: { in: ['REGISTERED', 'READY'] },
+            });
+        });
+
+        it('reconstitue la commande depuis sa ligne', async () => {
+            prisma.order.findMany.mockResolvedValue([row]);
+
+            const [order] = await repository.findByCustomerId(CUSTOMER_ID);
+
+            expect(order).toBeInstanceOf(Order);
+            expect(order.id).toBe(row.id);
+            expect(order.number?.toString()).toBe('2026-11-7');
+            expect(order.status).toBe('READY');
+            expect(order.customerId).toBe(CUSTOMER_ID);
+            expect(order.orderedAt).toEqual(row.createdAt);
+            expect(order.estimatedPickupDate).toEqual(row.estimatedPickupDate);
+            expect(order.contact.fullName).toBe('Marie Durand');
+            expect(order.contact.email).toBe('marie@example.fr');
+            expect(order.billingAddress).toMatchObject({
+                line1: '1 rue des Lilas',
+                line2: 'Bât. B',
+                postalCode: '29000',
+                city: 'Quimper',
+            });
+            expect(order.lines).toHaveLength(1);
+            expect(order.lines[0]).toMatchObject({
+                productId: FLOUR_ID,
+                productName: 'Farine',
+                unitPrice: 2.5,
+                vatRate: 5.5,
+                quantity: 3,
+            });
+            expect(order.subtotal).toBe(7.5);
+            expect(order.tax).toBe(0.41);
+            expect(order.total).toBe(7.91);
+        });
+
+        it('renvoie une liste vide si le client n’a pas de commande', async () => {
+            prisma.order.findMany.mockResolvedValue([]);
+
+            await expect(repository.findByCustomerId(CUSTOMER_ID)).resolves.toEqual([]);
         });
     });
 });

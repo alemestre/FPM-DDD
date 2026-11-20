@@ -1,5 +1,6 @@
 import { NestMailOrderConfirmationSender } from './infrastructure/nest-mail-order-confirmation.sender';
 import { OrderConfirmationSender } from './application/ports/order-confirmation-sender';
+import { ListOrdersUseCase } from './application/use-cases/list-orders.use-case';
 import { PlaceOrderUseCase } from './application/use-cases/place-order.use-case';
 import { OrderRegisteredMail } from './infrastructure/mail/order-registered.mail';
 import { PrismaOrderRepository } from './infrastructure/prisma-order.repository';
@@ -15,6 +16,7 @@ import { Module } from '@nestjs/common';
     controllers: [OrderController],
     providers: [
         PlaceOrderUseCase,
+        ListOrdersUseCase,
         OrderRegisteredMail,
         { provide: OrderRepository, useClass: PrismaOrderRepository },
         { provide: OrderConfirmationSender, useClass: NestMailOrderConfirmationSender },
