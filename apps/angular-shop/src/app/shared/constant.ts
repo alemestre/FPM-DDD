@@ -14,6 +14,7 @@ export const CONSTANTS = {
     ORDERS: 'orders',
     GUEST_ORDERS: 'orders/guest',
     CART: 'cart',
-    CART_ITEMS: 'cart/items'
+    CART_ITEMS: 'cart/items',
+    FORGOT_PASSWORD: 'forgot-password'
   },
 };

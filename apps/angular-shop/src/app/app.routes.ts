@@ -1,4 +1,5 @@
 import { CHECKOUT_IDENTIFICATION_URL, checkoutMatch, identificationGuard } from './guards/checkout-access.guard';
+import { ForgotPassword } from './pages/auth/forgot-password/forgot-password';
 import { VerifyEmail } from './pages/auth/verify-email/verify-email';
 import { Register } from './pages/auth/register/register';
 import { MainLayout } from './layout/main/main-layout';
@@ -96,6 +97,11 @@ export const appRoutes: Route[] = [
         path: 'register',
         component: Register,
         data: { breadcrumb: 'Inscription' }
+      },
+      {
+        path: 'mot-de-passe-oublie',
+        component: ForgotPassword,
+        data: { breadcrumb: 'Mot de passe oublié' }
       },
       {
         // Lien envoyé par l'API dans l'e-mail de vérification : /verifier-email?token=…

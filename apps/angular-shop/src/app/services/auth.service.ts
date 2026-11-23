@@ -108,4 +108,10 @@ export class AuthService {
                 }),
             );
     }
+
+    forgotPassword(email: string): Observable<void> {
+        return this.httpClient.post<void>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.FORGOT_PASSWORD}`, {
+            email,
+        });
+    }
 }
