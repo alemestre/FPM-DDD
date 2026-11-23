@@ -1,9 +1,4 @@
-export interface RegisterAddressInput {
-  readonly line1: string;
-  readonly line2?: string;
-  readonly postalCode: string;
-  readonly city: string;
-}
+import type { PostalAddressProps } from "../../shared/domain/value-objects/postal-address.value-object";
 
 export interface RegisterInput {
   readonly email: string;
@@ -11,5 +6,5 @@ export interface RegisterInput {
   readonly firstName: string;
   readonly lastName: string;
   readonly phone: string;
-  readonly address: RegisterAddressInput;
+  readonly address: PostalAddressProps;
 }

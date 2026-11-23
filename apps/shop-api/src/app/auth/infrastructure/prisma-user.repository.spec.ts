@@ -1,5 +1,5 @@
 import { PhoneNumber } from '../../shared/domain/value-objects/phone-number.value-object';
-import { PostalCode } from '../../shared/domain/value-objects/postal-code.value-object';
+import { PostalAddress } from '../../shared/domain/value-objects/postal-address.value-object';
 import { EmailAlreadyUsedError } from '../domain/errors/email-already-used.error';
 import type { PrismaService } from '../../../prisma/prisma.service';
 import { Prisma } from '../../../generated/prisma/client';
@@ -118,12 +118,8 @@ describe('PrismaUserRepository', () => {
     const newUser = () =>
       User.reconstitute(USER_ID, 'marie.durand@example.fr', 'Marie', 'Durand', 'CUSTOMER', true, false);
 
-    const address = () => ({
-      line1: '1 rue des Lilas',
-      line2: 'Bât. B',
-      postalCode: PostalCode.create('75001'),
-      city: 'Paris',
-    });
+    const address = () =>
+      PostalAddress.create({ line1: '1 rue des Lilas', line2: 'Bât. B', postalCode: '75001', city: 'Paris' });
 
     it('crée le compte et son profil client avec son adresse', async () => {
       await repository.register({

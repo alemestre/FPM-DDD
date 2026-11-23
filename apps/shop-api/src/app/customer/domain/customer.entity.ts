@@ -1,6 +1,6 @@
 import { DomainValidationError } from "../../shared/domain/errors/domain-validation.error";
 import { PhoneNumber } from "../../shared/domain/value-objects/phone-number.value-object";
-import type { CustomerAddress } from "./customer-address.value-object";
+import type { PostalAddress } from "../../shared/domain/value-objects/postal-address.value-object";
 
 /**
  * Profile of a customer account: identity, contact details and postal address.
@@ -13,7 +13,7 @@ export class Customer {
     private _firstName: string,
     private _lastName: string,
     private _phone: PhoneNumber,
-    private _address: CustomerAddress
+    private _address: PostalAddress
   ) {}
 
   static reconstitute(
@@ -22,7 +22,7 @@ export class Customer {
     firstName: string,
     lastName: string,
     phone: string,
-    address: CustomerAddress
+    address: PostalAddress
   ): Customer {
     return new Customer(id, email, firstName, lastName, PhoneNumber.create(phone), address);
   }
@@ -47,7 +47,7 @@ export class Customer {
     this._phone = PhoneNumber.create(phone);
   }
 
-  changeAddress(address: CustomerAddress): void {
+  changeAddress(address: PostalAddress): void {
     this._address = address;
   }
 
@@ -67,7 +67,7 @@ export class Customer {
     return this._phone.toString();
   }
 
-  get address(): CustomerAddress {
+  get address(): PostalAddress {
     return this._address;
   }
 }

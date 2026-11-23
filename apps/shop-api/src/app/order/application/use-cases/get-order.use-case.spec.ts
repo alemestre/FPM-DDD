@@ -1,5 +1,5 @@
 import type { OrderRepository } from '../../domain/order.repository';
-import { BillingAddress } from '../../domain/billing-address.value-object';
+import { PostalAddress } from '../../../shared/domain/value-objects/postal-address.value-object';
 import { OrderContact } from '../../domain/order-contact.value-object';
 import { OrderLine } from '../../domain/order-line.value-object';
 import { GetOrderUseCase } from './get-order.use-case';
@@ -24,7 +24,7 @@ const placeOrder = (customerId: string | null) =>
             email: 'marie@example.fr',
             phone: '0612345678',
         }),
-        billingAddress: BillingAddress.create({
+        billingAddress: PostalAddress.create({
             line1: '1 rue des Lilas',
             postalCode: '29000',
             city: 'Quimper',

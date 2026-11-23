@@ -1,5 +1,5 @@
 import type { Prisma } from "../../../generated/prisma/client";
-import { CustomerAddress } from "../domain/customer-address.value-object";
+import { PostalAddress } from "../../shared/domain/value-objects/postal-address.value-object";
 import { CustomerRepository } from "../domain/customer.repository";
 import { PrismaService } from "../../../prisma/prisma.service";
 import { Customer } from "../domain/customer.entity";
@@ -49,7 +49,7 @@ export class PrismaCustomerRepository implements CustomerRepository {
 
   private toDomain(row: CustomerRow): Customer {
     const { addressLine1, addressLine2, postalCode, city } = row;
-    const address = CustomerAddress.create({ line1: addressLine1, line2: addressLine2, postalCode, city });
+    const address = PostalAddress.create({ line1: addressLine1, line2: addressLine2, postalCode, city });
 
     return Customer.reconstitute(row.id, row.user.email, row.user.firstName, row.user.lastName, row.phone, address);
   }

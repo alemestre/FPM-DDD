@@ -1,4 +1,4 @@
-import { CustomerAddress } from "../../domain/customer-address.value-object";
+import { PostalAddress } from "../../../shared/domain/value-objects/postal-address.value-object";
 import type { UpdateCustomerProfileInput } from "../update-customer-profile.input";
 import { CustomerRepository } from "../../domain/customer.repository";
 import type { Customer } from "../../domain/customer.entity";
@@ -23,7 +23,7 @@ export class UpdateCustomerProfileUseCase {
       customer.rename(firstName ?? customer.firstName, lastName ?? customer.lastName);
     }
     if (phone !== undefined) customer.changePhone(phone);
-    if (address !== undefined) customer.changeAddress(CustomerAddress.create(address));
+    if (address !== undefined) customer.changeAddress(PostalAddress.create(address));
 
     await this.repository.save(customer);
     return customer;

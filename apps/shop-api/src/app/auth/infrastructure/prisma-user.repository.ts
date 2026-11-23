@@ -64,7 +64,7 @@ export class PrismaUserRepository implements UserRepository {
               phone: phone.toString(),
               addressLine1: address.line1,
               addressLine2: address.line2,
-              postalCode: address.postalCode.toString(),
+              postalCode: address.postalCode,
               city: address.city
             }
           }

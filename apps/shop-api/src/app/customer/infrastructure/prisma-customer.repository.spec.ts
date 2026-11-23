@@ -1,4 +1,4 @@
-import { CustomerAddress } from "../domain/customer-address.value-object";
+import { PostalAddress } from "../../shared/domain/value-objects/postal-address.value-object";
 import { PrismaCustomerRepository } from "./prisma-customer.repository";
 import type { PrismaService } from "../../../prisma/prisma.service";
 import { Customer } from "../domain/customer.entity";
@@ -69,7 +69,7 @@ describe("PrismaCustomerRepository", () => {
         "Anne",
         "Martin",
         "+33698765432",
-        CustomerAddress.create({ line1: "2 quai Est", postalCode: "29200", city: "Brest" })
+        PostalAddress.create({ line1: "2 quai Est", postalCode: "29200", city: "Brest" })
       );
 
       await repository.save(customer);

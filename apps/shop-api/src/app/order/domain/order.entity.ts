@@ -1,19 +1,19 @@
 import { DomainValidationError } from '../../shared/domain/errors/domain-validation.error';
 import { Uuid } from '../../shared/domain/value-objects/uuid.value-object';
-import type { BillingAddress } from './billing-address.value-object';
+import type { PostalAddress } from '../../shared/domain/value-objects/postal-address.value-object';
 import type { OrderContact } from './order-contact.value-object';
 import type { OrderNumber } from './order-number.value-object';
 import type { OrderLine } from './order-line.value-object';
 import type { OrderStatus } from './order-status';
 import { OrderStatusTransitionError } from './order-status-transition.error';
-import { estimatePickupDate } from './pickup-date';
+import { PickupDate } from './pickup-date.value-object';
 import { roundToCents, sumCents } from './money';
 
 export interface PlaceOrderProps {
     /** Null for a guest order. */
     readonly customerId: string | null;
     readonly contact: OrderContact;
-    readonly billingAddress: BillingAddress;
+    readonly billingAddress: PostalAddress;
     readonly lines: readonly OrderLine[];
     readonly orderedAt: Date;
 }
@@ -46,10 +46,10 @@ export class Order {
         private _status: OrderStatus,
         readonly customerId: string | null,
         readonly contact: OrderContact,
-        readonly billingAddress: BillingAddress,
+        readonly billingAddress: PostalAddress,
         private _lines: readonly OrderLine[],
         readonly orderedAt: Date,
-        readonly estimatedPickupDate: Date,
+        private readonly _estimatedPickupDate: PickupDate,
     ) {}
 
     /**
@@ -75,7 +75,7 @@ export class Order {
             billingAddress,
             [...lines],
             orderedAt,
-            estimatePickupDate(orderedAt),
+            PickupDate.estimateFrom(orderedAt),
         );
     }
 
@@ -89,7 +89,7 @@ export class Order {
             props.billingAddress,
             [...props.lines],
             props.orderedAt,
-            props.estimatedPickupDate,
+            PickupDate.restore(props.estimatedPickupDate),
         );
     }
 
@@ -196,6 +196,11 @@ export class Order {
 
     get status(): OrderStatus {
         return this._status;
+    }
+
+    /** Indicative pickup day, at 00:00 UTC. */
+    get estimatedPickupDate(): Date {
+        return this._estimatedPickupDate.value;
     }
 
     get isGuestOrder(): boolean {

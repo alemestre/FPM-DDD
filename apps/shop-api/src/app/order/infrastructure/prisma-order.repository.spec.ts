@@ -1,4 +1,4 @@
-import { BillingAddress } from '../domain/billing-address.value-object';
+import { PostalAddress } from '../../shared/domain/value-objects/postal-address.value-object';
 import { OrderContact } from '../domain/order-contact.value-object';
 import { OrderLine } from '../domain/order-line.value-object';
 import type { PrismaService } from '../../../prisma/prisma.service';
@@ -39,7 +39,7 @@ const placeOrder = (orderedAt = new Date('2026-11-19T10:00:00Z')) =>
             email: 'marie@example.fr',
             phone: '0612345678',
         }),
-        billingAddress: BillingAddress.create({
+        billingAddress: PostalAddress.create({
             line1: '1 rue des Lilas',
             line2: 'Bât. B',
             postalCode: '29000',

@@ -4,7 +4,7 @@ import { JwtCookieAuthGuard } from "../../../auth/interface/http/guards/jwt-cook
 import { UpdateCustomerProfileUseCase } from "../../application/use-cases/update-customer-profile.use-case";
 import { GetCustomerProfileUseCase } from "../../application/use-cases/get-customer-profile.use-case";
 import { ACCESS_TOKEN_COOKIE } from "../../../auth/interface/http/auth.constants";
-import { CustomerAddress } from "../../domain/customer-address.value-object";
+import { PostalAddress } from "../../../shared/domain/value-objects/postal-address.value-object";
 import { CustomerRepository } from "../../domain/customer.repository";
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from "@nestjs/core";
 import { Customer } from "../../domain/customer.entity";
@@ -56,7 +56,7 @@ describe("CustomerController (HTTP)", () => {
         "Marie",
         "Durand",
         "+33612345678",
-        CustomerAddress.create({ line1: "1 rue des Lilas", postalCode: "29000", city: "Quimper" })
+        PostalAddress.create({ line1: "1 rue des Lilas", postalCode: "29000", city: "Quimper" })
       )
     );
 

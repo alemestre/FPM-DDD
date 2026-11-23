@@ -1,37 +1,6 @@
 import { DomainValidationError } from '../../shared/domain/errors/domain-validation.error';
-import { BillingAddress } from './billing-address.value-object';
 import { OrderContact } from './order-contact.value-object';
 import { OrderLine } from './order-line.value-object';
-
-describe('BillingAddress', () => {
-    const valid = {
-        line1: ' 1 rue des Lilas ',
-        line2: ' Bât. B ',
-        postalCode: '29 000',
-        city: ' Quimper ',
-    };
-
-    it('normalise les valeurs', () => {
-        const address = BillingAddress.create(valid);
-
-        expect(address.line1).toBe('1 rue des Lilas');
-        expect(address.line2).toBe('Bât. B');
-        expect(address.postalCode).toBe('29000');
-        expect(address.city).toBe('Quimper');
-    });
-
-    it('utilise un complément vide par défaut', () => {
-        expect(BillingAddress.create({ ...valid, line2: undefined }).line2).toBe('');
-    });
-
-    it.each([
-        ['line1', { ...valid, line1: '  ' }],
-        ['city', { ...valid, city: '' }],
-        ['postalCode', { ...valid, postalCode: '2900' }],
-    ])('refuse une adresse dont %s est invalide', (_field, props) => {
-        expect(() => BillingAddress.create(props)).toThrow(DomainValidationError);
-    });
-});
 
 describe('OrderContact', () => {
     const valid = {

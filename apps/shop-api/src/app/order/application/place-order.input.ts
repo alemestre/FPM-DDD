@@ -1,5 +1,5 @@
 import type { OrderContactProps } from '../domain/order-contact.value-object';
-import type { BillingAddressProps } from '../domain/billing-address.value-object';
+import type { PostalAddressProps } from '../../shared/domain/value-objects/postal-address.value-object';
 
 export interface PlaceOrderItemInput {
     readonly productId: string;
@@ -8,7 +8,7 @@ export interface PlaceOrderItemInput {
 
 interface PlaceOrderBaseInput {
     readonly items: readonly PlaceOrderItemInput[];
-    readonly billingAddress: BillingAddressProps;
+    readonly billingAddress: PostalAddressProps;
 }
 
 /** Order of a signed-in customer: the contact details come from the account. */

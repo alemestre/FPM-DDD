@@ -1,5 +1,5 @@
 import { DomainValidationError } from '../../../shared/domain/errors/domain-validation.error';
-import { BillingAddress } from '../../domain/billing-address.value-object';
+import { PostalAddress } from '../../../shared/domain/value-objects/postal-address.value-object';
 import { OrderConfirmationSender } from '../ports/order-confirmation-sender';
 import { OrderContact } from '../../domain/order-contact.value-object';
 import { OrderLine } from '../../domain/order-line.value-object';
@@ -23,7 +23,7 @@ export class PlaceOrderUseCase {
      * @throws {NotFoundException} If the signed-in user has no customer profile.
      */
     async execute(input: PlaceOrderInput, orderedAt = new Date()): Promise<Order> {
-        const billingAddress = BillingAddress.create(input.billingAddress);
+        const billingAddress = PostalAddress.create(input.billingAddress);
         const [lines, contact] = await Promise.all([
             this.toLines(input.items),
             this.contactOf(input),

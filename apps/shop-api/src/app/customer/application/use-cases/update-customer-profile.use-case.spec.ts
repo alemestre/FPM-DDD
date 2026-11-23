@@ -1,5 +1,5 @@
 import { DomainValidationError } from "../../../shared/domain/errors/domain-validation.error";
-import { CustomerAddress } from "../../domain/customer-address.value-object";
+import { PostalAddress } from "../../../shared/domain/value-objects/postal-address.value-object";
 import { UpdateCustomerProfileUseCase } from "./update-customer-profile.use-case";
 import { CustomerRepository } from "../../domain/customer.repository";
 import { Customer } from "../../domain/customer.entity";
@@ -14,7 +14,7 @@ const existingCustomer = () =>
     "Marie",
     "Durand",
     "+33612345678",
-    CustomerAddress.create({ line1: "1 rue des Lilas", postalCode: "29000", city: "Quimper" })
+    PostalAddress.create({ line1: "1 rue des Lilas", postalCode: "29000", city: "Quimper" })
   );
 
 describe("UpdateCustomerProfileUseCase", () => {

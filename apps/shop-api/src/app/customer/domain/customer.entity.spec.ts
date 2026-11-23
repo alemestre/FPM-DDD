@@ -1,10 +1,10 @@
 import { DomainValidationError } from "../../shared/domain/errors/domain-validation.error";
-import { CustomerAddress } from "./customer-address.value-object";
+import { PostalAddress } from "../../shared/domain/value-objects/postal-address.value-object";
 import { Customer } from "./customer.entity";
 
 const CUSTOMER_ID = "3f0c9a52-8a6e-4c1b-9d57-2b1e7f4a6c10";
 
-const address = () => CustomerAddress.create({ line1: "1 rue des Lilas", postalCode: "29000", city: "Quimper" });
+const address = () => PostalAddress.create({ line1: "1 rue des Lilas", postalCode: "29000", city: "Quimper" });
 
 const customer = () =>
   Customer.reconstitute(CUSTOMER_ID, "marie.durand@example.fr", "Marie", "Durand", "+33612345678", address());
@@ -44,7 +44,7 @@ describe("Customer", () => {
 
   it("remplace l'adresse", () => {
     const c = customer();
-    const newAddress = CustomerAddress.create({ line1: "2 quai Est", postalCode: "29200", city: "Brest" });
+    const newAddress = PostalAddress.create({ line1: "2 quai Est", postalCode: "29200", city: "Brest" });
 
     c.changeAddress(newAddress);
     expect(c.address).toBe(newAddress);

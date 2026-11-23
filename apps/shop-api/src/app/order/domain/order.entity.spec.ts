@@ -1,5 +1,5 @@
 import { DomainValidationError } from '../../shared/domain/errors/domain-validation.error';
-import { BillingAddress } from './billing-address.value-object';
+import { PostalAddress } from '../../shared/domain/value-objects/postal-address.value-object';
 import { OrderContact } from './order-contact.value-object';
 import { OrderNumber } from './order-number.value-object';
 import { OrderLine } from './order-line.value-object';
@@ -21,7 +21,7 @@ const contact = OrderContact.create({
     email: 'marie@example.fr',
     phone: '0612345678',
 });
-const billingAddress = BillingAddress.create({
+const billingAddress = PostalAddress.create({
     line1: '1 rue des Lilas',
     postalCode: '29000',
     city: 'Quimper',

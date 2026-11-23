@@ -1,5 +1,5 @@
 import type { OrderableProduct, OrderCustomerContact } from '../domain/order.repository';
-import { BillingAddress } from '../domain/billing-address.value-object';
+import { PostalAddress } from '../../shared/domain/value-objects/postal-address.value-object';
 import { OrderContact } from '../domain/order-contact.value-object';
 import { OrderNumber } from '../domain/order-number.value-object';
 import { OrderLine } from '../domain/order-line.value-object';
@@ -161,7 +161,7 @@ export class PrismaOrderRepository extends OrderRepository {
                 email: row.email,
                 phone: row.phone,
             }),
-            billingAddress: BillingAddress.create({
+            billingAddress: PostalAddress.create({
                 line1: row.billingAddressLine1,
                 line2: row.billingAddressLine2,
                 postalCode: row.billingPostalCode,

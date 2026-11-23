@@ -1,10 +1,8 @@
 import { PhoneNumber } from "../../../shared/domain/value-objects/phone-number.value-object";
-import { PostalCode } from "../../../shared/domain/value-objects/postal-code.value-object";
-import { DomainValidationError } from "../../../shared/domain/errors/domain-validation.error";
-import type { CustomerAddress } from "../../domain/customer-registration";
+import { PostalAddress } from "../../../shared/domain/value-objects/postal-address.value-object";
 import { VerificationEmailSender } from "../ports/verification-email-sender";
 import { EmailVerificationToken } from "../ports/email-verification-token";
-import type { RegisterAddressInput, RegisterInput } from "../register.input";
+import type { RegisterInput } from "../register.input";
 import { UserRepository } from "../../domain/user.repository";
 import { PasswordHasher } from "../ports/password-hasher";
 import { Password } from "../../domain/password.value-object";
@@ -27,7 +25,7 @@ export class RegisterUseCase {
     // Every value object is built before hashing, so invalid input fails fast.
     const user = User.register(input);
     const phone = PhoneNumber.create(input.phone);
-    const address = toCustomerAddress(input.address);
+    const address = PostalAddress.create(input.address);
     const password = Password.create(input.password);
 
     const passwordHash = await this.passwordHasher.hash(password.value);
@@ -38,18 +36,4 @@ export class RegisterUseCase {
 
     return user;
   }
-}
-
-function toCustomerAddress({ line1, line2, postalCode, city }: RegisterAddressInput): CustomerAddress {
-  const trimmedLine1 = line1.trim();
-  const trimmedCity = city.trim();
-  if (!trimmedLine1 || !trimmedCity) {
-    throw new DomainValidationError("L'adresse et la ville sont obligatoires");
-  }
-  return {
-    line1: trimmedLine1,
-    line2: line2?.trim() ?? "",
-    postalCode: PostalCode.create(postalCode),
-    city: trimmedCity
-  };
 }

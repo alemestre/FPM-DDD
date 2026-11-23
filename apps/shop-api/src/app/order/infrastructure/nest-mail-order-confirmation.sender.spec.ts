@@ -1,5 +1,5 @@
 import { NestMailOrderConfirmationSender } from './nest-mail-order-confirmation.sender';
-import { BillingAddress } from '../domain/billing-address.value-object';
+import { PostalAddress } from '../../shared/domain/value-objects/postal-address.value-object';
 import { OrderContact } from '../domain/order-contact.value-object';
 import { OrderNumber } from '../domain/order-number.value-object';
 import { OrderRegisteredMail } from './mail/order-registered.mail';
@@ -33,7 +33,7 @@ describe('NestMailOrderConfirmationSender', () => {
                 email: 'paul@example.fr',
                 phone: '0698765432',
             }),
-            billingAddress: BillingAddress.create({
+            billingAddress: PostalAddress.create({
                 line1: '2 quai Est',
                 postalCode: '29200',
                 city: 'Brest',
