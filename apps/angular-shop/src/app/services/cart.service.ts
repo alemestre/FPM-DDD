@@ -77,8 +77,8 @@ export class CartService {
         // (sinon le panier vide initial écraserait le panier sauvegardé).
         effect(() => {
             const items = this.items();
-            if (!this.restored() || this.authService.isConnected()) return;
-            this.localStorageService.setItem(CART_STORAGE_KEY, items);
+            if (this.restored() && !this.authService.isConnected())
+              this.localStorageService.setItem(CART_STORAGE_KEY, items);
         });
     }
 
@@ -137,7 +137,8 @@ export class CartService {
         request.subscribe({
             // Une réponse arrivée après la déconnexion ne doit pas réafficher le panier du compte.
             next: (items) => {
-                if (this.authService.isConnected()) this.cartItems.set(items);
+                if (this.authService.isConnected())
+                  this.cartItems.set(items);
             },
             error: (error: unknown) =>
                 this.notificationService.showError(this.toErrorMessage(error)),
