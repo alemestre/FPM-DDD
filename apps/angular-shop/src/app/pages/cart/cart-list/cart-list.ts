@@ -3,6 +3,7 @@ import { CommonModule, CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { Component, inject, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../../services/cart.service';
+import type { CartItem } from '../cart-item';
 
 @Component({
   selector: 'app-cart-list',
@@ -26,14 +27,18 @@ export class CartListComponent {
     return this.cartService;
   }
 
-  updateQuantity(productId: string, quantity: string) {
-    const qty = Number.parseInt(quantity, 10);
+  updateQuantity(item: CartItem, field: HTMLInputElement) {
+    const qty = Number.parseInt(field.value, 10);
+    // L'input affiche toujours la quantité du panier : il reprend tout de suite la valeur
+    // actuelle, puis suit le panier. Une quantité refusée (limite, stock) n'y reste donc pas.
+    field.value = String(item.quantity);
+
     if (Number.isNaN(qty) || qty < 0) {
       this.notificationService.showError('Please enter a valid quantity');
       return;
     }
 
-    const result = this.cartService.updateQuantity(productId, qty);
+    const result = this.cartService.updateQuantity(item.product.id, qty);
     if (!result.success) {
       this.notificationService.showError(result.message);
     }

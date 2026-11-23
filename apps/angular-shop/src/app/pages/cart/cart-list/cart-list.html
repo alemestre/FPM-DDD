@@ -85,10 +85,7 @@
                         class="form-control"
                         min="1"
                         [value]="item.quantity"
-                        (change)="updateQuantity(
-                          item.product.id,
-                          $any($event.target).value
-                        )">
+                        (change)="updateQuantity(item, $any($event.target))">
                     }
 
                   </div>
