@@ -1,18 +1,25 @@
 import { type ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { JwtCookieStrategy } from '../strategies/jwt-cookie.strategy';
 import { JwtCookieAuthGuard } from './jwt-cookie-auth.guard';
+import type { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+
+// @nestjs/config est publié en ESM, que ts-jest ne charge pas : seul le type ConfigService est utile ici.
+jest.mock('@nestjs/config', () => ({ ConfigService: class ConfigService {} }));
 
 const SECRET = 'test-secret';
 const USER_ID = 'b1c2d3e4-5f60-4a7b-8c9d-0e1f2a3b4c5d';
 
 describe('JwtCookieAuthGuard', () => {
   const jwtService = new JwtService({ secret: SECRET });
-  const guard = new JwtCookieAuthGuard(jwtService);
+  // Instancier la stratégie l'enregistre auprès de Passport, sous le nom utilisé par le guard.
+  new JwtCookieStrategy({ getOrThrow: () => SECRET } as unknown as ConfigService);
+  const guard = new JwtCookieAuthGuard();
 
   const contextWith = (cookies: Record<string, string> | undefined) => {
     const request: Record<string, unknown> = { cookies };
     const context = {
-      switchToHttp: () => ({ getRequest: () => request }),
+      switchToHttp: () => ({ getRequest: () => request, getResponse: () => ({}) }),
     } as unknown as ExecutionContext;
     return { request, context };
   };
@@ -22,7 +29,7 @@ describe('JwtCookieAuthGuard', () => {
     const { request, context } = contextWith({ access_token: token });
 
     await expect(guard.canActivate(context)).resolves.toBe(true);
-    expect(request['authenticatedUserId']).toBe(USER_ID);
+    expect(request['user']).toBe(USER_ID);
   });
 
   it('refuse une requête sans cookie', async () => {

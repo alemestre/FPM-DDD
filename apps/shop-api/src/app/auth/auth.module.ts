@@ -13,6 +13,7 @@ import { MailModule } from "@nestjs/mail";
 import { GetCurrentUserUseCase } from "./application/use-cases/get-current-user.use-case";
 import { AuthenticationErrorFilter } from "./interface/http/error/authentication-error.filter";
 import { JwtCookieAuthGuard } from "./interface/http/guards/jwt-cookie-auth.guard";
+import { JwtCookieStrategy } from "./interface/http/strategies/jwt-cookie.strategy";
 import { JwtAccessTokenIssuer } from './infrastructure/jwt-access-token.issuer';
 import { PrismaUserRepository } from "./infrastructure/prisma-user.repository";
 import { Argon2PasswordHasher } from './infrastructure/argon2-password-hasher';
@@ -26,10 +27,12 @@ import { UserRepository } from "./domain/user.repository";
 import { ConfigService } from "@nestjs/config";
 import { APP_FILTER } from "@nestjs/core";
 import { Module } from "@nestjs/common";
+import { PassportModule } from "@nestjs/passport";
 import { JwtModule } from "@nestjs/jwt";
 
 @Module({
   imports: [
+    PassportModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -45,6 +48,7 @@ import { JwtModule } from "@nestjs/jwt";
   controllers: [AuthController],
   providers: [
     LogInUseCase,
+    JwtCookieStrategy,
     JwtCookieAuthGuard,
     GetCurrentUserUseCase,
     RegisterUseCase,

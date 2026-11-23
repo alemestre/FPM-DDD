@@ -6,5 +6,5 @@ import type { AuthenticatedRequest } from "./authenticated-request";
  */
 export const AuthenticatedUserId = createParamDecorator(
   (_data: unknown, context: ExecutionContext): string =>
-    context.switchToHttp().getRequest<AuthenticatedRequest>().authenticatedUserId
+    context.switchToHttp().getRequest<AuthenticatedRequest>().user
 );

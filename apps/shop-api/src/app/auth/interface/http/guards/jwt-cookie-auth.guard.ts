@@ -1,45 +1,11 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
-import type { AuthenticatedRequest } from "../authenticated-request";
-import { ACCESS_TOKEN_COOKIE } from "../auth.constants";
-import { JwtService } from "@nestjs/jwt";
-
-interface AccessTokenPayload {
-  sub?: unknown;
-  purpose?: unknown;
-}
+import { JWT_COOKIE_STRATEGY } from "../strategies/jwt-cookie.strategy";
+import { Injectable } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
 
 /**
  * Lets the request through only with a valid access token in the HTTP-only
- * cookie, and exposes the user id it was issued for (`sub` claim).
- * Requires cookie-parser (registered in main.ts).
+ * cookie (checked by JwtCookieStrategy), and exposes the user id it was issued
+ * for through `request.user`.
  */
 @Injectable()
-export class JwtCookieAuthGuard implements CanActivate {
-  constructor(private readonly jwtService: JwtService) {}
-
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    const token: unknown = request.cookies?.[ACCESS_TOKEN_COOKIE];
-
-    if (typeof token !== "string" || token === "") {
-      throw new UnauthorizedException();
-    }
-
-    let payload: AccessTokenPayload;
-    try {
-      // Checks the signature and the expiry (exp).
-      payload = await this.jwtService.verifyAsync<AccessTokenPayload>(token);
-    } catch {
-      throw new UnauthorizedException();
-    }
-
-    // Access tokens carry no `purpose`: tokens signed for another use, such as
-    // the email verification link, must not open a session.
-    if (payload.purpose !== undefined || typeof payload.sub !== "string" || payload.sub === "") {
-      throw new UnauthorizedException();
-    }
-
-    request.authenticatedUserId = payload.sub;
-    return true;
-  }
-}
+export class JwtCookieAuthGuard extends AuthGuard(JWT_COOKIE_STRATEGY) {}

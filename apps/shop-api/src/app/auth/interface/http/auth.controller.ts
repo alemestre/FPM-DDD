@@ -1,20 +1,20 @@
+import { ResendVerificationEmailUseCase } from "../../application/use-cases/resend-verification-email.use-case";
 import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_COOKIE_OPTIONS, ACCESS_TOKEN_TTL_SECONDS } from "./auth.constants";
 import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Res, UseGuards } from "@nestjs/common";
-import { ChangePasswordUseCase } from "../../application/use-cases/change-password.use-case";
 import { GetCurrentUserUseCase } from "../../application/use-cases/get-current-user.use-case";
-import { ResendVerificationEmailUseCase } from "../../application/use-cases/resend-verification-email.use-case";
+import { ChangePasswordUseCase } from "../../application/use-cases/change-password.use-case";
 import { VerifyEmailUseCase } from "../../application/use-cases/verify-email.use-case";
 import { RegisterUseCase } from "../../application/use-cases/register.use-case";
 import { LogInUseCase } from "../../application/use-cases/log-in.use-case";
-import { ResendVerificationDTO } from "./dto/resend-verification.dto";
-import { VerifyEmailDTO } from "./dto/verify-email.dto";
-import { RegisterDTO } from "./dto/register.dto";
 import { AuthenticatedUserId } from "./authenticated-user-id.decorator";
 import { toCurrentUserResponse } from "./current-user.response.mapper";
+import { ResendVerificationDTO } from "./dto/resend-verification.dto";
 import { JwtCookieAuthGuard } from "./guards/jwt-cookie-auth.guard";
-import type { CurrentUserResponseDto } from "@fpm/contracts";
-import { LoginDTO } from "./dto/login.dto";
 import { ChangePasswordDTO } from "./dto/change-password.dto";
+import type { CurrentUserResponseDto } from "@fpm/contracts";
+import { VerifyEmailDTO } from "./dto/verify-email.dto";
+import { RegisterDTO } from "./dto/register.dto";
+import { LoginDTO } from "./dto/login.dto";
 import type { Response } from "express";
 
 @Controller()
