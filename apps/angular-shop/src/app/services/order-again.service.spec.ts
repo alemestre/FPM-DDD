@@ -156,7 +156,7 @@ describe('OrderAgainService', () => {
     });
 
     it('compte comme indisponible un produit refusé par le panier', async () => {
-        cart.addToCart(product(PASTA_ID), 99);
+        cart.addToCart(product(PASTA_ID), 10);
 
         await orderAgain(
             [item(FLOUR_ID, 1, 1), item(PASTA_ID, 1, 1)],
@@ -164,7 +164,7 @@ describe('OrderAgainService', () => {
         );
 
         expect(cartQuantities()).toEqual([
-            [PASTA_ID, 99],
+            [PASTA_ID, 10],
             [FLOUR_ID, 1],
         ]);
         expect(notifications.showInfo).toHaveBeenCalledWith(

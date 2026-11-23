@@ -12,6 +12,8 @@ export const CONSTANTS = {
     VERIFY_EMAIL: 'verify-email',
     RESEND_VERIFICATION: 'resend-verification',
     ORDERS: 'orders',
-    GUEST_ORDERS: 'orders/guest'
+    GUEST_ORDERS: 'orders/guest',
+    CART: 'cart',
+    CART_ITEMS: 'cart/items'
   },
 };
