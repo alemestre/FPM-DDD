@@ -1,6 +1,7 @@
 import { DomainValidationErrorFilter } from '../../../shared/interface/http/domain-validation-error.filter';
 import { ApiResponseInterceptor } from '../../../shared/interface/http/api-response.interceptor';
 import { JwtCookieAuthGuard } from '../../../auth/interface/http/guards/jwt-cookie-auth.guard';
+import { JwtCookieStrategy } from '../../../auth/interface/http/strategies/jwt-cookie.strategy';
 import { OrderConfirmationSender } from '../../application/ports/order-confirmation-sender';
 import { ListOrdersUseCase } from '../../application/use-cases/list-orders.use-case';
 import { GetOrderUseCase } from '../../application/use-cases/get-order.use-case';
@@ -15,9 +16,13 @@ import { Order } from '../../domain/order.entity';
 import { OrderController } from './order.controller';
 import type { INestApplication } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { Test } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
+
+// @nestjs/config est publié en ESM, que ts-jest ne charge pas : seul le jeton ConfigService est utile ici.
+jest.mock('@nestjs/config', () => ({ ConfigService: class ConfigService {} }));
 
 jest.mock('uuid', () => ({
     v4: jest.fn(() => '12345678-1234-4123-8123-123456789abc'),
@@ -139,6 +144,8 @@ describe('OrderController (HTTP)', () => {
             controllers: [OrderController],
             providers: [
                 JwtCookieAuthGuard,
+                JwtCookieStrategy,
+                { provide: ConfigService, useValue: { getOrThrow: () => 'test-secret' } },
                 PlaceOrderUseCase,
                 ListOrdersUseCase,
                 GetOrderUseCase,

@@ -2,6 +2,7 @@ import { DomainValidationErrorFilter } from '../../../shared/interface/http/doma
 import { ChangeCartItemQuantityUseCase } from '../../application/use-cases/change-cart-item-quantity.use-case';
 import { ApiResponseInterceptor } from '../../../shared/interface/http/api-response.interceptor';
 import { JwtCookieAuthGuard } from '../../../auth/interface/http/guards/jwt-cookie-auth.guard';
+import { JwtCookieStrategy } from '../../../auth/interface/http/strategies/jwt-cookie.strategy';
 import { RemoveCartItemUseCase } from '../../application/use-cases/remove-cart-item.use-case';
 import { AddCartItemUseCase } from '../../application/use-cases/add-cart-item.use-case';
 import { GetCartUseCase } from '../../application/use-cases/get-cart.use-case';
@@ -20,9 +21,13 @@ import { Cart } from '../../domain/cart.entity';
 import { CartController } from './cart.controller';
 import type { INestApplication } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { Test } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
+
+// @nestjs/config est publié en ESM, que ts-jest ne charge pas : seul le jeton ConfigService est utile ici.
+jest.mock('@nestjs/config', () => ({ ConfigService: class ConfigService {} }));
 
 jest.mock('uuid', () => ({
     v4: jest.fn(() => '12345678-1234-4123-8123-123456789abc'),
@@ -89,6 +94,8 @@ describe('CartController (HTTP)', () => {
             controllers: [CartController],
             providers: [
                 JwtCookieAuthGuard,
+                JwtCookieStrategy,
+                { provide: ConfigService, useValue: { getOrThrow: () => 'test-secret' } },
                 GetCartUseCase,
                 AddCartItemUseCase,
                 ChangeCartItemQuantityUseCase,

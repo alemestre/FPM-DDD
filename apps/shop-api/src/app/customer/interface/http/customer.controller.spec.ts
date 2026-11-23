@@ -1,6 +1,7 @@
 import { DomainValidationErrorFilter } from "../../../shared/interface/http/domain-validation-error.filter";
 import { ApiResponseInterceptor } from "../../../shared/interface/http/api-response.interceptor";
 import { JwtCookieAuthGuard } from "../../../auth/interface/http/guards/jwt-cookie-auth.guard";
+import { JwtCookieStrategy } from "../../../auth/interface/http/strategies/jwt-cookie.strategy";
 import { UpdateCustomerProfileUseCase } from "../../application/use-cases/update-customer-profile.use-case";
 import { GetCustomerProfileUseCase } from "../../application/use-cases/get-customer-profile.use-case";
 import { ACCESS_TOKEN_COOKIE } from "../../../auth/interface/http/auth.constants";
@@ -11,9 +12,13 @@ import { Customer } from "../../domain/customer.entity";
 import { CustomerController } from "./customer.controller";
 import type { INestApplication } from "@nestjs/common";
 import { JwtModule, JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
 import { ZodValidationPipe } from "nestjs-zod";
 import { Test } from "@nestjs/testing";
 import cookieParser from "cookie-parser";
+
+// @nestjs/config est publié en ESM, que ts-jest ne charge pas : seul le jeton ConfigService est utile ici.
+jest.mock("@nestjs/config", () => ({ ConfigService: class ConfigService {} }));
 
 const CUSTOMER_ID = "3f0c9a52-8a6e-4c1b-9d57-2b1e7f4a6c10";
 const ADMIN_ID = "9b2d7c1e-4f3a-4e8b-a6d5-1c0f2e3d4b5a";
@@ -66,6 +71,8 @@ describe("CustomerController (HTTP)", () => {
       controllers: [CustomerController],
       providers: [
         JwtCookieAuthGuard,
+        JwtCookieStrategy,
+        { provide: ConfigService, useValue: { getOrThrow: () => "test-secret" } },
         GetCustomerProfileUseCase,
         UpdateCustomerProfileUseCase,
         { provide: CustomerRepository, useClass: InMemoryCustomerRepository },
