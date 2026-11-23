@@ -21,6 +21,8 @@ import { ProductController } from "./interface/http/product.controller";
     RestockProductUseCase,
     WithdrawProductStockUseCase,
     DeleteProductUseCase
-  ]
+  ],
+  // Read by the cart for the stock and the products it displays.
+  exports: [ProductRepository]
 })
 export class ProductModule {}
