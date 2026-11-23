@@ -7,7 +7,6 @@ import { environment } from '../../../environments/environment';
 import { AuthService } from '../../services/auth.service';
 import { provideRouter } from '@angular/router';
 import { CartService } from '../../services/cart.service';
-import { NotificationService } from '../../services/notification.service';
 import { CartComponent } from './cart';
 
 const product = (id: string, price: number): ProductWithProducerResponseDto => ({
@@ -79,7 +78,6 @@ describe('CartComponent', () => {
 
     it('vide le panier avec le bouton "Vider le panier"', async () => {
         const { fixture, cart, element } = await createComponent();
-        const notifications = TestBed.inject(NotificationService);
         cart.addToCart(product('p-1', 10));
         cart.addToCart(product('p-2', 5));
         await fixture.whenStable();
@@ -92,9 +90,7 @@ describe('CartComponent', () => {
         await fixture.whenStable();
 
         expect(cart.isEmpty()).toBe(true);
-        expect(notifications.notifications().map((n) => n.message)).toContain(
-            'Cart cleared successfully!',
-        );
+        expect(element.textContent).toContain('Votre panier est tristement vide');
     });
 });
 
