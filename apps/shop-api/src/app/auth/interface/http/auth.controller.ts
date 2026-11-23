@@ -3,6 +3,7 @@ import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_COOKIE_OPTIONS, ACCESS_TOKEN_TTL_SECO
 import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Res, UseGuards } from "@nestjs/common";
 import { GetCurrentUserUseCase } from "../../application/use-cases/get-current-user.use-case";
 import { ChangePasswordUseCase } from "../../application/use-cases/change-password.use-case";
+import { ForgotPasswordUseCase } from '../../application/use-cases/forgot-password.use-case';
 import { VerifyEmailUseCase } from "../../application/use-cases/verify-email.use-case";
 import { RegisterUseCase } from "../../application/use-cases/register.use-case";
 import { LogInUseCase } from "../../application/use-cases/log-in.use-case";
@@ -12,6 +13,7 @@ import { ResendVerificationDTO } from "./dto/resend-verification.dto";
 import { JwtCookieAuthGuard } from "./guards/jwt-cookie-auth.guard";
 import { ChangePasswordDTO } from "./dto/change-password.dto";
 import type { CurrentUserResponseDto } from "@fpm/contracts";
+import { ForgotPasswordDTO } from "./dto/forgot-password.dto";
 import { VerifyEmailDTO } from "./dto/verify-email.dto";
 import { RegisterDTO } from "./dto/register.dto";
 import { LoginDTO } from "./dto/login.dto";
@@ -25,7 +27,8 @@ export class AuthController {
     private readonly register: RegisterUseCase,
     private readonly verifyEmail: VerifyEmailUseCase,
     private readonly resendVerificationEmail: ResendVerificationEmailUseCase,
-    private readonly changePassword: ChangePasswordUseCase
+    private readonly changePassword: ChangePasswordUseCase,
+    private readonly forgotPassword: ForgotPasswordUseCase
   ) {}
 
   /**
@@ -96,5 +99,11 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   logout(@Res({ passthrough: true }) response: Response): void {
     response.clearCookie(ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_COOKIE_OPTIONS);
+  }
+
+  @Post("forgot-password")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async sendForgotPassword(@Body() { email }: ForgotPasswordDTO): Promise<void> {
+    await this.forgotPassword.execute(email);
   }
 }

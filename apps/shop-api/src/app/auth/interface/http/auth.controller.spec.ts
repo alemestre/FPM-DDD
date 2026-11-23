@@ -2,6 +2,7 @@ import { ApiResponseInterceptor } from '../../../shared/interface/http/api-respo
 import { DomainValidationErrorFilter } from '../../../shared/interface/http/domain-validation-error.filter';
 import { PasswordHasher } from '../../application/ports/password-hasher';
 import { VerificationEmailSender } from '../../application/ports/verification-email-sender';
+import { ForgotPasswordEmailSender } from '../../application/ports/forgot-password-email-sender';
 import type { CustomerRegistration } from '../../domain/customer-registration';
 import { EmailAlreadyUsedError } from '../../domain/errors/email-already-used.error';
 import type { UserCredentials } from '../../domain/user.credentials';
@@ -93,6 +94,15 @@ class FakeVerificationEmailSender extends VerificationEmailSender {
   }
 }
 
+/** Garde les jetons de réinitialisation au lieu d'envoyer des emails. */
+class FakeForgotPasswordEmailSender extends ForgotPasswordEmailSender {
+  readonly sent: { email: string; token: string }[] = [];
+
+  async send(user: User, token: string): Promise<void> {
+    this.sent.push({ email: user.email, token });
+  }
+}
+
 /** Hachage factice et rapide : argon2 est testé à part. */
 class FakePasswordHasher extends PasswordHasher {
   async hash(password: string): Promise<string> {
@@ -108,6 +118,7 @@ describe('AuthController (HTTP)', () => {
   let app: INestApplication;
   let repository: InMemoryUserRepository;
   let emailSender: FakeVerificationEmailSender;
+  let forgotPasswordEmailSender: FakeForgotPasswordEmailSender;
   let baseUrl: string;
 
   const sign = (payload: object, secret = SECRET) => new JwtService({ secret }).signAsync(payload);
@@ -165,6 +176,8 @@ describe('AuthController (HTTP)', () => {
       .useClass(FakePasswordHasher)
       .overrideProvider(VerificationEmailSender)
       .useClass(FakeVerificationEmailSender)
+      .overrideProvider(ForgotPasswordEmailSender)
+      .useClass(FakeForgotPasswordEmailSender)
       .compile();
 
     app = moduleRef.createNestApplication();
@@ -173,6 +186,7 @@ describe('AuthController (HTTP)', () => {
     baseUrl = await app.getUrl();
     repository = app.get(UserRepository);
     emailSender = app.get(VerificationEmailSender);
+    forgotPasswordEmailSender = app.get(ForgotPasswordEmailSender);
   });
 
   afterAll(() => app.close());
@@ -181,6 +195,7 @@ describe('AuthController (HTTP)', () => {
     repository.credentials.clear();
     repository.registrations.length = 0;
     emailSender.sent.length = 0;
+    forgotPasswordEmailSender.sent.length = 0;
   });
 
   describe('GET /me', () => {
@@ -457,6 +472,48 @@ describe('AuthController (HTTP)', () => {
 
       expect(response.status).toBe(204);
       expect(emailSender.sent).toHaveLength(0);
+    });
+  });
+
+  describe('POST /forgot-password', () => {
+    it("envoie un lien de réinitialisation, sans l'email de vérification, et répond 204 sans corps", async () => {
+      seedUser();
+
+      const response = await post('/forgot-password', { email: '  Marie.Durand@Example.FR ' });
+
+      expect(response.status).toBe(204);
+      expect(await response.text()).toBe('');
+      expect(forgotPasswordEmailSender.sent).toEqual([{ email: EMAIL, token: expect.any(String) }]);
+      expect(emailSender.sent).toHaveLength(0);
+    });
+
+    it('répond 204 sans rien envoyer pour un email inconnu', async () => {
+      const response = await post('/forgot-password', { email: 'inconnu@example.fr' });
+
+      expect(response.status).toBe(204);
+      expect(forgotPasswordEmailSender.sent).toHaveLength(0);
+    });
+
+    it('répond 204 sans rien envoyer pour un compte désactivé', async () => {
+      seedUser(false);
+
+      expect((await post('/forgot-password', { email: EMAIL })).status).toBe(204);
+      expect(forgotPasswordEmailSender.sent).toHaveLength(0);
+    });
+
+    it.each([
+      ['sans corps', undefined],
+      ['avec un email invalide', { email: 'pas-un-email' }],
+    ])('renvoie 400 %s', async (_case, body) => {
+      expect((await post('/forgot-password', body)).status).toBe(400);
+      expect(forgotPasswordEmailSender.sent).toHaveLength(0);
+    });
+
+    it('ne laisse pas le lien de réinitialisation servir de cookie de session', async () => {
+      seedUser();
+      await post('/forgot-password', { email: EMAIL });
+
+      expect((await getMe(forgotPasswordEmailSender.sent[0].token)).status).toBe(401);
     });
   });
 });
