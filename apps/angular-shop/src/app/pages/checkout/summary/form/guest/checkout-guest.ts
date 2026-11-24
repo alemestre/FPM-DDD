@@ -12,7 +12,7 @@ import { BillingField } from '../billing-field/billing-field';
 import { PickupInfo } from '../pickup-info/pickup-info';
 import { CHECKOUT_IDENTIFICATION_URL } from '../../../../../guards/checkout-access.guard';
 import { RouterLink } from '@angular/router';
-import { Checkout } from '../../../../../components/abstract-checkout';
+import { Checkout } from '../../../../../shared/abstract-checkout';
 
 interface GuestCheckoutModel {
     contact: ContactModel;

@@ -1,7 +1,7 @@
 import { CheckoutSessionService } from '../services/checkout-session.service';
 import type { BillingAddressPayload, OrderItemPayload } from '../services/orders.service';
 import { ADDRESS_FIELDS, AddressModel } from '../pages/checkout/summary/form/billing-fields';
-import { estimatePickupDate } from '../shared/pickup-date';
+import { estimatePickupDate } from './tools/pickup-date';
 import { OrdersService } from '../services/orders.service';
 import { CartService } from '../services/cart.service';
 import { HttpErrorResponse } from '@angular/common/http';

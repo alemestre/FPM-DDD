@@ -1,19 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { email, form, FormField, FormRoot, required } from '@angular/forms/signals';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { HttpErrorResponse } from '@angular/common/http';
+import { AbstractVerifyToken } from '../../../shared/abstract-verify-token';
+import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { AuthService } from '../../../services/auth.service';
 
-/**
- * - `verifying` : appel à l'API en cours.
- * - `verified` : adresse confirmée, le compte peut se connecter.
- * - `invalid` : lien absent, invalide ou expiré ; un nouveau lien peut être demandé.
- * - `error` : erreur réseau ou serveur ; la vérification peut être relancée.
- */
-export type VerificationStatus = 'verifying' | 'verified' | 'invalid' | 'error';
-
-interface ResendModel {
+interface IResendModel {
   email: string;
 }
 
@@ -24,15 +15,11 @@ interface ResendModel {
   templateUrl: './verify-email.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class VerifyEmail implements OnInit {
-  private readonly authService = inject(AuthService);
-  private readonly token = inject(ActivatedRoute).snapshot.queryParamMap.get('token');
-
-  protected readonly status = signal<VerificationStatus>('verifying');
+export class VerifyEmail extends AbstractVerifyToken {
   protected readonly resent = signal(false);
   protected readonly resendError = signal<string | null>(null);
 
-  protected readonly resendModel = signal<ResendModel>({ email: '' });
+  protected readonly resendModel = signal<IResendModel>({ email: '' });
   protected readonly resendForm = form(
     this.resendModel,
     (path) => {
@@ -55,22 +42,7 @@ export class VerifyEmail implements OnInit {
     }
   );
 
-  ngOnInit() {
-    void this.verify();
-  }
-
-  protected async verify() {
-    if (!this.token) {
-      this.status.set('invalid');
-      return;
-    }
-
-    this.status.set('verifying');
-    try {
-      await firstValueFrom(this.authService.verifyEmail(this.token));
-      this.status.set('verified');
-    } catch (error) {
-      this.status.set(error instanceof HttpErrorResponse && error.status === 400 ? 'invalid' : 'error');
-    }
+  protected verifyToken(token: string) {
+    return this.authService.verifyEmail(token);
   }
 }

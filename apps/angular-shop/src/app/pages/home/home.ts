@@ -2,7 +2,7 @@ import { ProductCard } from '../category/products/product-card/product-card';
 import { SearchBar } from '../../components/search-bar/search-bar';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
-import { Products } from '../../components/abstract-products';
+import { Products } from '../../shared/abstract-products';
 import { Component, computed, signal } from '@angular/core';
 
 /** Délai après la dernière frappe avant de filtrer la liste. */

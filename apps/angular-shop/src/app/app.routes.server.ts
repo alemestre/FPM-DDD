@@ -38,6 +38,10 @@ export const serverRoutes: ServerRoute[] = [
         renderMode: RenderMode.Client,
     },
     {
+        path: 'reinitialiser-mot-de-passe', // Reads the token from the URL and calls the API
+        renderMode: RenderMode.Client,
+    },
+    {
         path: '**',
         renderMode: RenderMode.Prerender,
     },

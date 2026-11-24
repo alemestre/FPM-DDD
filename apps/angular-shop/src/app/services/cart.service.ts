@@ -15,7 +15,7 @@ import { NotificationService } from './notification.service';
 import { CartApiService } from './cart-api.service';
 import { AuthService } from './auth.service';
 import { CartItem } from '../pages/cart/cart-item';
-import { lineAmounts, LineAmounts, sumCents } from '../shared/money';
+import { lineAmounts, LineAmounts, sumCents } from '../shared/tools/money';
 
 export const CART_STORAGE_KEY = 'fpm_cart';
 

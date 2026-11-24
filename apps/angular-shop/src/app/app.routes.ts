@@ -1,5 +1,6 @@
 import { CHECKOUT_IDENTIFICATION_URL, checkoutMatch, identificationGuard } from './guards/checkout-access.guard';
 import { ForgotPassword } from './pages/auth/forgot-password/forgot-password';
+import { ResetPassword } from './pages/auth/reset-password/reset-password';
 import { VerifyEmail } from './pages/auth/verify-email/verify-email';
 import { Register } from './pages/auth/register/register';
 import { MainLayout } from './layout/main/main-layout';
@@ -7,10 +8,10 @@ import { AuthLayout } from './layout/auth/auth-layout';
 import { Category } from './pages/category/category';
 import { Profile } from './pages/profile/profile';
 import { Login } from './pages/auth/login/login';
+import { authGuard } from './guards/auth.guard';
 import { About } from './pages/about/about';
 import { Home } from './pages/home/home';
 import { Route } from '@angular/router';
-import { authGuard } from './guards/auth.guard';
 
 export const appRoutes: Route[] = [
   {
@@ -102,6 +103,11 @@ export const appRoutes: Route[] = [
         path: 'mot-de-passe-oublie',
         component: ForgotPassword,
         data: { breadcrumb: 'Mot de passe oublié' }
+      },
+       {
+        path: 'reinitialiser-mot-de-passe',
+        component: ResetPassword,
+        data: { breadcrumb: 'Réinitialiser mot de passe' }
       },
       {
         // Lien envoyé par l'API dans l'e-mail de vérification : /verifier-email?token=…

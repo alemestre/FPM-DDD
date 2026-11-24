@@ -1,6 +1,6 @@
 import { ProductCard } from './product-card/product-card';
 import type { CategoryResponseDto as Category } from '@fpm/contracts';
-import { Products } from '../../../components/abstract-products';
+import { Products } from '../../../shared/abstract-products';
 import { TitleCasePipe } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
 

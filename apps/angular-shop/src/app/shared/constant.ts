@@ -15,6 +15,8 @@ export const CONSTANTS = {
     GUEST_ORDERS: 'orders/guest',
     CART: 'cart',
     CART_ITEMS: 'cart/items',
-    FORGOT_PASSWORD: 'forgot-password'
+    FORGOT_PASSWORD: 'forgot-password',
+    VERIFY_FORGOT_PASSWORD_TOKEN: 'verify-forgot-password-token',
+    RESET_PASSWORD: 'reset-password'
   },
 };

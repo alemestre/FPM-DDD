@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { ProfileService } from '../../../../../services/profile.service';
-import { Checkout } from '../../../../../components/abstract-checkout';
+import { Checkout } from '../../../../../shared/abstract-checkout';
 import { addressSchema, EMPTY_ADDRESS } from '../billing-fields';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BillingField } from '../billing-field/billing-field';

@@ -111,7 +111,20 @@ export class AuthService {
 
     forgotPassword(email: string): Observable<void> {
         return this.httpClient.post<void>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.FORGOT_PASSWORD}`, {
-            email,
+            email
+        });
+    }
+
+    verifyForgotPasswordToken(token: string): Observable<void> {
+        return this.httpClient.post<void>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.VERIFY_FORGOT_PASSWORD_TOKEN}`, {
+            token
+        });
+    }
+
+    resetPassword(token: string, password: string): Observable<void> {
+        return this.httpClient.post<void>(`${this._apiUrl}/${CONSTANTS.API_END_POINTS.RESET_PASSWORD}`, {
+            token,
+            password
         });
     }
 }
