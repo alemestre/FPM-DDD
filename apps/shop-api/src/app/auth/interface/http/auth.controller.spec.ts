@@ -7,6 +7,7 @@ import type { CustomerRegistration } from '../../domain/customer-registration';
 import { EmailAlreadyUsedError } from '../../domain/errors/email-already-used.error';
 import { EMAIL_VERIFICATION_PURPOSE } from '../../infrastructure/jwt-email-verification.token';
 import { RESET_PASSWORD_PURPOSE } from '../../infrastructure/jwt-forgot-password.token';
+import { ACCESS_TOKEN_TTL_SECONDS } from './auth.constants';
 import type { UserCredentials } from '../../domain/user.credentials';
 import { Global, type INestApplication, Module } from '@nestjs/common';
 import { UserRepository } from '../../domain/user.repository';
@@ -264,6 +265,17 @@ describe('AuthController (HTTP)', () => {
       const token = cookie?.split(';')[0].slice('access_token='.length);
 
       expect(await getMe(token)).toEqual({ status: 200, body: { success: true, data: expectedProfile } });
+    });
+
+    it('donne un jeton de session qui expire avec le cookie (1 h)', async () => {
+      seedUser();
+
+      const cookie = accessTokenCookieOf(await post('/login', { email: EMAIL, password: PASSWORD }));
+      const token = cookie?.split(';')[0].slice('access_token='.length) ?? '';
+      const { iat, exp } = new JwtService({ secret: SECRET }).decode<{ iat: number; exp?: number }>(token);
+
+      expect(exp).toBeDefined();
+      expect((exp ?? 0) - iat).toBe(ACCESS_TOKEN_TTL_SECONDS);
     });
 
     it("accepte l'email sans tenir compte de la casse ni des espaces", async () => {
