@@ -1,3 +1,4 @@
+import { UserRole } from '@fpm/tools';
 import { z } from 'zod';
 
 export const CurrentUserResponseSchema = z.object({
@@ -5,7 +6,7 @@ export const CurrentUserResponseSchema = z.object({
     email: z.string(),
     firstName: z.string(),
     lastName: z.string(),
-    role: z.enum(['ADMIN', 'CUSTOMER'])
+    role: z.enum(UserRole)
 });
 
 export type CurrentUserResponseDto = z.infer<typeof CurrentUserResponseSchema>;

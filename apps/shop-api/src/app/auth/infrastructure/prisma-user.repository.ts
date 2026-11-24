@@ -4,15 +4,17 @@ import type { CustomerRegistration } from "../domain/customer-registration";
 import type { UserCredentials } from "../domain/user.credentials";
 import { UserRepository } from "../domain/user.repository";
 import { PrismaService } from "../../../prisma/prisma.service";
-import { User, type UserRole } from "../domain/user.entity";
+import { User } from "../domain/user.entity";
+import { UserRole } from "@fpm/tools";
 import { Injectable } from "@nestjs/common";
 
 /** Prisma error code of a unique constraint violation. */
 const UNIQUE_CONSTRAINT_VIOLATION = "P2002";
 
+/** Keys: the Prisma enum (database). Values: the domain roles. The build fails if the two drift apart. */
 const ROLE_TO_DOMAIN = {
-  ADMIN: "ADMIN",
-  CUSTOMER: "CUSTOMER"
+  ADMIN: UserRole.ADMIN,
+  CUSTOMER: UserRole.CUSTOMER
 } as const satisfies Record<Role, UserRole>;
 
 @Injectable()

@@ -1,8 +1,9 @@
 import { DomainValidationError } from '../../shared/domain/errors/domain-validation.error';
 import { Email } from '../../shared/domain/value-objects/email.value-object';
 import { randomUUID } from 'node:crypto';
+import { UserRole } from '@fpm/tools';
 
-export type UserRole = 'ADMIN' | 'CUSTOMER';
+export type { UserRole } from '@fpm/tools';
 
 export interface UserRegistrationProps {
     readonly email: string;
@@ -35,7 +36,7 @@ export class User {
             Email.create(email),
             User.personName(firstName, 'prénom'),
             User.personName(lastName, 'nom'),
-            'CUSTOMER',
+            UserRole.CUSTOMER,
             true,
             false,
         );
