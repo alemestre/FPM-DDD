@@ -1,4 +1,5 @@
 import type { ApiResponseDto, CurrentUserResponseDto } from '@fpm/contracts';
+import { UserRole } from '@fpm/tools';
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { catchError, finalize, map, Observable, of, tap } from 'rxjs';
@@ -22,15 +23,25 @@ export class AuthService {
     private _currentUser = signal<User | null>(null);
     currentUser = this._currentUser.asReadonly();
     isConnected = computed(() => this.currentUser() !== null);
+    isAdmin = computed(() => this.currentUser()?.role === UserRole.ADMIN);
     // Passe à true quand loadCurrentUser a répondu (connecté ou non).
     private _sessionChecked = signal(false);
     sessionChecked = this._sessionChecked.asReadonly();
     private _apiUrl = environment.apiUrl;
 
     login(email: string, password: string): Observable<User> {
+        return this.openSession(CONSTANTS.API_END_POINTS.LOGIN, email, password);
+    }
+
+    /** Connexion à l'espace admin : l'API refuse (401) tout compte qui n'est pas admin, sans poser de cookie. */
+    adminLogin(email: string, password: string): Observable<User> {
+        return this.openSession(CONSTANTS.API_END_POINTS.ADMIN_LOGIN, email, password);
+    }
+
+    private openSession(endpoint: string, email: string, password: string): Observable<User> {
         return this.httpClient
             .post<ApiResponseDto<CurrentUserResponseDto>>(
-                `${this._apiUrl}/${CONSTANTS.API_END_POINTS.LOGIN}`,
+                `${this._apiUrl}/${endpoint}`,
                 { email, password },
                 { withCredentials: true },
             )

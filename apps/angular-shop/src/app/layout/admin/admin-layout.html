@@ -1,0 +1,24 @@
+<header class="navbar bg-white shadow-sm">
+    <div class="container-fluid gap-3">
+        <a class="navbar-brand d-flex align-items-center gap-2 me-auto" routerLink="/admin">
+            <img src="./images/logo.png" alt="Logo de l'application" height="40" />
+            <span class="badge text-bg-primary fw-medium">Administration</span>
+        </a>
+
+        @if (authService.currentUser(); as user) {
+        <span class="d-none d-sm-flex align-items-center gap-2 text-secondary small">
+            <i class="bi bi-person-circle" aria-hidden="true"></i>
+            {{ user.firstName }} {{ user.lastName }}
+        </span>
+        }
+
+        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill d-flex align-items-center gap-2" (click)="logout()">
+            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+            Déconnexion
+        </button>
+    </div>
+</header>
+
+<main>
+    <router-outlet />
+</main>

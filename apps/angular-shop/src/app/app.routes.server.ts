@@ -42,6 +42,14 @@ export const serverRoutes: ServerRoute[] = [
         renderMode: RenderMode.Client,
     },
     {
+        path: 'admin', // Admin area: behind the session cookie, so browser only
+        renderMode: RenderMode.Client,
+    },
+    {
+        path: 'admin/**',
+        renderMode: RenderMode.Client,
+    },
+    {
         path: '**',
         renderMode: RenderMode.Prerender,
     },

@@ -6,6 +6,7 @@ import { environment } from '../../../../environments/environment';
 import { Login } from './login';
 
 const LOGIN_URL = `${environment.apiUrl}/login`;
+const ADMIN_LOGIN_URL = `${environment.apiUrl}/admin/login`;
 const RESEND_URL = `${environment.apiUrl}/resend-verification`;
 
 describe('Login', () => {
@@ -107,6 +108,67 @@ describe('Login', () => {
 
     it('ignore un returnUrl vers un autre site', async () => {
       expect(await logInAndRedirect('/login?returnUrl=%2F%2Fevil.example')).toHaveBeenCalledWith('/home');
+    });
+
+    it('ouvre le tableau de bord pour un admin connecté depuis la boutique', async () => {
+      const router = TestBed.inject(Router);
+      await router.navigateByUrl('/login');
+      const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+      await logIn('admin@example.fr', 'MotDePasse1!');
+      http.expectOne(LOGIN_URL).flush({ success: true, data: { ...user, role: 'ADMIN' } });
+      await settle();
+
+      expect(navigate).toHaveBeenCalledWith('/admin');
+    });
+
+    it('laisse un admin continuer sa commande depuis le checkout intégré', async () => {
+      fixture.componentRef.setInput('embedded', true);
+      fixture.componentRef.setInput('redirectTo', '/checkout');
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      await logIn('admin@example.fr', 'MotDePasse1!');
+      http.expectOne(LOGIN_URL).flush({ success: true, data: { ...user, role: 'ADMIN' } });
+      await settle();
+
+      expect(navigate).toHaveBeenCalledWith('/checkout');
+    });
+  });
+
+  describe('mode admin', () => {
+    const admin = { id: 'a-1', email: 'admin@example.fr', firstName: 'Alice', lastName: 'Martin', role: 'ADMIN' };
+
+    beforeEach(async () => {
+      fixture.componentRef.setInput('admin', true);
+      fixture.componentRef.setInput('redirectTo', '/admin');
+      await settle();
+    });
+
+    it("affiche « Espace administrateur », sans lien d'inscription", () => {
+      expect(text()).toContain('Espace administrateur');
+      expect(element().querySelector('a[href="/register"]')).toBeNull();
+      expect(element().querySelector('a[href="/mot-de-passe-oublie"]')).not.toBeNull();
+    });
+
+    it("se connecte par POST /admin/login et ouvre le tableau de bord", async () => {
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      await logIn('admin@example.fr', 'MotDePasse1!');
+
+      const request = http.expectOne(ADMIN_LOGIN_URL);
+      expect(request.request.body).toEqual({ email: 'admin@example.fr', password: 'MotDePasse1!' });
+      request.flush({ success: true, data: admin });
+      await settle();
+
+      http.expectNone(LOGIN_URL);
+      expect(navigate).toHaveBeenCalledWith('/admin');
+    });
+
+    it('signale des identifiants incorrects quand un client essaie de se connecter (401)', async () => {
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      await logIn('marie.durand@example.fr', 'MotDePasse1!');
+      http.expectOne(ADMIN_LOGIN_URL).flush({ message: 'non' }, { status: 401, statusText: 'Unauthorized' });
+      await settle();
+
+      expect(text()).toContain('Identifiants incorrects.');
+      expect(navigate).not.toHaveBeenCalled();
     });
   });
 });

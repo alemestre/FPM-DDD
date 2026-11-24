@@ -2,6 +2,7 @@ import { CHECKOUT_IDENTIFICATION_URL, checkoutMatch, identificationGuard } from 
 import { ForgotPassword } from './pages/auth/forgot-password/forgot-password';
 import { ResetPassword } from './pages/auth/reset-password/reset-password';
 import { VerifyEmail } from './pages/auth/verify-email/verify-email';
+import { appAdminRoutes } from './pages/admin/admin.routes';
 import { Register } from './pages/auth/register/register';
 import { MainLayout } from './layout/main/main-layout';
 import { AuthLayout } from './layout/auth/auth-layout';
@@ -14,6 +15,7 @@ import { Home } from './pages/home/home';
 import { Route } from '@angular/router';
 
 export const appRoutes: Route[] = [
+  ...appAdminRoutes,
   {
     path: '',
     component: MainLayout,
@@ -122,3 +124,4 @@ export const appRoutes: Route[] = [
     redirectTo: '/home'
   }
 ];
+

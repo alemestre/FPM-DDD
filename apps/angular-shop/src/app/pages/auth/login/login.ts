@@ -4,6 +4,7 @@ import { ResendEmail } from '../register/resend-email/resend-email';
 import { AuthService } from '../../../services/auth.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ADMIN_HOME_URL } from '../../../guards/admin.guard';
 import { firstValueFrom } from 'rxjs';
 
 interface LoginModel {
@@ -26,6 +27,8 @@ export class Login {
   readonly redirectTo = input('/home');
   /** Intégré dans une autre page (identification du checkout) : prend toute la largeur de son conteneur. */
   readonly embedded = input(false);
+  /** Connexion à l'espace admin : l'API refuse les comptes clients, et la page ne propose pas l'inscription. */
+  readonly admin = input(false);
 
   protected readonly model = signal<LoginModel>({ email: '', password: '' });
   protected readonly showPassword = signal(false);
@@ -50,7 +53,10 @@ export class Login {
           this.unverifiedEmail.set(null);
           const { email, password } = field().value();
           try {
-            await firstValueFrom(this.authService.login(email, password));
+            const login = this.admin()
+              ? this.authService.adminLogin(email, password)
+              : this.authService.login(email, password);
+            await firstValueFrom(login);
             await this.router.navigateByUrl(this.redirectUrl());
           } catch (error) {
             if (error instanceof HttpErrorResponse && error.status === 403) {
@@ -64,10 +70,17 @@ export class Login {
     }
   );
 
-  /** Seul un chemin interne est suivi (`/…`, pas `//autre-site`) : pas de redirection ouverte. */
+  /**
+   * Seul un chemin interne est suivi (`/…`, pas `//autre-site`) : pas de redirection ouverte.
+   * Sans `returnUrl`, un admin connecté depuis la boutique arrive sur son tableau de bord ;
+   * intégré au checkout, il continue sa commande.
+   */
   private redirectUrl(): string {
     const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-    return returnUrl?.startsWith('/') && !returnUrl.startsWith('//') ? returnUrl : this.redirectTo();
+    if (returnUrl?.startsWith('/') && !returnUrl.startsWith('//')) {
+      return returnUrl;
+    }
+    return this.authService.isAdmin() && !this.embedded() ? ADMIN_HOME_URL : this.redirectTo();
   }
 
   protected togglePasswordVisibility() {

@@ -4,6 +4,7 @@ export const CONSTANTS = {
     CATEGORY_BY_SLUG: 'categories/slug',
     PRODUCTS: 'products',
     LOGIN: 'login',
+    ADMIN_LOGIN: 'admin/login',
     REGISTER: 'register',
     LOGOUT: 'logout',
     ME: 'me',
