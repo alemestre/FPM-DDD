@@ -306,6 +306,57 @@ describe('AuthController (HTTP)', () => {
     });
   });
 
+  describe('POST /admin/login', () => {
+    const ADMIN_ID = 'a1b2c3d4-5e6f-4a7b-8c9d-0e1f2a3b4c5e';
+    const ADMIN_EMAIL = 'admin@example.fr';
+
+    const seedAdmin = () =>
+      repository.credentials.set(ADMIN_EMAIL, {
+        user: User.reconstitute(ADMIN_ID, ADMIN_EMAIL, 'Alice', 'Martin', 'ADMIN', true, true),
+        passwordHash: `hash:${PASSWORD}`,
+      });
+
+    it("pose le cookie de session et renvoie le profil d'un admin", async () => {
+      seedAdmin();
+
+      const response = await post('/admin/login', { email: ADMIN_EMAIL, password: PASSWORD });
+
+      expect(accessTokenCookieOf(response)).toMatch(/HttpOnly/);
+      expect(await parse(response)).toEqual({
+        status: 200,
+        body: {
+          success: true,
+          data: { id: ADMIN_ID, email: ADMIN_EMAIL, firstName: 'Alice', lastName: 'Martin', role: 'ADMIN' },
+        },
+      });
+    });
+
+    it("refuse un client (401, même message qu'un mauvais mot de passe) sans poser de cookie", async () => {
+      seedUser();
+
+      const response = await post('/admin/login', { email: EMAIL, password: PASSWORD });
+
+      expect(accessTokenCookieOf(response)).toBeUndefined();
+      expect(await parse(response)).toEqual({ status: 401, body: INVALID_CREDENTIALS });
+    });
+
+    it('refuse un admin avec un mauvais mot de passe', async () => {
+      seedAdmin();
+
+      const response = await post('/admin/login', { email: ADMIN_EMAIL, password: 'mauvais' });
+
+      expect(accessTokenCookieOf(response)).toBeUndefined();
+      expect(response.status).toBe(401);
+    });
+
+    it.each([
+      ['sans corps', undefined],
+      ['avec un email invalide', { email: 'pas-un-email', password: PASSWORD }],
+    ])('renvoie 400 %s', async (_case, body) => {
+      expect((await post('/admin/login', body)).status).toBe(400);
+    });
+  });
+
   describe('PATCH /me/password', () => {
     const NEW_PASSWORD = 'Nouveau1!motdepasse';
 

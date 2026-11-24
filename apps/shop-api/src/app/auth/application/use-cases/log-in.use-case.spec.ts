@@ -106,4 +106,52 @@ describe('LogInUseCase', () => {
       new AuthenticationError(INVALID_CREDENTIALS),
     );
   });
+
+  describe("avec un rôle requis (connexion à l'espace admin)", () => {
+    const adminCredentials = () => ({
+      user: User.reconstitute(USER_ID, 'admin@example.fr', 'Alice', 'Martin', 'ADMIN', true, true),
+      passwordHash: PASSWORD_HASH,
+    });
+
+    it("émet un jeton pour un admin", async () => {
+      const credentials = adminCredentials();
+      repository.findCredentialsByEmail.mockResolvedValue(credentials);
+      passwordHasher.verify.mockResolvedValue(true);
+
+      const result = await useCase.execute({ email: 'admin@example.fr', password: 'motdepasse' }, 'ADMIN');
+
+      expect(accessTokenIssuer.issue).toHaveBeenCalledWith(credentials.user);
+      expect(result).toEqual({ user: credentials.user, accessToken: 'signed.jwt.token' });
+    });
+
+    it("refuse un client avec le même message qu'un mauvais mot de passe, après vérification du mot de passe", async () => {
+      repository.findCredentialsByEmail.mockResolvedValue(credentialsOf());
+      passwordHasher.verify.mockResolvedValue(true);
+
+      await expect(
+        useCase.execute({ email: 'marie.durand@example.fr', password: 'motdepasse' }, 'ADMIN'),
+      ).rejects.toThrow(new AuthenticationError(INVALID_CREDENTIALS));
+      expect(passwordHasher.verify).toHaveBeenCalledWith('motdepasse', PASSWORD_HASH);
+      expect(accessTokenIssuer.issue).not.toHaveBeenCalled();
+    });
+
+    it("ne révèle pas à un client que son email n'est pas vérifié", async () => {
+      repository.findCredentialsByEmail.mockResolvedValue(credentialsOf(true, false));
+      passwordHasher.verify.mockResolvedValue(true);
+
+      await expect(
+        useCase.execute({ email: 'marie.durand@example.fr', password: 'motdepasse' }, 'ADMIN'),
+      ).rejects.toThrow(new AuthenticationError(INVALID_CREDENTIALS));
+    });
+
+    it("refuse un admin avec un mauvais mot de passe", async () => {
+      repository.findCredentialsByEmail.mockResolvedValue(adminCredentials());
+      passwordHasher.verify.mockResolvedValue(false);
+
+      await expect(useCase.execute({ email: 'admin@example.fr', password: 'mauvais' }, 'ADMIN')).rejects.toThrow(
+        new AuthenticationError(INVALID_CREDENTIALS),
+      );
+      expect(accessTokenIssuer.issue).not.toHaveBeenCalled();
+    });
+  });
 });

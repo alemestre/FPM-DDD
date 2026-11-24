@@ -20,8 +20,10 @@ import { VerifyForgotPasswordTokenDTO } from "./dto/verify-forgot-password-token
 import { ResetPasswordDTO } from './dto/reset-password.dto';
 import { VerifyEmailDTO } from "./dto/verify-email.dto";
 import { RegisterDTO } from "./dto/register.dto";
+import type { LoginOutput } from "../../application/login.output";
 import { LoginDTO } from "./dto/login.dto";
 import type { Response } from "express";
+import { UserRole } from "@fpm/tools";
 
 @Controller()
 export class AuthController {
@@ -89,12 +91,20 @@ export class AuthController {
     @Body() credentials: LoginDTO,
     @Res({ passthrough: true }) response: Response
   ): Promise<CurrentUserResponseDto> {
-    const { accessToken, user } = await this.logIn.execute(credentials);
-    response.cookie(ACCESS_TOKEN_COOKIE, accessToken, {
-      ...ACCESS_TOKEN_COOKIE_OPTIONS,
-      maxAge: ACCESS_TOKEN_TTL_SECONDS * 1000
-    });
-    return toCurrentUserResponse(user);
+    return this.openSession(response, await this.logIn.execute(credentials));
+  }
+
+  /**
+   * Same as POST /login, for the admin area: a customer account gets the same 401
+   * as a wrong password, and no session cookie.
+   */
+  @Post("admin/login")
+  @HttpCode(HttpStatus.OK)
+  async adminLogin(
+    @Body() credentials: LoginDTO,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<CurrentUserResponseDto> {
+    return this.openSession(response, await this.logIn.execute(credentials, UserRole.ADMIN));
   }
 
   /**
@@ -123,5 +133,13 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async resetForgotPassword(@Body() { token, password }: ResetPasswordDTO): Promise<void> {
     await this.resetPassword.execute({ token, password });
+  }
+
+  private openSession(response: Response, { accessToken, user }: LoginOutput): CurrentUserResponseDto {
+    response.cookie(ACCESS_TOKEN_COOKIE, accessToken, {
+      ...ACCESS_TOKEN_COOKIE_OPTIONS,
+      maxAge: ACCESS_TOKEN_TTL_SECONDS * 1000
+    });
+    return toCurrentUserResponse(user);
   }
 }
