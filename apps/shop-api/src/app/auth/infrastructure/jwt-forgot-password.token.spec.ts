@@ -1,5 +1,5 @@
-import { InvalidVerificationTokenError } from '../domain/errors/invalid-verification-token.error';
-import { JwtForgotPasswordToken, RESET_PASSWORD_TTL_SECONDS } from './jwt-email-forgot-password.token';
+import { InvalidResetPasswordTokenError } from '../domain/errors/invalid-reset-password-token.error';
+import { JwtForgotPasswordToken, RESET_PASSWORD_TTL_SECONDS } from './jwt-forgot-password.token';
 import type { UserCredentials } from '../domain/user.credentials';
 import { User } from '../domain/user.entity';
 import { JwtService } from '@nestjs/jwt';
@@ -47,13 +47,13 @@ describe('JwtForgotPasswordToken', () => {
     const token = await tokens.issue(credentials);
     const afterReset = currentCredentials({ user, passwordHash: '$argon2id$v=19$m=65536,t=3,p=4$nouveau' });
 
-    await expect(tokens.verify(token, afterReset)).rejects.toThrow(InvalidVerificationTokenError);
+    await expect(tokens.verify(token, afterReset)).rejects.toThrow(InvalidResetPasswordTokenError);
   });
 
   it("refuse un jeton dont l'utilisateur n'existe plus", async () => {
     const token = await tokens.issue(credentials);
 
-    await expect(tokens.verify(token, currentCredentials(null))).rejects.toThrow(InvalidVerificationTokenError);
+    await expect(tokens.verify(token, currentCredentials(null))).rejects.toThrow(InvalidResetPasswordTokenError);
   });
 
   it.each([
@@ -69,7 +69,7 @@ describe('JwtForgotPasswordToken', () => {
     ["une chaîne qui n'est pas un JWT", async () => 'n-importe-quoi'],
   ])('refuse %s', async (_case, makeToken) => {
     await expect(tokens.verify(await makeToken(), currentCredentials())).rejects.toThrow(
-      InvalidVerificationTokenError,
+      InvalidResetPasswordTokenError,
     );
   });
 });

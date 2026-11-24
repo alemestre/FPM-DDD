@@ -1,4 +1,4 @@
-import { InvalidVerificationTokenError } from "../domain/errors/invalid-verification-token.error";
+import { InvalidResetPasswordTokenError } from "../domain/errors/invalid-reset-password-token.error";
 import { ForgotPasswordToken } from "../application/ports/forgot-password-token";
 import type { UserCredentials } from "../domain/user.credentials";
 import { Injectable } from "@nestjs/common";
@@ -58,7 +58,7 @@ export class JwtForgotPasswordToken implements ForgotPasswordToken {
     try {
       payload = await this.jwtService.verifyAsync<ResetPasswordPayload>(token);
     } catch (error) {
-      throw new InvalidVerificationTokenError({ cause: error });
+      throw new InvalidResetPasswordTokenError({ cause: error });
     }
 
     if (
@@ -67,13 +67,13 @@ export class JwtForgotPasswordToken implements ForgotPasswordToken {
       payload.sub === "" ||
       typeof payload.pwd !== "string"
     ) {
-      throw new InvalidVerificationTokenError();
+      throw new InvalidResetPasswordTokenError();
     }
 
     const credentials = await findCredentials(payload.sub);
 
     if (!credentials || this._passwordFingerprintOf(credentials.passwordHash) !== payload.pwd) {
-      throw new InvalidVerificationTokenError();
+      throw new InvalidResetPasswordTokenError();
     }
 
     return credentials;

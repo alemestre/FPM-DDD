@@ -5,6 +5,8 @@ import { VerificationEmailSender } from '../../application/ports/verification-em
 import { ForgotPasswordEmailSender } from '../../application/ports/forgot-password-email-sender';
 import type { CustomerRegistration } from '../../domain/customer-registration';
 import { EmailAlreadyUsedError } from '../../domain/errors/email-already-used.error';
+import { EMAIL_VERIFICATION_PURPOSE } from '../../infrastructure/jwt-email-verification.token';
+import { RESET_PASSWORD_PURPOSE } from '../../infrastructure/jwt-forgot-password.token';
 import type { UserCredentials } from '../../domain/user.credentials';
 import { Global, type INestApplication, Module } from '@nestjs/common';
 import { UserRepository } from '../../domain/user.repository';
@@ -35,6 +37,7 @@ const SECRET = 'test-secret';
 const USER_ID = 'b1c2d3e4-5f60-4a7b-8c9d-0e1f2a3b4c5d';
 const EMAIL = 'marie.durand@example.fr';
 const PASSWORD = 'motdepasse';
+const INVALID_RESET_LINK = 'Le lien de réinitialisation est invalide ou a expiré';
 const INVALID_CREDENTIALS = { statusCode: 401, error: 'Unauthorized', message: 'Email ou mot de passe incorrect' };
 
 /** Remplace le ConfigModule global de l'application. */
@@ -145,6 +148,12 @@ describe('AuthController (HTTP)', () => {
   /** Valeur du cookie access_token posé par la réponse, ou undefined. */
   const accessTokenCookieOf = (response: Response) =>
     response.headers.getSetCookie().find((cookie) => cookie.startsWith('access_token='));
+
+  /** Demande un lien « mot de passe oublié » et renvoie le jeton qu'il contient. */
+  const resetLinkFor = async (email: string) => {
+    await post('/forgot-password', { email });
+    return forgotPasswordEmailSender.sent[forgotPasswordEmailSender.sent.length - 1].token;
+  };
 
   const seedUser = (isActive = true) =>
     repository.credentials.set(EMAIL, {
@@ -514,6 +523,144 @@ describe('AuthController (HTTP)', () => {
       await post('/forgot-password', { email: EMAIL });
 
       expect((await getMe(forgotPasswordEmailSender.sent[0].token)).status).toBe(401);
+    });
+  });
+
+  describe('POST /verify-forgot-password-token', () => {
+    it('répond 204 pour un lien valide', async () => {
+      seedUser();
+      const token = await resetLinkFor(EMAIL);
+
+      expect((await post('/verify-forgot-password-token', { token })).status).toBe(204);
+    });
+
+    it('renvoie 400 pour un lien invalide, avec un message propre à la réinitialisation', async () => {
+      expect(await parse(await post('/verify-forgot-password-token', { token: 'pas.un.jeton' }))).toEqual({
+        status: 400,
+        body: { statusCode: 400, error: 'Bad Request', message: INVALID_RESET_LINK },
+      });
+    });
+
+    it('renvoie 400 si le compte a été désactivé depuis l’envoi du lien', async () => {
+      seedUser();
+      const token = await resetLinkFor(EMAIL);
+      seedUser(false);
+
+      expect((await post('/verify-forgot-password-token', { token })).status).toBe(400);
+    });
+
+    it.each([
+      ['sans corps', undefined],
+      ['avec un jeton vide', { token: '' }],
+      ['avec un champ inconnu', { token: 'a.b.c', email: EMAIL }],
+    ])('renvoie 400 %s', async (_case, body) => {
+      expect((await post('/verify-forgot-password-token', body)).status).toBe(400);
+    });
+  });
+
+  describe('POST /reset-password', () => {
+    const NEW_PASSWORD = 'Nouveau1!motdepasse';
+
+    it('change le mot de passe (204) : le nouveau permet de se connecter, plus l’ancien', async () => {
+      seedUser();
+      const token = await resetLinkFor(EMAIL);
+
+      const response = await post('/reset-password', { token, password: NEW_PASSWORD });
+
+      expect(response.status).toBe(204);
+      expect(await response.text()).toBe('');
+      expect((await post('/login', { email: EMAIL, password: NEW_PASSWORD })).status).toBe(200);
+      expect((await post('/login', { email: EMAIL, password: PASSWORD })).status).toBe(401);
+    });
+
+    it('ne laisse servir le lien qu’une fois', async () => {
+      seedUser();
+      const token = await resetLinkFor(EMAIL);
+      await post('/reset-password', { token, password: NEW_PASSWORD });
+
+      expect((await post('/reset-password', { token, password: 'Autre2!motdepasse' })).status).toBe(400);
+      expect((await post('/verify-forgot-password-token', { token })).status).toBe(400);
+      expect(repository.credentials.get(EMAIL)?.passwordHash).toBe(`hash:${NEW_PASSWORD}`);
+    });
+
+    it('renvoie 400 pour un lien invalide', async () => {
+      seedUser();
+
+      expect(await parse(await post('/reset-password', { token: 'pas.un.jeton', password: NEW_PASSWORD }))).toEqual({
+        status: 400,
+        body: { statusCode: 400, error: 'Bad Request', message: INVALID_RESET_LINK },
+      });
+      expect(repository.credentials.get(EMAIL)?.passwordHash).toBe(`hash:${PASSWORD}`);
+    });
+
+    it('revérifie le lien à la soumission : refusé s’il a expiré depuis l’ouverture de la page', async () => {
+      seedUser();
+      const expired = await new JwtService({ secret: SECRET }).signAsync(
+        { sub: USER_ID, purpose: RESET_PASSWORD_PURPOSE, pwd: 'empreinte' },
+        { expiresIn: -60 },
+      );
+
+      expect((await post('/reset-password', { token: expired, password: NEW_PASSWORD })).status).toBe(400);
+      expect(repository.credentials.get(EMAIL)?.passwordHash).toBe(`hash:${PASSWORD}`);
+    });
+
+    it('revérifie le lien à la soumission : refusé si le mot de passe a changé entre-temps', async () => {
+      seedUser();
+      const token = await resetLinkFor(EMAIL);
+      expect((await post('/verify-forgot-password-token', { token })).status).toBe(204);
+      await repository.savePasswordHash(USER_ID, 'hash:Autre2!motdepasse');
+
+      expect((await post('/reset-password', { token, password: NEW_PASSWORD })).status).toBe(400);
+      expect(repository.credentials.get(EMAIL)?.passwordHash).toBe('hash:Autre2!motdepasse');
+    });
+
+    it('revérifie le lien à la soumission : refusé si le compte a été désactivé entre-temps', async () => {
+      seedUser();
+      const token = await resetLinkFor(EMAIL);
+      seedUser(false);
+
+      expect(await parse(await post('/reset-password', { token, password: NEW_PASSWORD }))).toEqual({
+        status: 400,
+        body: { statusCode: 400, error: 'Bad Request', message: INVALID_RESET_LINK },
+      });
+      expect(repository.credentials.get(EMAIL)?.passwordHash).toBe(`hash:${PASSWORD}`);
+    });
+
+    it('refuse un lien de vérification d’email à la place du lien de réinitialisation', async () => {
+      seedUser();
+      const token = await sign({ sub: USER_ID, purpose: EMAIL_VERIFICATION_PURPOSE });
+
+      expect((await post('/reset-password', { token, password: NEW_PASSWORD })).status).toBe(400);
+    });
+
+    it('renvoie 400 pour un mot de passe qui ne respecte pas les règles', async () => {
+      seedUser();
+      const token = await resetLinkFor(EMAIL);
+
+      expect((await post('/reset-password', { token, password: 'motdepasse2' })).status).toBe(400);
+      expect(repository.credentials.get(EMAIL)?.passwordHash).toBe(`hash:${PASSWORD}`);
+    });
+
+    it('renvoie 400 si le nouveau mot de passe est identique à l’actuel', async () => {
+      const current = 'Actuel1!motdepasse';
+      repository.credentials.set(EMAIL, {
+        user: User.reconstitute(USER_ID, EMAIL, 'Marie', 'Durand', 'CUSTOMER', true, true),
+        passwordHash: `hash:${current}`,
+      });
+      const token = await resetLinkFor(EMAIL);
+
+      expect(await parse(await post('/reset-password', { token, password: current }))).toEqual({
+        status: 400,
+        body: { statusCode: 400, error: 'Bad Request', message: "Le nouveau mot de passe doit être différent de l'actuel" },
+      });
+    });
+
+    it.each([
+      ['sans corps', undefined],
+      ['sans jeton', { password: NEW_PASSWORD }],
+      ['sans mot de passe', { token: 'header.payload.signature' }],
+    ])('renvoie 400 %s', async (_case, body) => {
+      expect((await post('/reset-password', body)).status).toBe(400);
     });
   });
 });

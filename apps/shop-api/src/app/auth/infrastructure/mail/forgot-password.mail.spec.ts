@@ -36,7 +36,7 @@ describe('ForgotPasswordEmail', () => {
     expect(message.html).toContain('<html lang="fr">');
     expect(message.html).toContain('Bonjour Marie,');
     expect(message.html).toContain(`href="${URL}"`);
-    expect(message.html).toContain('Choisir un nouveau mot de passe');
+    expect(message.html).toContain('Réinitialiser mon mot de passe');
     expect(message.html).toContain('valable 60 minutes');
   });
 

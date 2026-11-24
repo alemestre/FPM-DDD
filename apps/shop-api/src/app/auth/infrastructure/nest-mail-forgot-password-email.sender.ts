@@ -14,7 +14,7 @@ import { ForgotPasswordEmail } from './mail/forgot-password.mail';
 export class NestForgotPasswordEmailSender implements ForgotPasswordEmailSender {
   private readonly logger = new Logger(NestForgotPasswordEmailSender.name);
 
-  private RESET_PASSWORD_PATH = "/reinitialisation-mot-de-passe";
+  private RESET_PASSWORD_PATH = "/reinitialiser-mot-de-passe";
 
   constructor(
     private readonly mailer: Mailer,

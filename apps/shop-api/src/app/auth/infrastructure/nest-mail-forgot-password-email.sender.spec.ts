@@ -27,7 +27,7 @@ describe('NestForgotPasswordEmailSender', () => {
 
     expect(mailer.send).toHaveBeenCalledWith(ForgotPasswordEmail, {
       to: { name: 'Marie Durand', address: 'marie.durand@example.fr' },
-      data: { firstName: 'Marie', url: 'http://localhost:4200/reinitialisation-mot-de-passe?token=a.b%2Bc%2Fd' },
+      data: { firstName: 'Marie', url: 'http://localhost:4200/reinitialiser-mot-de-passe?token=a.b%2Bc%2Fd' },
     });
   });
 

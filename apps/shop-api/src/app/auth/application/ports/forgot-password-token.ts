@@ -9,9 +9,10 @@ export abstract class ForgotPasswordToken {
   abstract issue(credentials: UserCredentials): Promise<string>;
 
   /**
+   * @param token
    * @param findCredentials Loads the current credentials of the user the token names.
    * @returns The current credentials of the user the token was issued for.
-   * @throws InvalidVerificationTokenError when the token is malformed, forged or expired,
+   * @throws InvalidResetPasswordTokenError when the token is malformed, forged or expired,
    *   when the user no longer exists, or when the password changed since the token was issued.
    */
   abstract verify(

@@ -1,4 +1,4 @@
-import { RESET_PASSWORD_TTL_SECONDS } from '../jwt-email-forgot-password.token';
+import { RESET_PASSWORD_TTL_SECONDS } from '../jwt-forgot-password.token';
 import type { Mailable, MailTemplateContent } from '@nestjs/mail';
 import { Injectable } from '@nestjs/common';
 

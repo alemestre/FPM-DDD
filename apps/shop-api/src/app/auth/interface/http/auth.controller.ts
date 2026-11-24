@@ -1,7 +1,9 @@
+import { VerifyForgotPasswordTokenUseCase } from '../../application/use-cases/verify-forgot-password-token.use-case';
 import { ResendVerificationEmailUseCase } from "../../application/use-cases/resend-verification-email.use-case";
 import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_COOKIE_OPTIONS, ACCESS_TOKEN_TTL_SECONDS } from "./auth.constants";
 import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Res, UseGuards } from "@nestjs/common";
 import { GetCurrentUserUseCase } from "../../application/use-cases/get-current-user.use-case";
+import { ResetPasswordUseCase } from '../../application/use-cases/reset-password.use-case';
 import { ChangePasswordUseCase } from "../../application/use-cases/change-password.use-case";
 import { ForgotPasswordUseCase } from '../../application/use-cases/forgot-password.use-case';
 import { VerifyEmailUseCase } from "../../application/use-cases/verify-email.use-case";
@@ -14,6 +16,8 @@ import { JwtCookieAuthGuard } from "./guards/jwt-cookie-auth.guard";
 import { ChangePasswordDTO } from "./dto/change-password.dto";
 import type { CurrentUserResponseDto } from "@fpm/contracts";
 import { ForgotPasswordDTO } from "./dto/forgot-password.dto";
+import { VerifyForgotPasswordTokenDTO } from "./dto/verify-forgot-password-token.dto";
+import { ResetPasswordDTO } from './dto/reset-password.dto';
 import { VerifyEmailDTO } from "./dto/verify-email.dto";
 import { RegisterDTO } from "./dto/register.dto";
 import { LoginDTO } from "./dto/login.dto";
@@ -26,9 +30,11 @@ export class AuthController {
     private readonly logIn: LogInUseCase,
     private readonly register: RegisterUseCase,
     private readonly verifyEmail: VerifyEmailUseCase,
-    private readonly resendVerificationEmail: ResendVerificationEmailUseCase,
+    private readonly resetPassword: ResetPasswordUseCase,
     private readonly changePassword: ChangePasswordUseCase,
-    private readonly forgotPassword: ForgotPasswordUseCase
+    private readonly forgotPassword: ForgotPasswordUseCase,
+    private readonly resendVerificationEmail: ResendVerificationEmailUseCase,
+    private readonly verifyForgotPasswordToken: VerifyForgotPasswordTokenUseCase
   ) {}
 
   /**
@@ -105,5 +111,17 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async sendForgotPassword(@Body() { email }: ForgotPasswordDTO): Promise<void> {
     await this.forgotPassword.execute(email);
+  }
+
+  @Post("verify-forgot-password-token")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async confirmForgotPasswordToken(@Body() { token }: VerifyForgotPasswordTokenDTO): Promise<void> {
+    await this.verifyForgotPasswordToken.execute(token);
+  }
+
+  @Post("reset-password")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async resetForgotPassword(@Body() { token, password }: ResetPasswordDTO): Promise<void> {
+    await this.resetPassword.execute({ token, password });
   }
 }

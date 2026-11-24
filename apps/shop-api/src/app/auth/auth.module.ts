@@ -9,7 +9,7 @@ import { AuthenticationErrorFilter } from "./interface/http/error/authentication
 import { ForgotPasswordEmailSender } from './application/ports/forgot-password-email-sender';
 import { JwtEmailVerificationToken } from "./infrastructure/jwt-email-verification.token";
 import { GetCurrentUserUseCase } from "./application/use-cases/get-current-user.use-case";
-import { JwtForgotPasswordToken } from './infrastructure/jwt-email-forgot-password.token';
+import { JwtForgotPasswordToken } from './infrastructure/jwt-forgot-password.token';
 import { ChangePasswordUseCase } from "./application/use-cases/change-password.use-case";
 import { VerificationEmailSender } from "./application/ports/verification-email-sender";
 import { EmailVerificationToken } from "./application/ports/email-verification-token";
@@ -35,6 +35,8 @@ import { MailModule } from "@nestjs/mail";
 import { APP_FILTER } from "@nestjs/core";
 import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
+import { VerifyForgotPasswordTokenUseCase } from './application/use-cases/verify-forgot-password-token.use-case';
+import { ResetPasswordUseCase } from './application/use-cases/reset-password.use-case';
 
 @Module({
   imports: [
@@ -64,6 +66,8 @@ import { JwtModule } from "@nestjs/jwt";
     ResendVerificationEmailUseCase,
     ForgotPasswordUseCase,
     ForgotPasswordEmail,
+    VerifyForgotPasswordTokenUseCase,
+    ResetPasswordUseCase,
     { provide: UserRepository, useClass: PrismaUserRepository },
     { provide: APP_FILTER, useClass: AuthenticationErrorFilter },
     { provide: PasswordHasher, useClass: Argon2PasswordHasher },
