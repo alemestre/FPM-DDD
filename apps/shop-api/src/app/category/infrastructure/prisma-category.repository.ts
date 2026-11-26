@@ -1,17 +1,12 @@
-import { Prisma, type Category as CategoryRow } from "../../../generated/prisma/client";
+import { FOREIGN_KEY_VIOLATION, UNIQUE_CONSTRAINT_VIOLATION } from "../../shared/infrastructure/prisma-error-codes";
 import { CategorySlugAlreadyUsedError } from "../domain/errors/category-slug-already-used.error";
+import { Prisma, type Category as CategoryRow } from "../../../generated/prisma/client";
 import { Slug } from "../../shared/domain/value-objects/slug.value-object";
 import { CategoryInUseError } from "../domain/errors/category-in-use.error";
 import { CategoryRepository } from "../domain/category.repository";
 import { PrismaService } from "../../../prisma/prisma.service";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Category } from "../domain/category.entity";
-
-/**
- * Prisma error codes: unique constraint violation (P2002) and foreign key violation (P2003).
- */
-const UNIQUE_CONSTRAINT_VIOLATION = "P2002";
-const FOREIGN_KEY_VIOLATION = "P2003";
 
 @Injectable()
 export class PrismaCategoryRepository implements CategoryRepository {

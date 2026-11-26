@@ -12,12 +12,7 @@ import { Product } from "../domain/product.entity";
 import type { ProductUnitValue } from "../domain/value-objects/product-unit.value-object";
 import type { MeasureUnitValue } from "../domain/value-objects/measure.value-object";
 import type { ProductContent, ProductContentProps } from "../domain/value-objects/product-content.value-object";
-
-/**
- * Prisma error raised when a write points to a missing producer or category:
- * foreign key violation (P2003) on `producerId` or `categoryId`.
- */
-const FOREIGN_KEY_VIOLATION = "P2003";
+import { FOREIGN_KEY_VIOLATION } from "../../shared/infrastructure/prisma-error-codes";
 
 /**
  * Keeps the Prisma enum and the domain units in sync at compile time.
