@@ -16,6 +16,7 @@ import { EmailVerificationToken } from "./application/ports/email-verification-t
 import { JwtCookieStrategy } from "./interface/http/strategies/jwt-cookie.strategy";
 import { VerifyEmailUseCase } from "./application/use-cases/verify-email.use-case";
 import { JwtCookieAuthGuard } from "./interface/http/guards/jwt-cookie-auth.guard";
+import { AdminGuard } from "./interface/http/guards/admin.guard";
 import { JwtAccessTokenIssuer } from './infrastructure/jwt-access-token.issuer';
 import { ForgotPasswordToken } from './application/ports/forgot-password-token';
 import { createMailOptions } from "./infrastructure/mail/mail-options.factory";
@@ -61,6 +62,7 @@ import { ResetPasswordUseCase } from './application/use-cases/reset-password.use
     JwtCookieStrategy,
     VerifyEmailUseCase,
     JwtCookieAuthGuard,
+    AdminGuard,
     ChangePasswordUseCase,
     GetCurrentUserUseCase,
     ResendVerificationEmailUseCase,
@@ -79,7 +81,8 @@ import { ResetPasswordUseCase } from './application/use-cases/reset-password.use
     { provide: VerificationEmailSender, useClass: NestMailVerificationEmailSender },
     { provide: ForgotPasswordEmailSender, useClass: NestForgotPasswordEmailSender }
   ],
-  // Lets other contexts protect their routes with the same guard.
-  exports: [JwtModule, JwtCookieAuthGuard]
+  // Lets other contexts protect their routes with the same guards (see OnlyAdmin).
+  // AdminGuard is built in the consuming module, which needs GetCurrentUserUseCase.
+  exports: [JwtModule, JwtCookieAuthGuard, AdminGuard, GetCurrentUserUseCase]
 })
 export class AuthModule {}
