@@ -1,3 +1,4 @@
+import { GenericEntitySchema } from './generic-entity.dto';
 import { z } from 'zod';
 
 export const CustomerAddressResponseSchema = z.object({
@@ -7,8 +8,7 @@ export const CustomerAddressResponseSchema = z.object({
     city: z.string(),
 });
 
-export const CustomerProfileResponseSchema = z.object({
-    id: z.uuid(),
+export const CustomerProfileResponseSchema = GenericEntitySchema.extend({
     email: z.string(),
     firstName: z.string(),
     lastName: z.string(),

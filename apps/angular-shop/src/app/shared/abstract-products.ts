@@ -1,13 +1,13 @@
 import type { ApiResponseDto, ProductWithProducerResponseDto as Product } from '@fpm/contracts';
 import { NotificationService } from '../services/notification.service';
-import { ProductsService } from '../services/products.service';
+import { ProductService } from '../services/product.service';
 import type { HttpResourceRef } from '@angular/common/http';
 import { CartService } from '../services/cart.service';
 import { computed, effect, inject } from '@angular/core';
 
 export abstract class Products {
     protected readonly notificationService = inject(NotificationService);
-    protected readonly productsService = inject(ProductsService);
+    protected readonly productsService = inject(ProductService);
     protected readonly cartService = inject(CartService);
 
     /** Fournie par la sous-classe avec l'une des méthodes `*Resource` de ProductsService. */

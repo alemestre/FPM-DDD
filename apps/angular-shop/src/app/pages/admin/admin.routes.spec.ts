@@ -8,6 +8,7 @@ import type { User } from '../../models/entities/user';
 import { AuthService } from '../../services/auth.service';
 import { appAdminRoutes } from './admin.routes';
 
+const CATEGORY_ID = 'b3bb189e-8bf9-4888-9912-ace4e6543002';
 const ADMIN: User = { id: 'a-1', email: 'admin@example.fr', firstName: 'Alice', lastName: 'Martin', role: 'ADMIN' };
 
 describe("routes de l'espace admin", () => {
@@ -69,5 +70,43 @@ describe("routes de l'espace admin", () => {
 
     expect(currentUrl()).toBe('/admin/login');
     expect(harness.fixture.nativeElement.querySelector('app-admin-login')).not.toBeNull();
+  });
+
+  it.each(['/admin/producteurs', '/admin/producteurs/nouveau', '/admin/producteurs/12', '/admin/producteurs/12/modifier'])(
+    'ouvre %s pour un admin',
+    async (url) => {
+      const harness = await harnessAs(ADMIN);
+      await harness.navigateByUrl(url);
+
+      expect(currentUrl()).toBe(url);
+      expect(harness.fixture.nativeElement.querySelector('app-admin-placeholder')).not.toBeNull();
+    }
+  );
+
+  it('affiche le titre de la page CRUD', async () => {
+    const harness = await harnessAs(ADMIN);
+    await harness.navigateByUrl('/admin/produits/nouveau');
+
+    expect(harness.fixture.nativeElement.querySelector('h1')?.textContent).toContain('Produits — Nouveau');
+  });
+
+  it('envoie un visiteur de /admin/commandes vers /admin/login', async () => {
+    const harness = await harnessAs(null);
+    await harness.navigateByUrl('/admin/commandes');
+
+    expect(currentUrl()).toBe('/admin/login');
+  });
+
+  it.each([
+    ['/admin/categories', 'app-admin-category-list'],
+    ['/admin/categories/nouveau', 'app-admin-category-form'],
+    [`/admin/categories/${CATEGORY_ID}`, 'app-admin-category-detail'],
+    [`/admin/categories/${CATEGORY_ID}/modifier`, 'app-admin-category-form']
+  ])('ouvre %s sur la page catégories', async (url, selector) => {
+    const harness = await harnessAs(ADMIN);
+    await harness.navigateByUrl(url);
+
+    expect(currentUrl()).toBe(url);
+    expect(harness.fixture.nativeElement.querySelector(selector)).not.toBeNull();
   });
 });

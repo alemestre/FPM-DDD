@@ -1,8 +1,8 @@
 import { UserRole } from '@fpm/tools';
+import { GenericEntitySchema } from './generic-entity.dto';
 import { z } from 'zod';
 
-export const CurrentUserResponseSchema = z.object({
-    id: z.uuid(),
+export const CurrentUserResponseSchema = GenericEntitySchema.extend({
     email: z.string(),
     firstName: z.string(),
     lastName: z.string(),

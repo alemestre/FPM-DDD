@@ -1,0 +1,55 @@
+<a class="link-secondary text-decoration-none d-inline-flex align-items-center gap-1 mb-3" routerLink="..">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    Retour aux catégories
+</a>
+
+@if (entityResource.isLoading()) {
+<div class="d-flex justify-content-center p-5">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement de la catégorie…</span>
+    </div>
+</div>
+} @else if (notFound()) {
+<div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+    <i class="bi bi-question-circle-fill" aria-hidden="true"></i>
+    Catégorie introuvable.
+</div>
+} @else if (entityResource.error()) {
+<div class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+    La catégorie n’a pas pu être chargée.
+    <button type="button" class="btn btn-sm btn-outline-danger ms-auto" (click)="entityResource.reload()">Réessayer</button>
+</div>
+} @else if (entity(); as category) {
+<div class="card rounded-4 border-0 shadow-sm">
+    <div class="card-body p-4">
+        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+            <h1 class="fs-4 fw-semibold mb-0">{{ category.name }}</h1>
+            <div class="d-flex gap-2">
+                <a class="btn btn-outline-primary d-flex align-items-center gap-2" routerLink="modifier">
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                    Modifier
+                </a>
+                <button type="button" class="btn btn-outline-danger d-flex align-items-center gap-2" (click)="delete()">
+                    <i class="bi bi-trash" aria-hidden="true"></i>
+                    Supprimer
+                </button>
+            </div>
+        </div>
+
+        <dl class="row mb-0">
+            <dt class="col-sm-3 text-secondary fw-medium">Nom</dt>
+            <dd class="col-sm-9">{{ category.name }}</dd>
+            <dt class="col-sm-3 text-secondary fw-medium">Slug</dt>
+            <dd class="col-sm-9"><code>{{ category.slug }}</code></dd>
+            <dt class="col-sm-3 text-secondary fw-medium">Page boutique</dt>
+            <dd class="col-sm-9 mb-0">
+                <a [routerLink]="['/produits', category.slug]" target="_blank" class="d-inline-flex align-items-center gap-1">
+                    /produits/{{ category.slug }}
+                    <i class="bi bi-box-arrow-up-right small" aria-hidden="true"></i>
+                </a>
+            </dd>
+        </dl>
+    </div>
+</div>
+}

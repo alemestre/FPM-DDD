@@ -1,7 +1,7 @@
 import { NotificationService } from '../../services/notification.service';
 import { CategoryProducts } from './products/category-products.component';
 import type { CategoryResponseDto as CategoryDTO } from '@fpm/contracts';
-import { CategoriesService } from '../../services/categories.service';
+import { CategoryService } from '../../services/category.service';
 import { Component, computed, effect, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
@@ -14,7 +14,7 @@ import { map } from 'rxjs';
 })
 export class Category {
   private readonly notificationService = inject(NotificationService);
-  private readonly categoriesService = inject(CategoriesService);
+  private readonly categoriesService = inject(CategoryService);
   private readonly route = inject(ActivatedRoute);
 
   private readonly slug = toSignal(this.route.paramMap.pipe(map((params) => params.get('slug'))), {

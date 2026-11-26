@@ -1,3 +1,4 @@
+import { GenericEntitySchema } from './generic-entity.dto';
 import { z } from 'zod';
 
 export const ProductUnitSchema = z.enum(['KG', 'BOTTE', 'PIECE', 'DOUZAINE', 'BOUTEILLE', 'LOT']);
@@ -34,8 +35,7 @@ export const ReferencePriceSchema = z.object({
 
 export type ReferencePriceDto = z.infer<typeof ReferencePriceSchema>;
 
-export const ProductResponseSchema = z.object({
-    id: z.uuid(),
+export const ProductResponseSchema = GenericEntitySchema.extend({
     name: z.string(),
     price: z.number(),
     vatRate: z.number(),
@@ -52,8 +52,7 @@ export const ProductResponseSchema = z.object({
 
 export type ProductResponseDto = z.infer<typeof ProductResponseSchema>;
 
-export const ProducerSummarySchema = z.object({
-    id: z.uuid(),
+export const ProducerSummarySchema = GenericEntitySchema.extend({
     name: z.string(),
 });
 

@@ -3,7 +3,7 @@ import { Component, computed, inject, model } from '@angular/core';
 import { TitleCasePipe } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap';
-import { CategoriesService } from '../../../services/categories.service';
+import { CategoryService } from '../../../services/category.service';
 
 @Component({
     selector: 'app-category-nav',
@@ -12,7 +12,7 @@ import { CategoriesService } from '../../../services/categories.service';
     styleUrl: './category-nav.css',
 })
 export class CategoryNav {
-    private readonly categoriesService = inject(CategoriesService);
+    private readonly categoriesService = inject(CategoryService);
 
     /** Ouverture du menu sur mobile, partagée avec le layout. */
     readonly menuOpen = model(false);

@@ -1,5 +1,5 @@
-import { environment } from '../../environments/environment';
-import type { CategoryResponseDto as Category, ApiResponseDto } from '@fpm/contracts';
+import type { CategoryResponseDto as Category, CategoryRequestDto, ApiResponseDto } from '@fpm/contracts';
+import { AdminEntityService } from '../shared/abstract-entity.service';
 import { Injectable, type Signal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { CONSTANTS } from '../shared/constant';
@@ -11,8 +11,8 @@ import { CONSTANTS } from '../shared/constant';
 @Injectable({
     providedIn: 'root',
 })
-export class CategoriesService {
-    private _apiUrl = environment.apiUrl;
+export class CategoryService extends AdminEntityService<Category, CategoryRequestDto> {
+  protected readonly path = CONSTANTS.API_END_POINTS.CATEGORIES;
 
     allCategoriesResource() {
         return httpResource<ApiResponseDto<Category[]>>(

@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { CartService } from './cart.service';
 import { NotificationService } from './notification.service';
-import { ProductsService } from './products.service';
+import { ProductService } from './product.service';
 
 /**
  * Remet dans le panier le contenu d'une commande passée, avec les quantités confirmées par la
@@ -16,7 +16,7 @@ import { ProductsService } from './products.service';
 })
 export class OrderAgainService {
   private readonly notificationService = inject(NotificationService);
-  private readonly productsService = inject(ProductsService);
+  private readonly productsService = inject(ProductService);
   private readonly cartService = inject(CartService);
   private readonly router = inject(Router);
 

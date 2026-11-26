@@ -1,7 +1,7 @@
+import { GenericEntitySchema } from './generic-entity.dto';
 import { z } from 'zod';
 
-export const ProducerResponseSchema = z.object({
-    id: z.uuid(),
+export const ProducerResponseSchema = GenericEntitySchema.extend({
     name: z.string(),
     email: z.string(),
     phone: z.string(),

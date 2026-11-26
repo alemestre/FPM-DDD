@@ -1,3 +1,4 @@
+import { GenericEntitySchema } from './generic-entity.dto';
 import { z } from 'zod';
 
 export const OrderStatusSchema = z.enum([
@@ -37,8 +38,7 @@ export const OrderItemResponseSchema = z.object({
     total: z.number(),
 });
 
-export const OrderResponseSchema = z.object({
-    id: z.uuid(),
+export const OrderResponseSchema = GenericEntitySchema.extend({
     /** YYYY-MM-N, e.g. 2026-11-7. */
     number: z.string(),
     status: OrderStatusSchema,

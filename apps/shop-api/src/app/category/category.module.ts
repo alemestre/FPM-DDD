@@ -6,11 +6,15 @@ import { PrismaCategoryRepository } from "./infrastructure/prisma-category.repos
 import { GetCategoryUseCase } from "./application/use-cases/get-category.use-case";
 import { GetCategoryBySlugUseCase } from "./application/use-cases/get-category-by-slug.use-case";
 import { CategoryController } from "./interface/http/category.controller";
+import { AdminCategoryController } from "./interface/http/admin-category.controller";
 import { CategoryRepository } from "./domain/category.repository";
+import { AuthModule } from "../auth/auth.module";
 import { Module } from "@nestjs/common";
 
 @Module({
-  controllers: [CategoryController],
+  // Provides the guards behind @OnlyAdmin, which protects AdminCategoryController.
+  imports: [AuthModule],
+  controllers: [CategoryController, AdminCategoryController],
   providers: [
     { provide: CategoryRepository, useClass: PrismaCategoryRepository },
     CreateCategoryUseCase,

@@ -1,0 +1,72 @@
+<!-- `..` : la liste depuis « nouveau », la fiche depuis « :id/modifier » -->
+<a class="link-secondary text-decoration-none d-inline-flex align-items-center gap-1 mb-3" routerLink="..">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    {{ isEdit() ? 'Retour à la fiche' : 'Retour aux catégories' }}
+</a>
+
+@if (isEdit() && entityResource.isLoading()) {
+<div class="d-flex justify-content-center p-5">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement de la catégorie…</span>
+    </div>
+</div>
+} @else if (notFound()) {
+<div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+    <i class="bi bi-question-circle-fill" aria-hidden="true"></i>
+    Catégorie introuvable.
+</div>
+} @else if (entityResource.error()) {
+<div class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+    La catégorie n’a pas pu être chargée.
+    <button type="button" class="btn btn-sm btn-outline-danger ms-auto" (click)="entityResource.reload()">Réessayer</button>
+</div>
+} @else {
+<div class="card rounded-4 border-0 shadow-sm col-12 col-xl-8">
+    <div class="card-body p-4">
+        <h1 class="fs-4 fw-semibold mb-4">{{ isEdit() ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}</h1>
+
+        @if (submitError(); as error) {
+        <div class="alert alert-danger d-flex align-items-center gap-2 py-2 small" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            {{ error }}
+        </div>
+        }
+
+        <form [formRoot]="form">
+            <div class="mb-4">
+                <label class="form-label fw-medium text-secondary" for="category-name">Nom</label>
+                <input
+                    [class.is-invalid]="form.name().touched() && form.name().invalid()"
+                    [formField]="form.name"
+                    class="form-control"
+                    id="category-name"
+                    type="text"
+                    autocomplete="off"
+                />
+                @if (form.name().touched() && form.name().invalid()) {
+                <div class="invalid-feedback d-block">
+                    @for (error of form.name().errors(); track error.kind) {
+                    <div>{{ error.message }}</div>
+                    }
+                </div>
+                } @else {
+                <div class="form-text">Le slug utilisé dans l’URL de la boutique est calculé à partir du nom.</div>
+                }
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a class="btn btn-outline-secondary" routerLink="..">Annuler</a>
+                <button type="submit" class="btn btn-primary d-flex align-items-center gap-2" [disabled]="form().submitting()">
+                    @if (form().submitting()) {
+                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                    } @else {
+                    <i class="bi bi-check-lg" aria-hidden="true"></i>
+                    }
+                    Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+}

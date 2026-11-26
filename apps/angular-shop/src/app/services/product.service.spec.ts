@@ -2,19 +2,19 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ApplicationRef, signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { ProductsService } from './products.service';
+import { ProductService } from './product.service';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
 describe('ProductsService', () => {
-    let service: ProductsService;
+    let service: ProductService;
     let http: HttpTestingController;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
             providers: [provideHttpClient(), provideHttpClientTesting()],
         });
-        service = TestBed.inject(ProductsService);
+        service = TestBed.inject(ProductService);
         http = TestBed.inject(HttpTestingController);
     });
 

@@ -41,8 +41,10 @@ Follow the guidelines defined in `.claude/rules/`:
 
 - apps/shop-api : backend api
 - apps/angular-shop : Angular SSR storefront (still the generated starter)
-- libs/contracts : HTTP response contracts (`@fpm/contracts`) shared by both apps. Holds the Zod
-  schemas and `*ResponseDto` types only. Mappers stay in shop-api because they import domain entities.
+- libs/contracts : HTTP contracts (`@fpm/contracts`) shared by both apps. Holds the Zod schemas with
+  their `*ResponseDto` and `*RequestDto` types only. Request body schemas (`*.request.dto.ts`) are
+  used by the shop-api DTOs (`createZodDto(CategoryRequestSchema)`) and typed in Angular, but check
+  shape only: business rules stay in the domain. Mappers stay in shop-api because they import domain entities.
   In angular-shop, use `import type` so Zod stays out of the browser bundle.
 - libs/tools : framework-free helpers (`@fpm/tools`) shared by both apps, e.g. `PARIS_DATE_FORMAT` and
   `toParisCalendarDay` (calendar day in the shop time zone, at 00:00 UTC).
@@ -58,6 +60,23 @@ Follow the guidelines defined in `.claude/rules/`:
 
 - Angular (v 22.0.0)
 - Bootstrap 5.3 : utilise les classes utilitaires pour la mise en page et le style plutot que des fichiers CSS personnalisés.
+
+### Espace admin
+
+Chaque rubrique (catégories, produits, producteurs, commandes, utilisateurs) suit le modèle de
+`pages/admin/categories/` :
+
+- **Des pages, jamais des modals, pour le CRUD**, sous `/admin/<rubrique>` : `''` liste, `nouveau`
+  ajout, `:id` fiche, `:id/modifier` modification, en `loadComponent` dans `pages/admin/admin.routes.ts`.
+  Un seul composant de formulaire sert à l'ajout et à la modification (`admin-producer-form.ts`).
+- **Suppression :** une action de la liste ou de la fiche, confirmée par `ConfirmDialogService`
+  (`shared/confirm-dialog/`). C'est le seul modal de l'espace admin.
+- **Erreurs API :** `apiErrorMessage(error, fallback)` (`shared/tools/api-error-message.ts`) affiche
+  le message renvoyé par l'API (409…).
+- **Côté API :** un contrôleur `admin-<contexte>.controller.ts` par bounded context, sur
+  `/admin/<rubrique>`, avec `@OnlyAdmin()` sur la classe (modèle :
+  `category/interface/http/admin-category.controller.ts`). Le contrôleur public ne garde que les GET
+  dont la boutique a besoin. Pas de module `admin` qui importerait les use cases de tous les contextes.
 
 ## Commands
 
