@@ -49,6 +49,13 @@ describe('CreateProducerUseCase', () => {
     expect(producer.isActive).toBe(true);
   });
 
+  it('crée un producteur inactif si isActive vaut false', async () => {
+    const producer = await useCase.execute({ ...input, isActive: false });
+
+    expect(producer.isActive).toBe(false);
+    expect(repository.save).toHaveBeenCalledWith(producer);
+  });
+
   it('ne sauvegarde rien si une valeur est invalide', async () => {
     await expect(useCase.execute({ ...input, vatNumber: 'FR41303265045' })).rejects.toBeInstanceOf(
       DomainValidationError,

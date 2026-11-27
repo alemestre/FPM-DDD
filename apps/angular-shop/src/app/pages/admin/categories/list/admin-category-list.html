@@ -49,9 +49,6 @@
                             <a class="btn btn-sm btn-outline-secondary ms-1" [routerLink]="[category.id, 'modifier']" [attr.aria-label]="'Modifier ' + category.name" title="Modifier">
                                 <i class="bi bi-pencil" aria-hidden="true"></i>
                             </a>
-                            <button type="button" class="btn btn-sm btn-outline-danger ms-1" (click)="delete(category)" [attr.aria-label]="'Supprimer ' + category.name" title="Supprimer">
-                                <i class="bi bi-trash" aria-hidden="true"></i>
-                            </button>
                         </td>
                     </tr>
                     }

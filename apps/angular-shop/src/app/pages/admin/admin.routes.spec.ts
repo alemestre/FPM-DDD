@@ -9,6 +9,7 @@ import { AuthService } from '../../services/auth.service';
 import { appAdminRoutes } from './admin.routes';
 
 const CATEGORY_ID = 'b3bb189e-8bf9-4888-9912-ace4e6543002';
+const PRODUCER_ID = 'c4f2a8d1-3b6e-4f7a-9d2c-1e5b8a7f6c30';
 const ADMIN: User = { id: 'a-1', email: 'admin@example.fr', firstName: 'Alice', lastName: 'Martin', role: 'ADMIN' };
 
 describe("routes de l'espace admin", () => {
@@ -72,7 +73,7 @@ describe("routes de l'espace admin", () => {
     expect(harness.fixture.nativeElement.querySelector('app-admin-login')).not.toBeNull();
   });
 
-  it.each(['/admin/producteurs', '/admin/producteurs/nouveau', '/admin/producteurs/12', '/admin/producteurs/12/modifier'])(
+  it.each(['/admin/commandes', '/admin/commandes/nouveau', '/admin/commandes/12', '/admin/commandes/12/modifier'])(
     'ouvre %s pour un admin',
     async (url) => {
       const harness = await harnessAs(ADMIN);
@@ -103,6 +104,19 @@ describe("routes de l'espace admin", () => {
     [`/admin/categories/${CATEGORY_ID}`, 'app-admin-category-detail'],
     [`/admin/categories/${CATEGORY_ID}/modifier`, 'app-admin-category-form']
   ])('ouvre %s sur la page catégories', async (url, selector) => {
+    const harness = await harnessAs(ADMIN);
+    await harness.navigateByUrl(url);
+
+    expect(currentUrl()).toBe(url);
+    expect(harness.fixture.nativeElement.querySelector(selector)).not.toBeNull();
+  });
+
+  it.each([
+    ['/admin/producteurs', 'app-admin-producer-list'],
+    ['/admin/producteurs/nouveau', 'app-admin-producer-form'],
+    [`/admin/producteurs/${PRODUCER_ID}`, 'app-admin-producer-detail'],
+    [`/admin/producteurs/${PRODUCER_ID}/modifier`, 'app-admin-producer-form']
+  ])('ouvre %s sur la page producteurs', async (url, selector) => {
     const harness = await harnessAs(ADMIN);
     await harness.navigateByUrl(url);
 

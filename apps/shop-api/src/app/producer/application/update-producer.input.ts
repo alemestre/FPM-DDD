@@ -7,4 +7,5 @@ export interface UpdateProducerInput {
   readonly addressLine2?: string;
   readonly postalCode?: string;
   readonly city?: string;
+  readonly isActive?: boolean;
 }

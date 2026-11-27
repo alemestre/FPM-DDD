@@ -41,7 +41,10 @@ export abstract class EntityForm<Entity extends GenericEntity, Body extends obje
 
     // Pré-rempli une fois l'entité chargée, puis modifié par le formulaire.
     // Paresseux : n'est lu qu'au rendu, une fois les champs de la sous-classe initialisés.
-    private readonly model = linkedSignal(() => this.toModel(this.entityResource.value()?.data));
+    // `value()` lève une erreur quand la ressource est en erreur (404…) : on teste `hasValue()` d'abord.
+    private readonly model = linkedSignal(() =>
+        this.toModel(this.entityResource.hasValue() ? this.entityResource.value()?.data : undefined),
+    );
 
     protected readonly form = form(this.model, (path) => this.applySchema(path), {
         submission: {
@@ -59,7 +62,7 @@ export abstract class EntityForm<Entity extends GenericEntity, Body extends obje
                     this.notificationService.showSuccess(
                         `${upperFirst(this.entityName)} ${id ? 'modifié' : 'créé'}${this.genderSuffix}`,
                     );
-                    await this.router.navigateByUrl(`${this.entitySpecs.basePath}/${entity.id}`);
+                    await this.router.navigateByUrl(`/admin/${this.entitySpecs.basePath}/${entity.id}`);
                 } catch (error) {
                     this.submitError.set(
                         apiErrorMessage(

@@ -5,7 +5,6 @@ import { GetCurrentUserUseCase } from '../../../auth/application/use-cases/get-c
 import { AdminGuard } from '../../../auth/interface/http/guards/admin.guard';
 import { ACCESS_TOKEN_COOKIE } from '../../../auth/interface/http/auth.constants';
 import { CreateCategoryUseCase } from '../../application/use-cases/create-category.use-case';
-import { DeleteCategoryUseCase } from '../../application/use-cases/delete-category.use-case';
 import { ListCategoriesUseCase } from '../../application/use-cases/list-categories.use-case';
 import { UpdateCategoryUseCase } from '../../application/use-cases/update-category.use-case';
 import { GetCategoryUseCase } from '../../application/use-cases/get-category.use-case';
@@ -79,7 +78,6 @@ describe('AdminCategoryController (HTTP)', () => {
         ListCategoriesUseCase,
         GetCategoryUseCase,
         UpdateCategoryUseCase,
-        DeleteCategoryUseCase,
         { provide: CategoryRepository, useClass: InMemoryCategoryRepository },
         { provide: APP_PIPE, useClass: ZodValidationPipe },
         { provide: APP_FILTER, useClass: DomainValidationErrorFilter },
@@ -113,7 +111,6 @@ describe('AdminCategoryController (HTTP)', () => {
       ['GET', `/${CATEGORY_ID}`, undefined],
       ['POST', '', { name: 'Légumes' }],
       ['PATCH', `/${CATEGORY_ID}`, { name: 'Légumes' }],
-      ['DELETE', `/${CATEGORY_ID}`, undefined],
     ];
 
     it.each(routes)('%s %s renvoie 401 sans session', async (method, path, body) => {
@@ -199,27 +196,10 @@ describe('AdminCategoryController (HTTP)', () => {
     });
   });
 
-  describe('DELETE /admin/categories/:id', () => {
-    it('supprime la catégorie (204)', async () => {
-      seedCategory();
+  it("n'expose pas de DELETE : une catégorie n'est jamais supprimée", async () => {
+    seedCategory();
 
-      expect((await request('DELETE', `/${CATEGORY_ID}`)).status).toBe(204);
-      expect(repository.categories.has(CATEGORY_ID)).toBe(false);
-    });
-
-    it("renvoie 404 si la catégorie n'existe pas", async () => {
-      expect((await request('DELETE', `/${CATEGORY_ID}`)).status).toBe(404);
-    });
-
-    it('renvoie 409 si des produits utilisent encore la catégorie', async () => {
-      seedCategory();
-      repository.usedByProducts.add(CATEGORY_ID);
-
-      const { status, body } = await request('DELETE', `/${CATEGORY_ID}`);
-
-      expect(status).toBe(409);
-      expect(body.message).toBe('La catégorie est utilisée par au moins un produit et ne peut pas être supprimée');
-      expect(repository.categories.has(CATEGORY_ID)).toBe(true);
-    });
+    expect((await request('DELETE', `/${CATEGORY_ID}`)).status).toBe(404);
+    expect(repository.categories.has(CATEGORY_ID)).toBe(true);
   });
 });

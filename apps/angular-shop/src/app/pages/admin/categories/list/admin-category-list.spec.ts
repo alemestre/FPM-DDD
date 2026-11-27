@@ -39,49 +39,13 @@ describe('AdminCategoryList', () => {
 
   const element = () => fixture.nativeElement as HTMLElement;
   const rows = () => [...element().querySelectorAll('tbody tr')].map((row) => row.querySelector('td')?.textContent?.trim());
-  const deleteButton = (name: string) => element().querySelector<HTMLButtonElement>(`button[aria-label="Supprimer ${name}"]`);
 
   it('affiche une ligne par catégorie, avec les liens vers la fiche et la modification', () => {
     expect(rows()).toEqual(['Fruits', 'Légumes']);
     expect(element().querySelector(`a[aria-label="Modifier Fruits"]`)?.getAttribute('href')).toBe(`/${FRUITS.id}/modifier`);
   });
 
-  it('supprime après confirmation, puis recharge la liste', async () => {
-    deleteButton('Fruits')?.click();
-    await settle();
-
-    expect(confirmDialog.confirm).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('Fruits') }));
-    const request = http.expectOne(`${ADMIN_CATEGORIES_URL}/${FRUITS.id}`);
-    expect(request.request.method).toBe('DELETE');
-    request.flush(null, { status: 204, statusText: 'No Content' });
-    await settle();
-
-    await vi.waitFor(() => expect(notifications.showSuccess).toHaveBeenCalledWith('Catégorie « Fruits » supprimée'));
-    TestBed.tick();
-    http.expectOne(ADMIN_CATEGORIES_URL).flush({ success: true, data: [LEGUMES] });
-    await settle();
-    expect(rows()).toEqual(['Légumes']);
-  });
-
-  it("n'envoie rien si l'admin annule", async () => {
-    confirmDialog.confirm.mockResolvedValueOnce(false);
-
-    deleteButton('Fruits')?.click();
-    await settle();
-
-    http.expectNone(`${ADMIN_CATEGORIES_URL}/${FRUITS.id}`);
-  });
-
-  it("affiche le message de l'API si la catégorie est utilisée (409)", async () => {
-    deleteButton('Fruits')?.click();
-    await settle();
-
-    http
-      .expectOne(`${ADMIN_CATEGORIES_URL}/${FRUITS.id}`)
-      .flush({ message: 'La catégorie est utilisée par au moins un produit' }, { status: 409, statusText: 'Conflict' });
-    await settle();
-
-    await vi.waitFor(() => expect(notifications.showError).toHaveBeenCalledWith('La catégorie est utilisée par au moins un produit'));
-    expect(rows()).toEqual(['Fruits', 'Légumes']);
+  it("n'offre pas de suppression : la catégorie garde la trace des produits et des commandes", () => {
+    expect(element().querySelector('button[aria-label^="Supprimer"]')).toBeNull();
   });
 });

@@ -5,15 +5,13 @@ import {
     required,
     type SchemaPathTree,
 } from '@angular/forms/signals';
+import type { CategoryResponseDto as Category, CategoryRequestDto } from '@fpm/contracts';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CategoryService } from '../../../../services/category.service';
-import type { CategoryResponseDto as Category, CategoryRequestDto } from '@fpm/contracts';
 import { EntityForm } from '../../../../shared/CRUD/entity-form';
+import { NAME_MIN_LENGTH } from '../../../../shared/constant';
 import { CATEGORY_SPECS } from '../constants';
 import { RouterLink } from '@angular/router';
-
-/** Même règle que le value object Name de l'API. */
-const NAME_MIN_LENGTH = 3;
 
 /**
  * Formulaire d'une catégorie : /admin/categories/nouveau (ajout) et /admin/categories/:id/modifier.

@@ -71,7 +71,7 @@ model Producer {
   name         String
   email        String
   phone        String
-  tvaNumber    String
+  vatNumber    String
   addressLine1 String
   addressLine2 String    @default("")
   postalCode   String

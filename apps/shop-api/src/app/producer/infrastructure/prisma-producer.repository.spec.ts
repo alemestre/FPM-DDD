@@ -20,7 +20,7 @@ const producerRow = (overrides: Record<string, unknown> = {}) => ({
   name: 'Ferme du Moulin',
   email: 'contact@ferme-moulin.fr',
   phone: '+33612345678',
-  tvaNumber: 'FR40303265045',
+  vatNumber: 'FR40303265045',
   addressLine1: '1 chemin du Moulin',
   addressLine2: '',
   postalCode: '75001',
@@ -64,7 +64,7 @@ describe('PrismaProducerRepository', () => {
     repository = new PrismaProducerRepository(prisma as unknown as PrismaService);
   });
 
-  it('save upsert tous les champs, vatNumber vers tvaNumber et isActive compris', async () => {
+  it('save upsert tous les champs, isActive compris', async () => {
     prisma.producer.upsert.mockResolvedValue(producerRow({ isActive: false }));
 
     const saved = await repository.save(existingProducer(false));
@@ -73,7 +73,7 @@ describe('PrismaProducerRepository', () => {
       name: 'Ferme du Moulin',
       email: 'contact@ferme-moulin.fr',
       phone: '+33612345678',
-      tvaNumber: 'FR40303265045',
+      vatNumber: 'FR40303265045',
       addressLine1: '1 chemin du Moulin',
       addressLine2: '',
       postalCode: '75001',
@@ -101,7 +101,7 @@ describe('PrismaProducerRepository', () => {
     });
   });
 
-  it('reconstitue le producteur à partir de la ligne, tvaNumber et isActive compris', async () => {
+  it('reconstitue le producteur à partir de la ligne, isActive compris', async () => {
     prisma.producer.findUnique.mockResolvedValue(producerRow({ isActive: false }));
 
     const producer = await repository.findById(PRODUCER_ID);

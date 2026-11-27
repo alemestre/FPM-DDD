@@ -7,5 +7,5 @@ export const CATEGORY_SPECS: EntitySpecs<Category> = {
   name: 'catégorie',
   key: 'name',
   gender: 'F',
-  basePath: '/admin/categories'
+  basePath: 'categories'
 };

@@ -1,11 +1,29 @@
 import { DomainValidationErrorFilter } from '../../../shared/interface/http/domain-validation-error.filter';
+import { JwtCookieAuthGuard } from '../../../auth/interface/http/guards/jwt-cookie-auth.guard';
+import { JwtCookieStrategy } from '../../../auth/interface/http/strategies/jwt-cookie.strategy';
+import { GetCurrentUserUseCase } from '../../../auth/application/use-cases/get-current-user.use-case';
+import { DeactivateProducerUseCase } from '../../application/use-cases/deactivate-producer.use-case';
+import { ActivateProducerUseCase } from '../../application/use-cases/activate-producer.use-case';
+import { CreateProducerUseCase } from '../../application/use-cases/create-producer.use-case';
+import { UpdateProducerUseCase } from '../../application/use-cases/update-producer.use-case';
+import { ListProducersUseCase } from '../../application/use-cases/list-producers.use-case';
+import { GetProducerUseCase } from '../../application/use-cases/get-producer.use-case';
+import { AdminGuard } from '../../../auth/interface/http/guards/admin.guard';
+import { ACCESS_TOKEN_COOKIE } from '../../../auth/interface/http/auth.constants';
 import { type INestApplication, NotFoundException } from '@nestjs/common';
 import { ProducerRepository } from '../../domain/producer.repository';
+import { AdminProducerController } from './admin-producer.controller';
 import { Producer } from '../../domain/producer.entity';
-import { ProducerModule } from '../../producer.module';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { Test } from '@nestjs/testing';
+import { UserRole } from '@fpm/tools';
+import cookieParser from 'cookie-parser';
+
+// @nestjs/config est publié en ESM, que ts-jest ne charge pas : seul le jeton ConfigService est utile ici.
+jest.mock('@nestjs/config', () => ({ ConfigService: class ConfigService {} }));
 
 jest.mock('uuid', () => ({
   v4: jest.fn(() => '12345678-1234-4123-8123-123456789abc'),
@@ -14,10 +32,10 @@ jest.mock('uuid', () => ({
   ),
 }));
 
-jest.mock('../../infrastructure/prisma-producer.repository', () => ({ PrismaProducerRepository: class {} }));
-
 const NEW_ID = '12345678-1234-4123-8123-123456789abc';
 const PRODUCER_ID = 'a3bb189e-8bf9-4888-9912-ace4e6543002';
+const ADMIN_ID = '9b2d7c1e-4f3a-4e8b-a6d5-1c0f2e3d4b5a';
+const CUSTOMER_ID = '3f0c9a52-8a6e-4c1b-9d57-2b1e7f4a6c10';
 
 class InMemoryProducerRepository extends ProducerRepository {
   readonly producers = new Map<string, Producer>();
@@ -50,20 +68,31 @@ class InMemoryProducerRepository extends ProducerRepository {
   }
 }
 
-describe('ProducerController (HTTP)', () => {
+describe('AdminProducerController (HTTP)', () => {
   let app: INestApplication;
   let repository: InMemoryProducerRepository;
   let baseUrl: string;
+  let adminCookie: string;
+  let customerCookie: string;
 
-  const request = async (method: string, path: string, body?: unknown) => {
-    const response = await fetch(`${baseUrl}/producers${path}`, {
+  // AdminGuard relit le rôle via ce use case : on le simule plutôt que de monter le contexte auth.
+  const getCurrentUser = {
+    execute: jest.fn(async (userId: string) => ({
+      id: userId,
+      role: userId === ADMIN_ID ? UserRole.ADMIN : UserRole.CUSTOMER,
+    })),
+  };
+
+  const requestAs = async (cookie: string | null, method: string, path: string, body?: unknown) => {
+    const response = await fetch(`${baseUrl}/admin/producers${path}`, {
       method,
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', ...(cookie && { cookie }) },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     const text = await response.text();
     return { status: response.status, body: text ? JSON.parse(text) : undefined };
   };
+  const request = (method: string, path: string, body?: unknown) => requestAs(adminCookie, method, path, body);
 
   const seedProducer = (isActive = true) =>
     repository.producers.set(
@@ -97,20 +126,35 @@ describe('ProducerController (HTTP)', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [ProducerModule],
+      imports: [JwtModule.register({ secret: 'test-secret' })],
+      controllers: [AdminProducerController],
       providers: [
+        JwtCookieAuthGuard,
+        JwtCookieStrategy,
+        AdminGuard,
+        { provide: GetCurrentUserUseCase, useValue: getCurrentUser },
+        { provide: ConfigService, useValue: { getOrThrow: () => 'test-secret' } },
+        CreateProducerUseCase,
+        ListProducersUseCase,
+        GetProducerUseCase,
+        UpdateProducerUseCase,
+        ActivateProducerUseCase,
+        DeactivateProducerUseCase,
+        { provide: ProducerRepository, useClass: InMemoryProducerRepository },
         { provide: APP_PIPE, useClass: ZodValidationPipe },
         { provide: APP_FILTER, useClass: DomainValidationErrorFilter },
       ],
-    })
-      .overrideProvider(ProducerRepository)
-      .useClass(InMemoryProducerRepository)
-      .compile();
+    }).compile();
 
     app = moduleRef.createNestApplication();
+    app.use(cookieParser());
     await app.listen(0);
     baseUrl = await app.getUrl();
     repository = moduleRef.get(ProducerRepository);
+
+    const jwt = moduleRef.get(JwtService);
+    adminCookie = `${ACCESS_TOKEN_COOKIE}=${await jwt.signAsync({ sub: ADMIN_ID })}`;
+    customerCookie = `${ACCESS_TOKEN_COOKIE}=${await jwt.signAsync({ sub: CUSTOMER_ID })}`;
   });
 
   beforeEach(() => repository.producers.clear());
@@ -119,7 +163,35 @@ describe('ProducerController (HTTP)', () => {
     await app.close();
   });
 
-  describe('POST /producers', () => {
+  describe('accès', () => {
+    // Toujours 3 colonnes : avec moins, Jest passerait `done` en dernier argument et attendrait son appel.
+    const routes: [string, string, unknown][] = [
+      ['GET', '', undefined],
+      ['GET', `/${PRODUCER_ID}`, undefined],
+      ['POST', '', { name: 'Ferme des Saules' }],
+      ['PATCH', `/${PRODUCER_ID}`, { city: 'Lyon' }],
+      ['POST', `/${PRODUCER_ID}/activate`, undefined],
+      ['POST', `/${PRODUCER_ID}/deactivate`, undefined],
+    ];
+
+    it.each(routes)('%s %s renvoie 401 sans session', async (method, path, body) => {
+      seedProducer();
+
+      expect((await requestAs(null, method, path, body)).status).toBe(401);
+      const producer = repository.producers.get(PRODUCER_ID);
+      expect([producer?.city, producer?.isActive]).toEqual(['Paris', true]);
+    });
+
+    it.each(routes)('%s %s renvoie 403 pour un client', async (method, path, body) => {
+      seedProducer();
+
+      expect((await requestAs(customerCookie, method, path, body)).status).toBe(403);
+      const producer = repository.producers.get(PRODUCER_ID);
+      expect([producer?.city, producer?.isActive]).toEqual(['Paris', true]);
+    });
+  });
+
+  describe('POST /admin/producers', () => {
     const payload = {
       name: 'Ferme du Moulin',
       email: 'contact@ferme-moulin.fr',
@@ -174,7 +246,7 @@ describe('ProducerController (HTTP)', () => {
     });
   });
 
-  describe('PATCH /producers/:id', () => {
+  describe('PATCH /admin/producers/:id', () => {
     it('met à jour les champs fournis', async () => {
       seedProducer();
 
@@ -184,10 +256,29 @@ describe('ProducerController (HTTP)', () => {
       expect(body).toEqual({ ...expectedProducer, city: 'Lyon', postalCode: '69002' });
     });
 
-    it('refuse de modifier isActive directement (400)', async () => {
+    it('désactive puis réactive le producteur via isActive', async () => {
       seedProducer();
 
-      const { status } = await request('PATCH', `/${PRODUCER_ID}`, { isActive: false });
+      const deactivated = await request('PATCH', `/${PRODUCER_ID}`, { isActive: false });
+      expect(deactivated).toEqual({ status: 200, body: { ...expectedProducer, isActive: false } });
+      expect(repository.producers.get(PRODUCER_ID)?.isActive).toBe(false);
+
+      const reactivated = await request('PATCH', `/${PRODUCER_ID}`, { isActive: true });
+      expect(reactivated).toEqual({ status: 200, body: expectedProducer });
+    });
+
+    it("garde l'état actif quand isActive n'est pas envoyé", async () => {
+      seedProducer(false);
+
+      const { body } = await request('PATCH', `/${PRODUCER_ID}`, { city: 'Lyon' });
+
+      expect(body.isActive).toBe(false);
+    });
+
+    it('renvoie 400 si isActive n’est pas un booléen', async () => {
+      seedProducer();
+
+      const { status } = await request('PATCH', `/${PRODUCER_ID}`, { isActive: 'non' });
 
       expect(status).toBe(400);
       expect(repository.producers.get(PRODUCER_ID)?.isActive).toBe(true);

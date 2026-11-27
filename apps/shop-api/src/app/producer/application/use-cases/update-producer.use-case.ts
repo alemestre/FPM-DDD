@@ -11,7 +11,7 @@ export class UpdateProducerUseCase {
    * goes through the domain invariants before being persisted.
    */
   async execute(id: string, input: UpdateProducerInput): Promise<Producer> {
-    const { name, email, phone, vatNumber, addressLine1, addressLine2, postalCode, city } = input;
+    const { name, email, phone, vatNumber, addressLine1, addressLine2, postalCode, city, isActive } = input;
     const producer = await this.repository.findByIdOrFail(id);
 
     if (name !== undefined) producer.changeName(name);
@@ -19,6 +19,8 @@ export class UpdateProducerUseCase {
     if (phone !== undefined) producer.changePhone(phone);
     if (vatNumber !== undefined) producer.changeVatNumber(vatNumber);
     producer.changeAddress({ addressLine1, addressLine2, postalCode, city });
+    if (isActive === true) producer.activate();
+    if (isActive === false) producer.deactivate();
 
     return this.repository.save(producer);
   }

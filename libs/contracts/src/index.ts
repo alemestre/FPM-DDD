@@ -8,3 +8,5 @@ export * from './lib/current-user.response.dto';
 export * from './lib/customer-profile.response.dto';
 export * from './lib/order.response.dto';
 export * from './lib/cart.response.dto';
+export * from './lib/producer.request.dto';
+export * from './lib/producer.response.dto';

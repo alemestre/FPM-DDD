@@ -1,0 +1,64 @@
+<a class="link-secondary text-decoration-none d-inline-flex align-items-center gap-1 mb-3" routerLink="..">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    Retour aux producteurs
+</a>
+
+@if (entityResource.isLoading()) {
+<div class="d-flex justify-content-center p-5">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement du producteur…</span>
+    </div>
+</div>
+} @else if (notFound()) {
+<div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+    <i class="bi bi-question-circle-fill" aria-hidden="true"></i>
+    Producteur introuvable.
+</div>
+} @else if (entityResource.error()) {
+<div class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+    Le producteur n’a pas pu être chargé.
+    <button type="button" class="btn btn-sm btn-outline-danger ms-auto" (click)="entityResource.reload()">Réessayer</button>
+</div>
+} @else if (entity(); as entity) {
+<div class="card rounded-4 border-0 shadow-sm">
+    <div class="card-body p-4">
+        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+            <h1 class="fs-4 fw-semibold mb-0">{{ entity.name }}</h1>
+            <div class="d-flex gap-2">
+                <a class="btn btn-outline-primary d-flex align-items-center gap-2" routerLink="modifier">
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                    Modifier
+                </a>
+            </div>
+        </div>
+
+        <dl class="row mb-0">
+            <dt class="col-sm-3 text-secondary fw-medium">Nom</dt>
+            <dd class="col-sm-9">{{ entity.name }}</dd>
+            <dt class="col-sm-3 text-secondary fw-medium">Numéro de TVA</dt>
+            <dd class="col-sm-9">{{ entity.vatNumber }}</dd>
+            <dt class="col-sm-3 text-secondary fw-medium">E-mail</dt>
+            <dd class="col-sm-9"><a [href]="'mailto:' + entity.email">{{ entity.email }}</a></dd>
+            <dt class="col-sm-3 text-secondary fw-medium">Téléphone</dt>
+            <dd class="col-sm-9"><a [href]="'tel:' + entity.phone">{{ entity.phone }}</a></dd>
+            <dt class="col-sm-3 text-secondary fw-medium">Adresse</dt>
+            <dd class="col-sm-9">
+                {{ entity.addressLine1 }}<br />
+                @if (entity.addressLine2) {
+                {{ entity.addressLine2 }}<br />
+                }
+                {{ entity.postalCode }} {{ entity.city }}
+            </dd>
+            <dt class="col-sm-3 text-secondary fw-medium">Statut</dt>
+            <dd class="col-sm-9 mb-0">
+                @if (entity.isActive) {
+                <span class="badge text-bg-success">Actif</span>
+                } @else {
+                <span class="badge text-bg-secondary">Inactif</span>
+                }
+            </dd>
+        </dl>
+    </div>
+</div>
+}

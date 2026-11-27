@@ -64,6 +64,21 @@ describe('UpdateProducerUseCase', () => {
     expect(updated.addressLine1).toBe('1 chemin du Moulin');
   });
 
+  it.each([
+    [false, true, false],
+    [true, false, true],
+    [undefined, false, false],
+  ])('isActive %p sur un producteur actif=%p : actif=%p après la modification', async (isActive, wasActive, expected) => {
+    const producer = existingProducer();
+    if (!wasActive) producer.deactivate();
+    repository.findByIdOrFail.mockResolvedValue(producer);
+
+    const updated = await useCase.execute(PRODUCER_ID, { isActive });
+
+    expect(updated.isActive).toBe(expected);
+    expect(repository.save).toHaveBeenCalledWith(updated);
+  });
+
   it('ne sauvegarde rien si une valeur est invalide', async () => {
     repository.findByIdOrFail.mockResolvedValue(existingProducer());
 

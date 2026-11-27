@@ -71,6 +71,8 @@ Chaque rubrique (catégories, produits, producteurs, commandes, utilisateurs) su
   Un seul composant de formulaire sert à l'ajout et à la modification (`admin-producer-form.ts`).
 - **Suppression :** une action de la liste ou de la fiche, confirmée par `ConfirmDialogService`
   (`shared/confirm-dialog/`). C'est le seul modal de l'espace admin.
+  Les catégories et les producteurs ne se suppriment jamais : produits et commandes doivent garder
+  leur trace (pas de route DELETE, pas de bouton Supprimer). Un producteur se désactive (`isActive`).
 - **Erreurs API :** `apiErrorMessage(error, fallback)` (`shared/tools/api-error-message.ts`) affiche
   le message renvoyé par l'API (409…).
 - **Côté API :** un contrôleur `admin-<contexte>.controller.ts` par bounded context, sur

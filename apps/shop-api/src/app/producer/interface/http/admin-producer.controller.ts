@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { DeactivateProducerUseCase } from "../../application/use-cases/deactivate-producer.use-case";
 import { ActivateProducerUseCase } from "../../application/use-cases/activate-producer.use-case";
 import { CreateProducerUseCase } from "../../application/use-cases/create-producer.use-case";
@@ -9,13 +9,15 @@ import type { ProducerResponseDto } from "@fpm/contracts";
 import { toProducerResponse } from "./producer.response.mapper";
 import { CreateProducerDto } from "./dto/create-producer.dto";
 import { UpdateProducerDto } from "./dto/update-producer.dto";
+import { OnlyAdmin } from '../../../auth/interface/http/only-admin.decorator';
 
 /**
  * Producers are never deleted, so their products keep a valid producer:
  * they are deactivated instead.
  */
-@Controller("producers")
-export class ProducerController {
+@Controller("admin/producers")
+@OnlyAdmin()
+export class AdminProducerController {
   constructor(
     private readonly createProducer: CreateProducerUseCase,
     private readonly listProducers: ListProducersUseCase,

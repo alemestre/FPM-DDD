@@ -3,6 +3,7 @@ export const CONSTANTS = {
     CATEGORIES: 'categories',
     CATEGORY_BY_SLUG: 'categories/slug',
     PRODUCTS: 'products',
+    PRODUCERS: 'producers',
     LOGIN: 'login',
     ADMIN_LOGIN: 'admin/login',
     REGISTER: 'register',
@@ -21,3 +22,5 @@ export const CONSTANTS = {
     RESET_PASSWORD: 'reset-password'
   },
 };
+
+export const NAME_MIN_LENGTH = 3

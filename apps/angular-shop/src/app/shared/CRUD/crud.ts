@@ -11,7 +11,7 @@ export interface EntitySpecs<Entity> {
     /** Propriété qui nomme une entité dans les messages (« Fruits »). */
     key: keyof Entity;
     gender: 'F' | 'M';
-    /** URL absolue de la liste, par exemple `/admin/categories`. */
+    /** Chemin de la liste sous /admin, par exemple `categories`. */
     basePath: string;
 }
 

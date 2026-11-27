@@ -39,7 +39,7 @@ export abstract class EntityDetail<
         try {
             await firstValueFrom(this.entityService.deleteEntity(entity.id));
             this.notificationService.showSuccess(this.deletedMessage(entity));
-            await this.router.navigateByUrl(this.entitySpecs.basePath);
+            await this.router.navigateByUrl(`/admin/${this.entitySpecs.basePath}`);
         } catch (error) {
             this.notificationService.showError(apiErrorMessage(error, this.deleteFailedMessage()));
         }

@@ -7,4 +7,6 @@ export interface CreateProducerInput {
   readonly addressLine2?: string;
   readonly postalCode: string;
   readonly city: string;
+  /** `true` par défaut. */
+  readonly isActive?: boolean;
 }

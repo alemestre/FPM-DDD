@@ -1,24 +1,41 @@
+import { categoriesComponent } from './categories/categories.component';
 import { adminGuard, adminLoginGuard } from '../../guards/admin.guard';
+import { producersComponent } from './producers/producers.component';
+import { AdminPlaceholder } from './placeholder/admin-placeholder';
 import { AdminLayout } from '../../layout/admin/admin-layout';
 import { AuthLayout } from '../../layout/auth/auth-layout';
 import { AdminLogin } from './login/admin-login';
-import { AdminPlaceholder } from './placeholder/admin-placeholder';
 import { AdminHome } from './home/admin-home';
 import { Route } from '@angular/router';
 
+/** Charge une page à la demande : `() => import('./list/…').then((m) => m.MaPage)`. */
+type LoadComponent = NonNullable<Route['loadComponent']>;
+
+/** Pages CRUD d'une rubrique, chargées à la demande (chacune dans son propre chunk). */
+export type CrudLoadComponent = {
+  list: LoadComponent;
+  create: LoadComponent;
+  read: LoadComponent;
+  update: LoadComponent;
+};
+
 /**
  * Routes CRUD d'une rubrique : liste, ajout, fiche, modification. La suppression est une action
- * de la liste ou de la fiche, pas une route. Pages provisoires tant que la rubrique n'a pas ses écrans.
+ * de la liste ou de la fiche, pas une route. Sans `pages`, pages provisoires (AdminPlaceholder).
  */
-const crudRoutes = (path: string, label: string): Route => ({
-  path,
-  children: [
-    { path: '', component: AdminPlaceholder, data: { breadcrumb: label } },
-    { path: 'nouveau', component: AdminPlaceholder, data: { breadcrumb: `${label} — Nouveau` } },
-    { path: ':id', component: AdminPlaceholder, data: { breadcrumb: `${label} — Fiche` } },
-    { path: ':id/modifier', component: AdminPlaceholder, data: { breadcrumb: `${label} — Modifier` } }
-  ]
-});
+const crudRoutes = (path: string, label: string, pages?: CrudLoadComponent): Route => {
+  const page = (loadComponent: LoadComponent | undefined) =>
+    loadComponent ? { loadComponent } : { component: AdminPlaceholder };
+  return {
+    path,
+    children: [
+      { path: '', ...page(pages?.list), data: { breadcrumb: label } },
+      { path: 'nouveau', ...page(pages?.create), data: { breadcrumb: `${label} — Nouveau` } },
+      { path: ':id', ...page(pages?.read), data: { breadcrumb: `${label} — Fiche` } },
+      { path: ':id/modifier', ...page(pages?.update), data: { breadcrumb: `${label} — Modifier` } }
+    ]
+  };
+};
 
 /**
  * Espace admin. Déclaré avant les routes de la boutique, pour que leur `**` ne capte pas /admin/….
@@ -42,32 +59,8 @@ export const appAdminRoutes: Route[] = [
         children: [
           { path: '', component: AdminHome, data: { breadcrumb: 'Tableau de bord' } },
           crudRoutes('produits', 'Produits'),
-          {
-            path: 'categories',
-            children: [
-              {
-                path: '',
-                loadComponent: () => import('./categories/list/admin-category-list').then((m) => m.AdminCategoryList),
-                data: { breadcrumb: 'Catégories' }
-              },
-              {
-                path: 'nouveau',
-                loadComponent: () => import('./categories/form/admin-category-form').then((m) => m.AdminCategoryForm),
-                data: { breadcrumb: 'Nouvelle catégorie' }
-              },
-              {
-                path: ':id',
-                loadComponent: () => import('./categories/detail/admin-category-detail').then((m) => m.AdminCategoryDetail),
-                data: { breadcrumb: 'Catégorie' }
-              },
-              {
-                path: ':id/modifier',
-                loadComponent: () => import('./categories/form/admin-category-form').then((m) => m.AdminCategoryForm),
-                data: { breadcrumb: 'Modifier la catégorie' }
-              }
-            ]
-          },
-          crudRoutes('producteurs', 'Producteurs'),
+          crudRoutes('categories', 'Catégories', categoriesComponent),
+          crudRoutes('producteurs', 'Producteurs', producersComponent),
           crudRoutes('commandes', 'Commandes'),
           crudRoutes('utilisateurs', 'Utilisateurs'),
           // Page admin inconnue : tableau de bord (le garde a déjà renvoyé les non-admins vers /admin/login).

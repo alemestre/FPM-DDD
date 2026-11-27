@@ -9,7 +9,8 @@ export const CreateProducerSchema = z.object({
   addressLine1: z.string().min(1),
   addressLine2: z.string().default(""),
   postalCode: z.string().min(1),
-  city: z.string().min(1)
+  city: z.string().min(1),
+  isActive: z.boolean().optional()
 });
 
 export class CreateProducerDto extends createZodDto(CreateProducerSchema) {}

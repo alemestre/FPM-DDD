@@ -1,0 +1,68 @@
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <h1 class="fs-4 fw-semibold mb-0">Producteurs</h1>
+    <a class="btn btn-primary d-flex align-items-center gap-2" routerLink="nouveau">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+        Nouveau producteur
+    </a>
+</div>
+
+<div class="card rounded-4 border-0 shadow-sm">
+    <div class="card-body p-0">
+        @if (entitiesResource.isLoading()) {
+        <div class="d-flex justify-content-center p-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement des producteurs…</span>
+            </div>
+        </div>
+        } @else if (entitiesResource.error()) {
+        <div class="alert alert-danger d-flex align-items-center gap-2 m-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            Les producteurs n’ont pas pu être chargés.
+            <button type="button" class="btn btn-sm btn-outline-danger ms-auto" (click)="entitiesResource.reload()">Réessayer</button>
+        </div>
+        } @else if (entities().length === 0) {
+        <div class="text-center text-secondary p-5">
+            <i class="bi bi-shop fs-1 d-block mb-2" aria-hidden="true"></i>
+            Aucun producteur pour l’instant.
+        </div>
+        } @else {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col" class="ps-4">Nom</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Statut</th>
+                        <th scope="col" class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (producer of entities(); track producer.id) {
+                    <tr>
+                        <td class="ps-4 fw-medium">
+                            <a class="link-body-emphasis text-decoration-none" [routerLink]="producer.id">{{ producer.name }}</a>
+                        </td>
+                      <td class="text-secondary"><a [href]=`mailto:${producer.email}`>{{ producer.email }}</a></td>
+                        <td>
+                            @if (producer.isActive) {
+                            <span class="badge text-bg-success">Actif</span>
+                            } @else {
+                            <span class="badge text-bg-secondary">Inactif</span>
+                            }
+                        </td>
+                        <td class="text-end pe-4 text-nowrap">
+                            <a class="btn btn-sm btn-outline-secondary" [routerLink]="producer.id" [attr.aria-label]="'Voir ' + producer.name" title="Voir">
+                                <i class="bi bi-eye" aria-hidden="true"></i>
+                            </a>
+                            <a class="btn btn-sm btn-outline-secondary ms-1" [routerLink]="[producer.id, 'modifier']" [attr.aria-label]="'Modifier ' + producer.name" title="Modifier">
+                                <i class="bi bi-pencil" aria-hidden="true"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+    </div>
+</div>

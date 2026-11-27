@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import {
   ADMIN_CATEGORIES_URL,
@@ -61,16 +61,9 @@ describe('AdminCategoryDetail', () => {
     expect(element.textContent).toContain('Catégorie introuvable');
   });
 
-  it('revient à la liste après la suppression', async () => {
+  it("n'offre pas de suppression : la catégorie garde la trace des produits et des commandes", async () => {
     const element = await open();
-    const deleteButton = [...element.querySelectorAll('button')].find((button) => button.textContent?.includes('Supprimer'));
 
-    deleteButton?.click();
-    await settle();
-    http.expectOne(`${ADMIN_CATEGORIES_URL}/${FRUITS.id}`).flush(null, { status: 204, statusText: 'No Content' });
-    await settle();
-
-    await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/admin/categories'));
-    expect(notifications.showSuccess).toHaveBeenCalledWith('Catégorie « Fruits » supprimée');
+    expect([...element.querySelectorAll('button')].some((button) => button.textContent?.includes('Supprimer'))).toBe(false);
   });
 });

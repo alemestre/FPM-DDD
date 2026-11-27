@@ -3,14 +3,14 @@ import { z } from 'zod';
 
 export const ProducerResponseSchema = GenericEntitySchema.extend({
     name: z.string(),
-    email: z.string(),
+    email: z.email(),
     phone: z.string(),
     vatNumber: z.string(),
     addressLine1: z.string(),
     addressLine2: z.string(),
     postalCode: z.string(),
     city: z.string(),
-    isActive: z.boolean(),
+    isActive: z.boolean()
 });
 
 export type ProducerResponseDto = z.infer<typeof ProducerResponseSchema>;

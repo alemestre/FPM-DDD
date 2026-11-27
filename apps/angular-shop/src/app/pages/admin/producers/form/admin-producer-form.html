@@ -1,0 +1,207 @@
+<!-- `..` : la liste depuis « nouveau », la fiche depuis « :id/modifier » -->
+<a class="link-secondary text-decoration-none d-inline-flex align-items-center gap-1 mb-3" routerLink="..">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    {{ isEdit() ? 'Retour à la fiche' : 'Retour aux producteurs' }}
+</a>
+
+@if (isEdit() && entityResource.isLoading()) {
+<div class="d-flex justify-content-center p-5">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement du producteur…</span>
+    </div>
+</div>
+} @else if (notFound()) {
+<div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+    <i class="bi bi-question-circle-fill" aria-hidden="true"></i>
+    Producteur introuvable.
+</div>
+} @else if (entityResource.error()) {
+<div class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+    Le producteur n’a pas pu être chargé.
+    <button type="button" class="btn btn-sm btn-outline-danger ms-auto" (click)="entityResource.reload()">Réessayer</button>
+</div>
+} @else {
+<div class="card rounded-4 border-0 shadow-sm col-12 col-xl-8">
+    <div class="card-body p-4">
+        <h1 class="fs-4 fw-semibold mb-4">{{ isEdit() ? 'Modifier le producteur' : 'Nouveau producteur' }}</h1>
+
+        @if (submitError(); as error) {
+        <div class="alert alert-danger d-flex align-items-center gap-2 py-2 small" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            {{ error }}
+        </div>
+        }
+
+        <form [formRoot]="form">
+            <h2 class="fs-6 fw-semibold text-secondary text-uppercase small mb-3">Producteur</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <label class="form-label fw-medium text-secondary" for="producer-name">Nom</label>
+                    <input
+                        [class.is-invalid]="form.name().touched() && form.name().invalid()"
+                        [formField]="form.name"
+                        class="form-control"
+                        id="producer-name"
+                        type="text"
+                        autocomplete="organization"
+                    />
+                    @if (form.name().touched() && form.name().invalid()) {
+                    <div class="invalid-feedback d-block">
+                        @for (error of form.name().errors(); track error.kind) {
+                        <div>{{ error.message }}</div>
+                        }
+                    </div>
+                    }
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium text-secondary" for="producer-vat-number">Numéro de TVA</label>
+                    <input
+                        [class.is-invalid]="form.vatNumber().touched() && form.vatNumber().invalid()"
+                        [formField]="form.vatNumber"
+                        class="form-control"
+                        id="producer-vat-number"
+                        type="text"
+                        autocomplete="off"
+                    />
+                    @if (form.vatNumber().touched() && form.vatNumber().invalid()) {
+                    <div class="invalid-feedback d-block">
+                        @for (error of form.vatNumber().errors(); track error.kind) {
+                        <div>{{ error.message }}</div>
+                        }
+                    </div>
+                    } @else {
+                    <div class="form-text">FR suivi de 11 chiffres, par exemple FR40 303 265 045.</div>
+                    }
+                </div>
+            </div>
+
+            <h2 class="fs-6 fw-semibold text-secondary text-uppercase small mb-3">Contact</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-medium text-secondary" for="producer-email">E-mail</label>
+                    <input
+                        [class.is-invalid]="form.email().touched() && form.email().invalid()"
+                        [formField]="form.email"
+                        class="form-control"
+                        id="producer-email"
+                        type="email"
+                        autocomplete="email"
+                    />
+                    @if (form.email().touched() && form.email().invalid()) {
+                    <div class="invalid-feedback d-block">
+                        @for (error of form.email().errors(); track error.kind) {
+                        <div>{{ error.message }}</div>
+                        }
+                    </div>
+                    }
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium text-secondary" for="producer-phone">Téléphone</label>
+                    <input
+                        [class.is-invalid]="form.phone().touched() && form.phone().invalid()"
+                        [formField]="form.phone"
+                        class="form-control"
+                        id="producer-phone"
+                        type="tel"
+                        autocomplete="tel"
+                    />
+                    @if (form.phone().touched() && form.phone().invalid()) {
+                    <div class="invalid-feedback d-block">
+                        @for (error of form.phone().errors(); track error.kind) {
+                        <div>{{ error.message }}</div>
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <h2 class="fs-6 fw-semibold text-secondary text-uppercase small mb-3">Adresse</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <label class="form-label fw-medium text-secondary" for="producer-address-line1">Adresse</label>
+                    <input
+                        [class.is-invalid]="form.addressLine1().touched() && form.addressLine1().invalid()"
+                        [formField]="form.addressLine1"
+                        class="form-control"
+                        id="producer-address-line1"
+                        type="text"
+                        autocomplete="address-line1"
+                    />
+                    @if (form.addressLine1().touched() && form.addressLine1().invalid()) {
+                    <div class="invalid-feedback d-block">
+                        @for (error of form.addressLine1().errors(); track error.kind) {
+                        <div>{{ error.message }}</div>
+                        }
+                    </div>
+                    }
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium text-secondary" for="producer-address-line2">Complément d’adresse <span class="fw-normal">(facultatif)</span></label>
+                    <input
+                        [class.is-invalid]="form.addressLine2().touched() && form.addressLine2().invalid()"
+                        [formField]="form.addressLine2"
+                        class="form-control"
+                        id="producer-address-line2"
+                        type="text"
+                        autocomplete="address-line2"
+                    />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium text-secondary" for="producer-postal-code">Code postal</label>
+                    <input
+                        [class.is-invalid]="form.postalCode().touched() && form.postalCode().invalid()"
+                        [formField]="form.postalCode"
+                        class="form-control"
+                        id="producer-postal-code"
+                        type="text"
+                        autocomplete="postal-code"
+                    />
+                    @if (form.postalCode().touched() && form.postalCode().invalid()) {
+                    <div class="invalid-feedback d-block">
+                        @for (error of form.postalCode().errors(); track error.kind) {
+                        <div>{{ error.message }}</div>
+                        }
+                    </div>
+                    }
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label fw-medium text-secondary" for="producer-city">Ville</label>
+                    <input
+                        [class.is-invalid]="form.city().touched() && form.city().invalid()"
+                        [formField]="form.city"
+                        class="form-control"
+                        id="producer-city"
+                        type="text"
+                        autocomplete="address-level2"
+                    />
+                    @if (form.city().touched() && form.city().invalid()) {
+                    <div class="invalid-feedback d-block">
+                        @for (error of form.city().errors(); track error.kind) {
+                        <div>{{ error.message }}</div>
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <div class="form-check form-switch mb-4">
+                <input [formField]="form.isActive" class="form-check-input" id="producer-is-active" type="checkbox" role="switch" />
+                <label class="form-check-label" for="producer-is-active">Actif</label>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a class="btn btn-outline-secondary" routerLink="..">Annuler</a>
+                <button type="submit" class="btn btn-primary d-flex align-items-center gap-2" [disabled]="form().submitting()">
+                    @if (form().submitting()) {
+                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                    } @else {
+                    <i class="bi bi-check-lg" aria-hidden="true"></i>
+                    }
+                    Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+}
